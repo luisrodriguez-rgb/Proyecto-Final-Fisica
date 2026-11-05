@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 380" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <rect width="880" height="380" fill="#ffffff"/>
+  <defs>
+    <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#18181b"/>
+    </marker>
+    <marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2563eb"/>
+    </marker>
+    <marker id="fr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c2410c"/>
+    </marker>
+  </defs>
+
+  <text x="24" y="30" font-size="14" font-weight="bold" fill="#18181b">a) Geometría del sensor</text>
+  <!-- bobina -->
+  <rect x="120" y="70" width="200" height="110" fill="none" stroke="#a1a1aa" stroke-dasharray="4 4"/>
+  <g fill="#18181b">
+    <rect x="112" y="70" width="10" height="110"/>
+    <rect x="318" y="70" width="10" height="110"/>
+  </g>
+  <line x1="220" y1="50" x2="220" y2="300" stroke="#a1a1aa" stroke-dasharray="2 4"/>
+  <text x="226" y="60" fill="#71717a">eje z</text>
+  <!-- cotas -->
+  <line x1="220" y1="195" x2="323" y2="195" stroke="#18181b" marker-end="url(#fl)"/>
+  <text x="258" y="212" fill="#18181b">a</text>
+  <line x1="345" y1="70" x2="345" y2="180" stroke="#18181b" marker-start="url(#fl)" marker-end="url(#fl)"/>
+  <text x="352" y="130" fill="#18181b">l</text>
+  <text x="120" y="62" fill="#18181b">N espiras, R₀</text>
+  <!-- campo -->
+  <path d="M220,180 C220,215 160,240 90,210 C30,180 40,70 110,50" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fa)"/>
+  <path d="M220,180 C220,215 280,240 350,210 C410,180 400,70 330,50" fill="none" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fa)"/>
+  <text x="410" y="140" fill="#2563eb">B(t)</text>
+  <!-- distancia -->
+  <line x1="400" y1="180" x2="400" y2="250" stroke="#18181b" marker-start="url(#fl)" marker-end="url(#fl)"/>
+  <text x="408" y="220" fill="#18181b">d</text>
+  <!-- objeto -->
+  <rect x="40" y="250" width="380" height="70" fill="#fbe3d4" stroke="#c2410c"/>
+  <text x="52" y="342" fill="#c2410c">objeto metálico: σ, μᵣ   (semiespacio z &lt; 0)</text>
+  <ellipse cx="220" cy="262" rx="90" ry="9" fill="none" stroke="#c2410c" stroke-width="1.5" marker-end="url(#fr)"/>
+  <text x="250" y="292" fill="#c2410c">corrientes de Foucault J = σE</text>
+  <line x1="60" y1="270" x2="420" y2="270" stroke="#c2410c" stroke-dasharray="3 3"/>
+  <text x="430" y="274" fill="#c2410c">δ</text>
+
+  <text x="500" y="30" font-size="14" font-weight="bold" fill="#18181b">b) Circuito equivalente</text>
+  <!-- circuito -->
+  <g stroke="#18181b" stroke-width="1.6" fill="none">
+    <circle cx="540" cy="190" r="22"/>
+    <path d="M540,168 L540,100 L620,100"/>
+    <path d="M620,100 l8,-10 l12,20 l12,-20 l12,20 l12,-20 l8,10"/>
+    <path d="M686,100 L740,100"/>
+    <path d="M740,100 c0,-14 22,-14 22,0 c0,-14 22,-14 22,0 c0,-14 22,-14 22,0 c0,-14 22,-14 22,0"/>
+    <path d="M828,100 L850,100 L850,280 L540,280 L540,212"/>
+  </g>
+  <path d="M528,192 q6,-10 12,0 q6,10 12,0" fill="none" stroke="#18181b" stroke-width="1.4"/>
+  <text x="572" y="186" fill="#18181b">ε(t) = V₀ sen ωt</text>
+  <text x="572" y="202" fill="#18181b">o escalón V₀</text>
+  <text x="625" y="80" fill="#18181b">R_eff(d, σ, μᵣ, ω)</text>
+  <text x="745" y="80" fill="#18181b">L_eff(d, σ, μᵣ, ω)</text>
+  <path d="M600,140 L700,140" stroke="#2563eb" stroke-width="1.5" marker-end="url(#fa)"/>
+  <text x="640" y="160" fill="#2563eb">i(t)</text>
+  <text x="600" y="320" fill="#18181b">ε − i R_eff − L_eff di/dt = 0</text>
+  <text x="600" y="340" fill="#71717a">señal: |I_p − I_p,0| / I_p,0 ≥ umbral</text>
+</svg>
