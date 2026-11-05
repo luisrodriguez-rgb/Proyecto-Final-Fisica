@@ -41,3 +41,21 @@ def test_campo_espira_centro():
     # B en el centro de una espira: mu0 I / (2a)
     _, Bz = ph.campo_espira(0.01, 0.0, 1.0, np.array([0.0]), np.array([0.0]))
     assert Bz[0] == pytest.approx(ph.MU0 / (2 * 0.01), rel=1e-6)
+
+
+def test_escalon_dc_como_circuito_rc():
+    L, R, V0 = 0.6e-3, 5.0, 5.0
+    r = nm.resolver_rl(L, R, V0, 1000, 0.0, 200, 10, fuente="dc")
+    tau, i_max = L / R, V0 / R
+    # en t = tau la corriente alcanza el 63 % de i_max (igual que q(tau) = 0.63 q_max)
+    k = int(round(tau / r["h"]))
+    assert r["exacta"][k] == pytest.approx(i_max * (1 - np.exp(-1)), rel=1e-9)
+    assert np.max(np.abs(r["rk4"] - r["exacta"])) < 1e-8
+    # al desenergizar la corriente decae a cero
+    assert abs(r["exacta"][-1]) < 0.01 * i_max
+
+
+def test_orden_convergencia_dc():
+    filas = nm.estudio_convergencia(0.6e-3, 5.0, 5.0, 1000, 0.0, ciclos=6, pasos=(10, 20, 40, 80), fuente="dc")
+    assert filas[-1]["orden Euler"] == pytest.approx(1.0, abs=0.08)
+    assert filas[2]["orden RK4"] == pytest.approx(4.0, abs=0.2)

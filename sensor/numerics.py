@@ -70,8 +70,16 @@ def solucion_analitica(t, L: float, R: float, V0: float, f: float, I0: float = 0
     return (I0 + A * math.sin(phi)) * np.exp(-R / L * t) + A * np.sin(w * t - phi)
 
 
-def resolver_rl(L, R, V0, f, I0, pasos_por_ciclo, ciclos):
-    """Resuelve con Euler, RK4, solve_ivp (RK45) y la fórmula exacta."""
+def resolver_rl(L, R, V0, f, I0, pasos_por_ciclo, ciclos, fuente="ac"):
+    """Resuelve con Euler, RK4, solve_ivp (RK45) y la fórmula exacta.
+
+    fuente="ac": V(t) = V0 sin(wt); paso h = T/pasos_por_ciclo, duración ciclos*T.
+    fuente="dc": interruptor como en el circuito RC de clase. Primera mitad en A
+    (energizar, V = V0), segunda mitad en B (desenergizar, V = 0). Aquí
+    pasos_por_ciclo son pasos por constante de tiempo tau y ciclos es la duración en tau.
+    """
+    if fuente == "dc":
+        return _resolver_escalon(L, R, V0, I0, pasos_por_ciclo, ciclos)
     T = 1.0 / f
     n = int(pasos_por_ciclo * ciclos)
     h = T / pasos_por_ciclo
@@ -83,16 +91,54 @@ def resolver_rl(L, R, V0, f, I0, pasos_por_ciclo, ciclos):
     return {"t": t, "h": h, "euler": Ie, "rk4": Ir, "exacta": Ia, "scipy": sol.y[0]}
 
 
-def estudio_convergencia(L, R, V0, f, I0, ciclos=3, pasos=(10, 20, 40, 80, 160, 320, 640, 1280)):
+def solucion_escalon(t, L: float, R: float, V0: float, I0: float, t_s: float):
+    """Kirchhoff  V0 - iR - L di/dt = 0  resuelta por separación de variables:
+    energizar   i(t) = i_max + (I0 - i_max) e^{-t/tau},  i_max = V0/R,  tau = L/R
+    desenergizar (V0 = 0 desde t_s)  i(t) = i(t_s) e^{-(t - t_s)/tau}."""
+    tau = L / R
+    i_max = V0 / R
+    i_s = i_max + (I0 - i_max) * math.exp(-t_s / tau)
+    return np.where(t <= t_s, i_max + (I0 - i_max) * np.exp(-t / tau),
+                    i_s * np.exp(-(t - t_s) / tau))
+
+
+def _resolver_escalon(L, R, V0, I0, pasos_por_tau, duracion_tau):
+    tau = L / R
+    h = tau / pasos_por_tau
+    n = 2 * max(1, int(round(pasos_por_tau * duracion_tau / 2)))
+    m = n // 2
+    t_s = m * h
+
+    def carga(t, I):
+        return (V0 - R * I) / L
+
+    def descarga(t, I):
+        return -R * I / L
+
+    # Se integra por tramos para no evaluar la discontinuidad de V dentro de un paso.
+    t1, e1 = euler(carga, I0, h, m)
+    _, r1 = rk4(carga, I0, h, m)
+    t2, e2 = euler(descarga, e1[-1], h, m, t0=t_s)
+    _, r2 = rk4(descarga, r1[-1], h, m, t0=t_s)
+    t = np.concatenate([t1, t2[1:]])
+    s1 = solve_ivp(carga, (0, t_s), [I0], t_eval=t1, method="RK45", rtol=1e-9, atol=1e-12)
+    s2 = solve_ivp(descarga, (t_s, t[-1]), [s1.y[0][-1]], t_eval=t2, method="RK45", rtol=1e-9, atol=1e-12)
+    return {"t": t, "h": h, "t_s": t_s, "tau": tau, "i_max": V0 / R,
+            "euler": np.concatenate([e1, e2[1:]]), "rk4": np.concatenate([r1, r2[1:]]),
+            "exacta": solucion_escalon(t, L, R, V0, I0, t_s),
+            "scipy": np.concatenate([s1.y[0], s2.y[0][1:]])}
+
+
+def estudio_convergencia(L, R, V0, f, I0, ciclos=3, pasos=(10, 20, 40, 80, 160, 320, 640, 1280), fuente="ac"):
     """Error global máximo vs. paso h, y orden observado p = log(e1/e2)/log(h1/h2)."""
     filas = []
     for p in pasos:
-        r = resolver_rl(L, R, V0, f, I0, p, ciclos)
+        r = resolver_rl(L, R, V0, f, I0, p, ciclos, fuente)
         escala = np.max(np.abs(r["exacta"]))
         ee = np.max(np.abs(r["euler"] - r["exacta"]))
         er = np.max(np.abs(r["rk4"] - r["exacta"]))
         filas.append({
-            "pasos/ciclo": p,
+            ("pasos/τ" if fuente == "dc" else "pasos/ciclo"): p,
             "h (µs)": r["h"] * 1e6,
             "Euler e_abs (A)": ee,
             "Euler e_rel (%)": 100 * ee / escala,
