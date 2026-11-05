@@ -50,6 +50,9 @@ long_mm = sb.slider("Longitud l (mm)", 5.0, 100.0, 20.0, 1.0)
 R0 = sb.number_input("Resistencia del devanado R₀ (Ω)", 0.5, 100.0, 5.0, 0.5)
 
 ui.grupo("Fuente")
+fuente_lbl = sb.radio("Alimentación en la pestaña Respuesta temporal",
+                      ["Alterna  V₀ sin ωt", "Escalón DC  (energizar y desenergizar)"])
+fuente = "dc" if fuente_lbl.startswith("Escalón") else "ac"
 FRECS = [100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]
 frec = sb.select_slider("Frecuencia f (Hz)", FRECS, value=1000)
 V0 = sb.slider("Amplitud V₀ (V)", 1.0, 24.0, 5.0, 0.5)
@@ -62,8 +65,12 @@ umbral_pct = sb.slider("Umbral de activación |ΔI|/I (%)", 0.2, 20.0, 2.0, 0.1)
 hist_pct = sb.slider("Histéresis (%)", 0, 30, 10, 1)
 
 ui.grupo("Integración numérica")
-ppc = sb.slider("Pasos por ciclo  (Δt = T/n)", 8, 400, 40, 2)
-ciclos = sb.slider("Ciclos simulados", 1, 20, 6)
+if fuente == "dc":
+    ppc = sb.slider("Pasos por constante de tiempo  (Δt = τ/n)", 2, 200, 10, 1)
+    ciclos = sb.slider("Duración total (en τ)", 2, 20, 10, 2)
+else:
+    ppc = sb.slider("Pasos por ciclo  (Δt = T/n)", 8, 400, 40, 2)
+    ciclos = sb.slider("Ciclos simulados", 1, 20, 6)
 
 m_sel = ph.MATERIALES[material]
 bob = ph.Bobina(N=N, a=radio_mm / 1000, l=long_mm / 1000, R0=R0)
@@ -234,12 +241,23 @@ with tabs[0]:
 # 2. RESPUESTA TEMPORAL
 # ============================================================================
 with tabs[1]:
-    r = nm.resolver_rl(L_eff, R_eff, V0, frec, I0, ppc, ciclos)
+    r = nm.resolver_rl(L_eff, R_eff, V0, frec, I0, ppc, ciclos, fuente)
     t_ms = r["t"] * 1e3
     fig = go.Figure()
-    for y0, y1 in ((A_libre * (1 - umbral), A_libre * (1 + umbral)), (-A_libre * (1 + umbral), -A_libre * (1 - umbral))):
+    for y0, y1 in (() if fuente == "dc" else
+                   ((A_libre * (1 - umbral), A_libre * (1 + umbral)), (-A_libre * (1 + umbral), -A_libre * (1 - umbral)))):
         fig.add_hrect(y0=y0, y1=y1, fillcolor=P["accent"], opacity=0.08, line_width=0)
-    for s_ in (1, -1):
+    if fuente == "dc":
+        i_max = r["i_max"]
+        fig.add_hline(y=i_max, line_dash="dot", line_color=P["faint"], line_width=1,
+                      annotation_text="i_max = V₀/R", annotation_position="top left")
+        fig.add_hline(y=0.632 * i_max, line_dash="dot", line_color=P["faint"], line_width=1,
+                      annotation_text="0.63 i_max", annotation_position="bottom left")
+        fig.add_vline(x=tau * 1e3, line_dash="dot", line_color=P["faint"], line_width=1,
+                      annotation_text="t = τ", annotation_position="top right")
+        fig.add_vline(x=r["t_s"] * 1e3, line_dash="dash", line_color=P["muted"], line_width=1,
+                      annotation_text="interruptor A → B", annotation_position="top right")
+    for s_ in (() if fuente == "dc" else (1, -1)):
         fig.add_hline(y=s_ * A_libre, line_dash="dot", line_color=P["faint"], line_width=1)
     fig.add_trace(go.Scatter(x=t_ms, y=r["exacta"], name="Exacta", line=dict(color=S["exacta"], width=2.2)))
     fig.add_trace(go.Scatter(x=t_ms, y=r["scipy"], name="SciPy RK45", line=dict(color=S["scipy"], width=1)))
@@ -247,10 +265,20 @@ with tabs[1]:
                              marker=dict(size=3.5), line=dict(color=S["rk4"], width=1.2, dash="dash")))
     fig.add_trace(go.Scatter(x=t_ms, y=r["euler"], name="Euler", mode="lines+markers",
                              marker=dict(size=3.5), line=dict(color=S["euler"], width=1.2, dash="dot")))
-    ui.grafica(fig, height=460, title=f"Corriente I(t) con el objeto a {d_mm} mm",
+    ui.grafica(fig, height=460, title=(f"Energizar y desenergizar la bobina con el objeto a {d_mm} mm"
+                                       if fuente == "dc" else f"Corriente I(t) con el objeto a {d_mm} mm"),
                xaxis_title="t (ms)", yaxis_title="I (A)")
-    ui.nota(f"La banda sombreada es la zona muerta de ±{umbral_pct:.1f} % alrededor de la amplitud sin objeto "
-            f"(línea punteada, {A_libre:.4f} A). El sensor se activa cuando la amplitud sale de ella.")
+    if fuente == "dc":
+        st.latex(r"\varepsilon - iR - L\frac{di}{dt}=0\;\Rightarrow\;"
+                 r"\int_0^t\frac{dt}{\tau}=\int_0^{i(t)}\frac{di}{i_{max}-i}\;\Rightarrow\;"
+                 r"i(t)=i_{max}\left(1-e^{-t/\tau}\right),\quad \tau=\frac{L}{R}")
+        ui.nota("Es el mismo procedimiento del circuito RC visto en clase (ley de mallas de Kirchhoff y separación "
+                "de variables), con la bobina en lugar del capacitor: en t = τ la corriente llega al 63 % de "
+                f"i_max = {r['i_max']:.3f} A. Al pasar el interruptor a B la fem se anula y la corriente decae como "
+                "i(t_s)·e^(−(t−t_s)/τ). La bobina se opone a cambios de corriente como el capacitor a cambios de voltaje.")
+    else:
+        ui.nota(f"La banda sombreada es la zona muerta de ±{umbral_pct:.1f} % alrededor de la amplitud sin objeto "
+                f"(línea punteada, {A_libre:.4f} A). El sensor se activa cuando la amplitud sale de ella.")
     ui.kv([
         ("τ = L/R", f"{tau*1e6:.1f} µs"),
         ("Δt", f"{r['h']*1e6:.2f} µs"),
@@ -408,7 +436,9 @@ with tabs[3]:
 # 5. VALIDACIÓN
 # ============================================================================
 with tabs[4]:
-    conv = nm.estudio_convergencia(L_eff, R_eff, V0, frec, I0, ciclos=3)
+    conv = nm.estudio_convergencia(L_eff, R_eff, V0, frec, I0, ciclos=6 if fuente == "dc" else 3, fuente=fuente,
+                                   pasos=(2, 4, 8, 16, 32, 64, 128, 256) if fuente == "dc" else
+                                   (10, 20, 40, 80, 160, 320, 640, 1280))
     df = pd.DataFrame(conv)
     p_e = np.nanmean(df["orden Euler"].values[-4:])
     p_r = np.nanmean(df["orden RK4"].values[1:4])
@@ -423,7 +453,7 @@ with tabs[4]:
                                  line=dict(color=S["euler"], width=2), marker=dict(size=6)))
         fig.add_trace(go.Scatter(x=h, y=df["RK4 e_abs (A)"].clip(lower=1e-16), name="RK4", mode="lines+markers",
                                  line=dict(color=S["rk4"], width=2), marker=dict(size=6)))
-        fig.add_vline(x=T / ppc * 1e6, line_dash="dot", line_color=P["muted"], line_width=1,
+        fig.add_vline(x=(tau if fuente == "dc" else T) / ppc * 1e6, line_dash="dot", line_color=P["muted"], line_width=1,
                       annotation_text="Δt actual", annotation_position="top left")
         ui.grafica(fig, height=440, title="Error global máximo frente al paso",
                    xaxis=dict(type="log", title="Δt (µs)"), yaxis=dict(type="log", title="max |I_num − I_exacta| (A)"))
@@ -440,7 +470,7 @@ with tabs[4]:
         "RK4 e_abs (A)": "{:.3e}", "RK4 e_rel (%)": "{:.3e}", "orden Euler": "{:.3f}", "orden RK4": "{:.3f}",
     }, na_rep="—"), width="stretch", hide_index=True)
     ui.nota("Error relativo = error absoluto máximo / max|I_exacta|. El cociente punto a punto diverge en los cruces por cero.")
-    r = nm.resolver_rl(L_eff, R_eff, V0, frec, I0, ppc, ciclos)
+    r = nm.resolver_rl(L_eff, R_eff, V0, frec, I0, ppc, ciclos, fuente)
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=r["t"] * 1e3, y=np.abs(r["euler"] - r["exacta"]) + 1e-18, name="Euler", line=dict(color=S["euler"], width=1.4)))
     fig.add_trace(go.Scatter(x=r["t"] * 1e3, y=np.abs(r["rk4"] - r["exacta"]) + 1e-18, name="RK4", line=dict(color=S["rk4"], width=1.4)))
