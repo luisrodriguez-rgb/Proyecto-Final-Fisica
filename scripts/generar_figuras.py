@@ -133,6 +133,103 @@ def fig_campo():
     guardar(fig, "campo-magnetico.png")
 
 
+def fig_rc_clase():
+    """Ejercicio del apunte de clase: carga y descarga de un RC, R = 60 kΩ, C = 200 µF, ε = 9 V, dos ciclos,
+    resuelto con los mismos euler y rk4 del simulador."""
+    Rc, C, eps = 60e3, 200e-6, 9.0
+    tau = Rc * C
+    h = tau / 10
+    n = 50
+    tt, qq_e, qq_r, qq_x, ii = [], [], [], [], []
+    q0, t0 = 0.0, 0.0
+    for ciclo in range(2):
+        for fem in (eps, 0.0):
+            g = lambda t, q, fem=fem: (fem - q / C) / Rc
+            t, qe = nm.euler(g, q0, h, n, t0=t0)
+            _, qr = nm.rk4(g, q0, h, n, t0=t0)
+            qinf = fem * C
+            qx = qinf + (q0 - qinf) * np.exp(-(t - t0) / tau)
+            ii.append((qinf - q0) / (Rc * C) * np.exp(-(t - t0) / tau))
+            tt.append(t); qq_e.append(qe); qq_r.append(qr); qq_x.append(qx)
+            q0, t0 = qx[-1], t[-1]
+    t = np.concatenate(tt); qx = np.concatenate(qq_x)
+    fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
+    ax[0].plot(t, qx * 1e3, color="#18181b", lw=2, label="Exacta")
+    ax[0].plot(t, np.concatenate(qq_r) * 1e3, "--", color="#2563eb", lw=1.2, label="RK4")
+    ax[0].plot(t, np.concatenate(qq_e) * 1e3, ":", color="#dc2626", lw=1.4, label="Euler")
+    ax[0].set(xlabel="t (s)", ylabel="q (mC)", title="Ejercicio de clase: RC, dos ciclos (Δt = τ/10)")
+    ax[0].legend(fontsize=8)
+    ax[1].plot(t, np.concatenate(ii) * 1e6, color="#18181b", lw=1.6)
+    ax[1].set(xlabel="t (s)", ylabel="i (µA)", title="Corriente i = dq/dt (exacta)")
+    guardar(fig, "rc-clase-dos-ciclos.png")
+
+
+def fig_dipolo():
+    """Campo sobre el eje frente al campo de un dipolo magnético m = N I π a²."""
+    I = ph.amplitud_regimen(V0, BOB.L0, BOB.R0, F)
+    m = BOB.N * I * np.pi * BOB.a**2
+    z = np.geomspace(2e-3, 0.3, 120)
+    _, Bz = ph.campo_bobina(BOB, 0.0, I, np.zeros_like(z), BOB.l / 2 + z, 0.0, n_esp=150)
+    Bd = ph.MU0 * 2 * m / (4 * np.pi * z**3)
+    fig, ax = plt.subplots(figsize=(6, 3.8))
+    ax.loglog(z * 1e3, Bz * 1e3, color="#18181b", lw=2, label="Bobina (Biot–Savart)")
+    ax.loglog(z * 1e3, Bd * 1e3, "--", color="#2563eb", lw=1.4, label="Dipolo  μ₀·2m / 4πz³")
+    ax.axvline(BOB.a * 1e3, color="#a1a1aa", ls=":", lw=0.8)
+    ax.annotate("z = a", (BOB.a * 1e3, Bz.min() * 1e3 * 3), fontsize=8, color="#71717a")
+    ax.set(xlabel="distancia desde el borde de la bobina z (mm)", ylabel="B_z (mT)",
+           title="Lejos de la bobina el campo cae como 1/z³")
+    ax.legend(fontsize=8)
+    guardar(fig, "campo-dipolo.png")
+
+
+def fig_energia():
+    """Balance de energía al energizar: energía entregada = calor en R + energía magnética."""
+    from scipy.integrate import cumulative_trapezoid
+    L, R = ph.parametros_efectivos(BOB, D, F, "Cobre")
+    r = nm.resolver_rl(L, R, V0, F, 0.0, 200, 10, fuente="dc")
+    m = r["t"] <= r["t_s"]
+    t, i = r["t"][m], r["rk4"][m]
+    Ein = cumulative_trapezoid(V0 * i, t, initial=0)
+    Ej = cumulative_trapezoid(R * i**2, t, initial=0)
+    Em = 0.5 * L * i**2
+    fig, ax = plt.subplots(figsize=(6, 3.8))
+    ax.plot(t * 1e3, Ein * 1e3, color="#18181b", lw=2, label="Entregada por la fuente ∫ε i dt")
+    ax.plot(t * 1e3, Ej * 1e3, color="#dc2626", lw=1.4, label="Calor en la resistencia ∫i²R dt")
+    ax.plot(t * 1e3, Em * 1e3, color="#2563eb", lw=1.4, label="Magnética ½Li²")
+    ax.plot(t * 1e3, (Ej + Em) * 1e3, ":", color="#a1a1aa", lw=1.4, label="Calor + magnética")
+    ax.set(xlabel="t (ms)", ylabel="energía (mJ)", title="Balance de energía al energizar la bobina")
+    ax.legend(fontsize=8)
+    guardar(fig, "balance-energia.png")
+
+
+def _alcance(bob, f, mat, umbral=0.02):
+    dg = np.geomspace(0.2e-3, 80e-3, 260)
+    A0 = ph.amplitud_regimen(V0, bob.L0, bob.R0, f)
+    L, R = ph.parametros_efectivos(bob, dg, f, mat)
+    s = np.abs(ph.amplitud_regimen(V0, L, R, f) - A0) / A0
+    idx = np.where(s >= umbral)[0]
+    return dg[idx.max()] * 1e3 if idx.size else 0.0
+
+
+def fig_escenarios():
+    fig, ax = plt.subplots(1, 3, figsize=(12, 3.6))
+    Ns = np.arange(50, 501, 25)
+    ax[0].plot(Ns, [_alcance(ph.Bobina(int(n), BOB.a, BOB.l, BOB.R0), F, "Cobre") for n in Ns], "o-",
+               color=COL["Cobre"], ms=3)
+    ax[0].set(xlabel="N (espiras)", ylabel="alcance Sₙ (mm)", title="Número de espiras")
+    radios = np.linspace(0.005, 0.04, 15)
+    ax[1].plot(radios * 1e3, [_alcance(ph.Bobina(BOB.N, a, BOB.l, BOB.R0), F, "Cobre") for a in radios], "o-",
+               color=COL["Cobre"], ms=3)
+    ax[1].set(xlabel="radio a (mm)", title="Radio de la bobina")
+    fs = np.geomspace(200, 1e5, 30)
+    for mat in ("Cobre", "Acero al carbono (ferromagnético)"):
+        ax[2].semilogx(fs, [_alcance(BOB, f, mat) for f in fs], "o-", color=COL[mat], ms=3,
+                       label=mat.split(" (")[0])
+    ax[2].set(xlabel="f (Hz)", title="Frecuencia")
+    ax[2].legend(fontsize=8, loc="center right")
+    guardar(fig, "escenarios-alcance.png")
+
+
 if __name__ == "__main__":
     print("Generando figuras en", SALIDA)
     fig_distancia()
@@ -140,3 +237,7 @@ if __name__ == "__main__":
     fig_respuestas()
     fig_convergencia()
     fig_campo()
+    fig_rc_clase()
+    fig_dipolo()
+    fig_energia()
+    fig_escenarios()
