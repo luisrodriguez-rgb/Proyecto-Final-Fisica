@@ -118,3 +118,100 @@ Casos límite que sirven para revisar el modelo:
 4. Pieza modelada como un semiespacio: más ancha que la bobina y más gruesa que unas $3\delta$.
 5. Movimiento lento de la pieza frente al período de la fuente: para cada posición se usa la inductancia
    de esa posición ("inductancia constante por cada posición de detección", como sugiere la propuesta).
+
+## 1.7 Del campo eléctrico de clase al campo magnético del sensor
+
+Lo visto en clase para el campo eléctrico tiene su equivalente magnético. Esta correspondencia ordena todo el proyecto.
+
+| Electrostática (clase) | Magnetismo del sensor |
+|---|---|
+| Carga puntual: $\vec E = K\dfrac{q}{r^2}\hat r$ | Elemento de corriente (Biot–Savart): $d\vec B = \dfrac{\mu_0}{4\pi}\dfrac{i\,d\vec l\times\hat r}{r^2}$ |
+| $\vec E = -\nabla V$ (potencial escalar) | $\vec B = \nabla\times\vec A$ (potencial vector) |
+| Gauss: $\oint\vec E\cdot d\vec A = q_{enc}/\varepsilon_0$ | Gauss magnética: $\oint\vec B\cdot d\vec A = 0$ (no hay "cargas magnéticas") |
+| Flujo $\Phi_E = \vec E\cdot\vec A$ | Flujo $\Phi_B = \vec B\cdot\vec A$ |
+| Capacitancia $C = Q/\lvert\Delta V\rvert$, depende solo de la geometría | Inductancia $L = \Lambda/i$, depende solo de la geometría |
+| Capacitor de placas: el campo queda confinado entre las placas | Solenoide: el campo queda confinado dentro de la bobina |
+| Dieléctrico: se polariza y **reduce** el campo, $E_d = E/K_d$ | Ferromagnético: se magnetiza y **refuerza** el campo, $B = \mu_r\mu_0 H$ |
+| Conductor en equilibrio: $\vec E = 0$ adentro, la carga se va a la superficie | Conductor con campo variable: $\vec B$ solo entra una capa $\delta$, las corrientes van a la superficie |
+| Energía $\tfrac12 CV^2$, densidad $u_E = \tfrac12\varepsilon_0E^2$ | Energía $\tfrac12 Li^2$, densidad $u_B = \dfrac{B^2}{2\mu_0}$ |
+| Dipolo eléctrico: campo lejano $\propto 1/r^3$ | Dipolo magnético: campo lejano $\propto 1/r^3$ |
+| Pantalla táctil: el dedo cambia $C$, se mide $\Delta C$ | Sensor inductivo: la pieza cambia $L$, se mide $\Delta L$ |
+
+Dos de estas filas explican casi todo el sensor:
+
+- **El conductor apantalla.** En clase vimos que dentro de un conductor en equilibrio el campo eléctrico es cero
+  porque las cargas libres se reacomodan. Con un campo magnético que cambia pasa algo parecido: las corrientes
+  inducidas se reacomodan para anular el campo dentro del metal, pero no lo consiguen del todo. El campo entra
+  una profundidad $\delta$ y por eso la pantalla es imperfecta y depende de la frecuencia.
+- **El material magnético se comporta al revés que el dieléctrico.** Un dieléctrico debilita el campo eléctrico
+  porque sus dipolos se orientan en contra. Un ferromagnético refuerza el campo magnético porque sus dipolos se
+  orientan a favor. Eso explica por qué el acero puede **aumentar** la inductancia.
+
+## 1.8 Flujo magnético a través de la bobina
+
+Igual que en el apunte de Gauss, el flujo a través de una superficie plana es el producto punto entre el campo y
+el vector área, $\vec A = A\hat n$:
+
+$$\Phi_B = \vec B\cdot\vec A = BA\cos\alpha .$$
+
+La espira es perpendicular al eje, así que en el centro $\alpha = 0$ y $\Phi_B = BA$. Con los valores de
+referencia (sin pieza, corriente pico $0.800$ A), el campo en el centro de la bobina es
+
+$$B_{centro} = 4.17\ \text{mT}\qquad(\text{el solenoide ideal daría } \mu_0Ni/l = 7.54\ \text{mT}).$$
+
+Si se supone ese campo uniforme sobre el área $A = \pi a^2 = 7.07\times10^{-4}$ m², cada espira atrapa
+$\Phi_B \approx 2.95\times10^{-6}$ Wb y el flujo enlazado es $\Lambda = N\Phi_B \approx 4.4\times10^{-4}$ Wb.
+Entonces $L \approx \Lambda/i = 0.55$ mH, muy cerca de los 0.60 mH de la fórmula de Wheeler. La diferencia viene de
+que el campo no es uniforme: es más fuerte cerca del alambre que en el centro.
+
+Sobre una superficie **cerrada** el flujo magnético es siempre cero (Gauss magnética): todas las líneas que salen
+por una cara de la bobina vuelven a entrar por la otra, como muestra el mapa de campo del simulador.
+
+## 1.9 Órdenes de magnitud
+
+| Magnitud | Valor | Para comparar |
+|---|---|---|
+| Campo en el centro de la bobina | 4.2 mT | Campo de la Tierra: 0.05 mT; imán de nevera: ~5 mT |
+| Densidad de energía en el centro $B^2/2\mu_0$ | 6.9 J/m³ | |
+| Momento dipolar $m = Ni\pi a^2$ | 0.085 A·m² | |
+| Profundidad de penetración en cobre (1 kHz) | 2.1 mm | Más delgada que una moneda |
+| Corriente de desplazamiento / de conducción en cobre | $10^{-18}$ | |
+| Longitud de onda a 1 kHz | 300 km | La bobina mide 30 mm |
+
+## 1.10 La bobina vista de lejos: un dipolo magnético
+
+En la clase de interacción eléctrica se calculó el campo de un dipolo eléctrico y se vio que lejos cae como
+$1/r^3$. Una espira con corriente es el equivalente magnético: un **dipolo magnético** de momento
+$m = Ni\pi a^2$. Sobre el eje y lejos de la bobina ($z \gg a$),
+
+$$B_z \approx \frac{\mu_0}{4\pi}\frac{2m}{z^3} .$$
+
+| Distancia al borde de la bobina | $B$ calculado / $B$ de dipolo |
+|---|---|
+| 30 mm ($2a$) | 0.82 |
+| 60 mm ($4a$) | 0.96 |
+| 120 mm ($8a$) | 0.99 |
+
+![Campo dipolar](figuras/campo-dipolo.png)
+
+**Consecuencia para el sensor:** el campo que llega a la pieza cae como $1/z^3$, y el campo de las corrientes de
+Foucault que vuelve a la bobina cae otra vez. El efecto total disminuye mucho más rápido que el campo. Por eso
+**el alcance de un sensor inductivo es del orden de su radio**: para detectar más lejos hay que hacer la bobina
+más grande, no solo darle más corriente.
+
+## 1.11 La ley de Lenz, paso a paso
+
+Para fijar los signos, tomemos el instante en que la corriente de la bobina **aumenta** en sentido horario
+visto desde arriba (regla de la mano derecha: el campo de una corriente horaria vista desde arriba apunta hacia
+abajo):
+
+1. El campo de la bobina apunta hacia abajo, hacia la pieza, y está creciendo.
+2. El flujo hacia abajo a través de cualquier círculo en la superficie del metal crece: $d\Phi_B/dt > 0$.
+3. Faraday: el campo eléctrico inducido circula de modo que su propio campo se oponga a ese aumento; visto desde
+   arriba circula en sentido **antihorario**.
+4. En el metal, $\vec J = \sigma\vec E$ también circula en sentido antihorario.
+5. Una corriente antihoraria vista desde arriba crea un campo hacia **arriba**: se opone al aumento del flujo
+   hacia abajo.
+
+Medio ciclo después todo se invierte, y siempre se cumple lo mismo: las corrientes de Foucault se oponen al cambio
+que las produce.
