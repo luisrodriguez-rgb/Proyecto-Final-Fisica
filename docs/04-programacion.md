@@ -55,3 +55,65 @@ Pruebas y figuras:
   solución exacta, el 63 % en $t=\tau$, los límites físicos del modelo de la pieza y el campo de una espira.
 - **Herramientas de la guía.** NumPy, SciPy, Matplotlib, Plotly, Streamlit y SymPy. VPython no se usó porque
   Plotly y Matplotlib cubren las visualizaciones dentro de la misma app web.
+
+## 4.4 Flujo de datos
+
+```
+ Barra lateral (N, a, l, R₀, f, V₀, I₀, material, d, umbral, Δt)
+        │
+        ▼
+ physics.py ── L₀ (Wheeler) ── ΔZ (Dodd–Deeds) ──► L_eff, R_eff, δ, Γ
+        │                                              │
+        │                                              ▼
+        │                         numerics.py ── Euler, RK4, exacta, SciPy ──► i(t), errores, orden
+        │                                              │
+        ▼                                              ▼
+ campo_bobina ──► mapa de B                  envolvente + comparador ──► salida ON/OFF
+        │                                              │
+        └──────────────────► app.py + ui.py ◄──────────┘
+                                   │
+                                   ▼
+                     7 pestañas, tema claro u oscuro
+```
+
+Cada flecha es una llamada a función con números de entrada y de salida. Ningún módulo de `sensor/` importa
+Streamlit, así que la física se puede probar y reutilizar sola.
+
+## 4.5 Pruebas automáticas
+
+| Prueba | Qué garantiza |
+|---|---|
+| `test_orden_convergencia` | Euler converge con orden 1 y RK4 con orden 4 en alterna |
+| `test_orden_convergencia_dc` | Lo mismo en el escalón DC |
+| `test_rk4_coincide_con_scipy` | RK4 y SciPy coinciden con la solución exacta |
+| `test_escalon_dc_como_circuito_rc` | 63 % de $i_{max}$ en $t=\tau$ y descarga a cero |
+| `test_limites_fisicos` | El cobre baja $L$ y sube $R$, el acero sube $L$ a baja frecuencia, el efecto decae con la distancia, $\Gamma\to-1$ en un conductor perfecto |
+| `test_campo_espira_centro` | $B = \mu_0 I/2a$ en el centro de una espira |
+| `test_balance_de_energia_al_energizar` | Energía entregada = calor + energía magnética |
+| `test_campo_lejano_es_dipolo` | Lejos de la bobina el campo es el de un dipolo |
+
+```bash
+.venv/bin/python -m pytest -q tests
+```
+
+Si un cambio en el código rompe la física, alguna de estas pruebas falla.
+
+## 4.6 Cómo extender el código
+
+**Agregar un material.** Basta con una línea en el diccionario `MATERIALES` de
+[`sensor/physics.py`](../sensor/physics.py):
+
+```python
+"Níquel": {"sigma": 1.43e7, "mu_r": 100.0, "color": "#64748b"},
+```
+
+y su color en las paletas de [`ui.py`](../ui.py). El simulador, las tablas y las figuras lo incluyen solos.
+
+**Resolver otra EDO.** `euler(f, y0, h, n)` y `rk4(f, y0, h, n)` aceptan cualquier función `f(t, y)`. Así se
+resolvió el ejercicio RC de clase sin escribir métodos nuevos.
+
+## 4.7 Control de versiones
+
+El proyecto está en GitHub con un historial de commits pequeños: cada commit hace una sola cosa (una función, una
+figura, un documento) y su mensaje explica qué cambió y por qué. Así se puede revisar cómo evolucionó el proyecto y
+volver atrás cualquier cambio sin afectar los demás.
