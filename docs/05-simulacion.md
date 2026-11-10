@@ -27,6 +27,7 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 | **Modelo** | $\Delta L/L_0$ y $\Delta R$ frente a la distancia para todos los materiales, curva de detección con el umbral y la distancia de conmutación $S_n$, efecto de la frecuencia, ecuaciones del modelo |
 | **Respuesta temporal** | $i(t)$ exacta, RK4, Euler y SciPy. En alterna, la zona muerta del umbral; en DC, $i_{max}$, el 63 % en $t=\tau$ y el cambio del interruptor. Energía y potencia |
 | **Paso del objeto** | La pieza se acerca y se aleja: $d(t)$, $L(t)$, $i(t)$, envolvente demodulada, umbrales ON/OFF con histéresis y salida digital del sensor |
+| **Identificación** | Caso de estudio D.E.P.A.: el sensor identifica el material y la distancia de una pieza en el plano de impedancia, avisa de impurezas y mide su exactitud con una matriz de confusión; con ruido de medida, promedios y dos frecuencias |
 | **Campo** | Líneas de $\vec B$ y mapa de $\lvert\vec B\rvert$ con la pieza y $\delta$; perfil $B_z$ sobre el eje con y sin pieza |
 | **Validación** | Error frente a $\Delta t$ en log-log con pendientes 1 y 4, orden observado, límites de estabilidad, tabla descargable en CSV, error en el tiempo |
 | **Derivación** | Deducción simbólica con SymPy y sensibilidades evaluadas con los parámetros actuales |
@@ -45,6 +46,7 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 | Cálculo de energía, potencia o eficiencia | Energía $\tfrac12LI^2$, potencia total y disipada en la pieza, piezas por minuto |
 | Interpretación de resultados | Texto generado según el caso en la pestaña Análisis |
 | Señal de salida y umbral (propuesta) | Indicador de estado en la cabecera, curva de detección y salida digital |
+| Identificación del material y la distancia (orientación del profesor) | Pestaña Identificación |
 
 ## 5.4 Guion para mostrarlo en vivo
 
@@ -56,6 +58,9 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 4. **Paso del objeto**: la salida se activa y se desactiva en distancias distintas por la histéresis.
 5. **Validación**: bajar los pasos por ciclo y ver cómo crece el error de Euler. Mostrar las pendientes 1 y 4.
 6. Cambiar a **Escalón DC** y relacionarlo con el circuito RC de clase (63 % en $t = \tau$).
+7. **Identificación**: pasar un tornillo de acero, un cable de cobre y un conector de latón y leer la alerta.
+   Bajar la conductividad del cobre al 80 % para ver el aviso de impureza (con poco ruido) y comparar una y dos
+   frecuencias en la matriz de confusión.
 
 ## 5.5 Estudio de escenarios
 
