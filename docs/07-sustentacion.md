@@ -7,14 +7,31 @@
 
 | Minuto | Tema | Apoyo |
 |---|---|---|
-| 0 – 1 | Problema: detectar metal sin contacto en una línea de producción | [Propuesta](enunciado/propuesta-sensor-inductivo.docx) |
+| 0 – 1 | Problema y esquema D.E.P.A.: insumos, detección, emisiones, propiedades, alerta y solución | [00 · Modelo teórico](00-modelo-teorico-depa.md) |
 | 1 – 3 | Física: Faraday → corrientes de Foucault → Lenz → cambian $L$ y $R$ | [Fundamentación](01-fundamentacion-fisica.md), diagrama |
 | 3 – 5 | Modelo: Kirchhoff, misma deducción que el RC de clase, $\tau = L/R$, solución AC, $\Delta Z$ | [Modelamiento](02-modelamiento-analitico.md) |
 | 5 – 8 | Demostración en vivo | [Guion de demo](05-simulacion.md#54-guion-para-mostrarlo-en-vivo) |
 | 8 – 9 | Euler frente a RK4: órdenes 1 y 4, estabilidad $\Delta t < 2\tau$ | Pestaña Validación |
 | 9 – 10 | Resultados, eficiencia y limitaciones frente a FEM | [Validación e impacto](06-validacion-e-impacto.md) |
 
+**Frase para abrir:** "SEMP es un sensor para una línea de autopartes. Siguiendo el esquema D.E.P.A., detecta la
+pieza, mide cómo responde al campo, usa la frecuencia para saber de qué metal es y la potencia para saber a qué
+distancia está, y entrega una alerta."
+
 ## 7.2 Preguntas probables y respuestas cortas
+
+**¿Cómo identifica el sensor el material?**
+Por la fase del cambio de impedancia. Los conductores no magnéticos dan fase negativa (cerca de −80° el cobre,
+−49° el inoxidable) y el acero da fase positiva. La magnitud del cambio da la distancia.
+
+**¿Cómo detecta una impureza?**
+Si la medición no cae cerca de ninguna curva de material conocido, el residuo crece y la alerta avisa. Su límite:
+un cobre con el 60 % de su conductividad es indistinguible del aluminio, porque el sensor solo ve σ y μᵣ.
+
+**¿Por qué solo usan Faraday y Ampère?**
+Porque son las que contienen la física del sensor. Gauss magnética solo da una condición de frontera, Gauss
+eléctrica no interviene porque no se acumula carga, y la corriente de desplazamiento es despreciable.
+
 
 **¿Qué ecuación de Maxwell explica el sensor?**
 La ley de Faraday. El campo variable de la bobina induce un campo eléctrico en la pieza, que mueve las
