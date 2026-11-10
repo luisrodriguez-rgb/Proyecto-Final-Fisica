@@ -1,14 +1,30 @@
 # Simulador de sensor electromagnético de proximidad
 
-Proyecto final de **Electromagnetismo**: diseño y simulación de un sensor inductivo de proximidad, el
-dispositivo que en las líneas de producción detecta piezas metálicas sin tocarlas.
+**SEMP** · Proyecto final de **Electromagnetismo**: diseño y simulación de un sensor electromagnético de
+proximidad, el dispositivo que en las líneas de producción detecta piezas metálicas sin tocarlas.
 
 El simulador modela una bobina alimentada con corriente cuyo campo magnético induce **corrientes de Foucault**
 en una pieza cercana. Esas corrientes, por la ley de Lenz, cambian la inductancia y la resistencia de la bobina, y
 con ellas la corriente del circuito. El sensor compara esa corriente con la que habría sin pieza y se activa
-cuando la diferencia supera un umbral.
+cuando la diferencia supera un umbral. Además, por la fase y la magnitud de ese cambio, identifica **de qué metal**
+es la pieza y **a qué distancia** está.
 
 ![Campo magnético de la bobina sin pieza y con cobre a 5 mm](docs/figuras/campo-magnetico.png)
+
+## Esquema del proyecto: D.E.P.A.
+
+El proyecto sigue el esqueleto propuesto por el profesor ([orientación](docs/enunciado/orientacion-profesor.md)):
+
+| Etapa | En el sensor |
+|---|---|
+| **Insumos** | Contextos de aplicación; caso de estudio: una línea de autopartes con piezas de acero, cobre, aluminio, latón e inoxidable |
+| **D · Detección** | Identificar el material y estimar la distancia |
+| **E · Emisiones** | La respuesta de la pieza: corrientes de Foucault que cambian la corriente de la bobina (amplitud y fase) |
+| **P · Propiedades** | Frecuencia → material, potencia → distancia; solo las ecuaciones de Maxwell necesarias (Faraday y Ampère) |
+| **A · Alerta** | "Cobre a 6.0 mm", "ferroso", o aviso de posible impureza |
+| **Solución** | Identificación correcta del 100 % de las piezas con dos frecuencias y 16 promedios; ferroso / no ferroso siempre |
+
+Detalle en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md).
 
 ## Qué hace el proyecto
 
@@ -49,6 +65,7 @@ Otros hallazgos:
 | **Modelo** | Inductancia y resistencia efectivas frente a la distancia para cinco materiales, curva de detección con el umbral y efecto de la frecuencia |
 | **Respuesta temporal** | Corriente en el tiempo con la solución exacta, RK4, Euler y SciPy; en modo DC, la curva del 63 % |
 | **Paso del objeto** | Una pieza que pasa por una banda transportadora y la salida ON/OFF del sensor, con histéresis |
+| **Identificación** | El caso de estudio D.E.P.A.: material y distancia de la pieza en el plano de impedancia, aviso de impurezas y matriz de confusión |
 | **Campo** | Líneas del campo magnético y su intensidad, con la pieza y la profundidad de penetración |
 | **Validación** | Error frente al paso temporal, orden de convergencia y límites de estabilidad |
 | **Derivación** | La deducción simbólica con SymPy |
@@ -81,6 +98,7 @@ El informe completo está en [`docs/`](docs/README.md), con un documento por cad
 
 | Criterio | Peso | Documento |
 |---|---|---|
+| Esqueleto del proyecto (D.E.P.A.) | – | [00 · Modelo teórico y formalismo](docs/00-modelo-teorico-depa.md) |
 | Fundamentación física | 15 % | [01 · Fundamentación física](docs/01-fundamentacion-fisica.md) |
 | Modelamiento analítico | 20 % | [02 · Modelamiento analítico](docs/02-modelamiento-analitico.md) |
 | Métodos numéricos | 20 % | [03 · Métodos numéricos](docs/03-metodos-numericos.md) |
@@ -98,10 +116,11 @@ El enunciado del curso y la guía con la rúbrica están en [`docs/enunciado/`](
 |---|---|
 | `sensor/physics.py` | Inductancia de la bobina (Wheeler), modelo de Dodd–Deeds, profundidad de penetración y campo magnético (Biot–Savart con integrales elípticas) |
 | `sensor/numerics.py` | Euler y RK4 a mano, soluciones exactas AC y DC, estudio de convergencia, pieza en movimiento con L(t) variable, demodulador y comparador con histéresis |
+| `sensor/identificacion.py` | Identificación del material y la distancia en el plano de impedancia, residuo de impurezas y evaluación Monte Carlo |
 | `sensor/symbolic.py` | Deducción con SymPy de la ecuación del circuito, su solución, la impedancia, la energía y las sensibilidades |
 | `app.py`, `ui.py` | Interfaz del simulador y temas claro y oscuro |
 | `scripts/generar_figuras.py` | Figuras del informe en `docs/figuras` |
-| `tests/test_modelo.py` | 8 pruebas: convergencia, límites físicos, 63 % en τ, energía y campo dipolar |
+| `tests/test_modelo.py` | 10 pruebas: convergencia, límites físicos, 63 % en τ, energía, campo dipolar e identificación |
 
 ## Modelo en resumen
 
