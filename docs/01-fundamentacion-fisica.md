@@ -62,6 +62,11 @@ para una superficie cerrada), y en forma diferencial.
 | Faraday | $\oint_C \vec E\cdot d\vec l = -\dfrac{d\Phi_B}{dt}$ | $\nabla\times\vec E = -\dfrac{\partial\vec B}{\partial t}$ | Origen de la fem autoinducida de la bobina ($-L\,di/dt$) y del campo que mueve las corrientes de Foucault. |
 | Ampère–Maxwell | $\oint_C \vec B\cdot d\vec l = \mu_0\left(I_{enc} + \varepsilon_0\dfrac{d\Phi_E}{dt}\right)$ | $\nabla\times\vec H = \vec J + \dfrac{\partial\vec D}{\partial t}$ | Da el campo de la bobina y el campo de reacción de las corrientes de Foucault. |
 
+**Cuáles se necesitan.** Siguiendo la orientación del profesor, solo se discuten las ecuaciones que el sensor
+usa. **Faraday** es la central y **Ampère** (sin corriente de desplazamiento) da los campos. Gauss magnética
+entra solo como condición de frontera, y Gauss eléctrica no se necesita: no hay acumulación de carga. Ver
+[00 · Modelo teórico D.E.P.A.](00-modelo-teorico-depa.md#06-p--propiedades-de-las-ondas-em-solo-las-ecuaciones-de-maxwell-necesarias).
+
 ### Justificación de la aproximación cuasi-estática
 
 Se desprecia la corriente de desplazamiento $\varepsilon_0\,d\Phi_E/dt$:
