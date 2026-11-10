@@ -117,6 +117,13 @@ h1, h2, h3, h4 {{ letter-spacing:-0.015em; font-weight:600; }}
 .kv div {{ padding:0.7rem 0; border-bottom:1px solid var(--border); }}
 .kv .lab {{ font-size:0.72rem; color:var(--muted); }}
 .kv .val {{ font-family:{MONO}; font-size:1rem; color:var(--text); margin-top:0.2rem; }}
+.pasos {{ display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:0;
+          border:1px solid var(--border); border-radius:6px; margin:0.4rem 0 1.4rem; }}
+.paso {{ padding:0.8rem 1rem; border-right:1px solid var(--border); }}
+.paso:last-child {{ border-right:none; }}
+.paso .letra {{ font-family:{MONO}; font-size:1.1rem; color:var(--accent); }}
+.paso .nom {{ font-size:0.82rem; font-weight:600; color:var(--text); margin-top:0.15rem; }}
+.paso .txt {{ font-size:0.8rem; color:var(--muted); margin-top:0.25rem; line-height:1.45; }}
 .lista {{ color:var(--muted); font-size:0.9rem; line-height:1.6; padding-left:1.1rem; }}
 .lista li {{ margin-bottom:0.45rem; }}
 .lista b {{ color:var(--text); font-weight:600; }}
@@ -194,6 +201,13 @@ def nota(texto_html: str, tipo: str = "") -> None:
 def kv(items: list[tuple[str, str]]) -> None:
     st.markdown('<div class="kv">' + "".join(f'<div><div class="lab">{l}</div><div class="val">{v}</div></div>'
                                               for l, v in items) + "</div>", unsafe_allow_html=True)
+
+
+def pasos(items: list[tuple[str, str, str]]) -> None:
+    """Fila de etapas (letra, nombre, descripción), por ejemplo el esquema D.E.P.A."""
+    st.markdown('<div class="pasos">' + "".join(
+        f'<div class="paso"><div class="letra">{l}</div><div class="nom">{n}</div><div class="txt">{t}</div></div>'
+        for l, n, t in items) + "</div>", unsafe_allow_html=True)
 
 
 def lista(items_html: list[str]) -> None:

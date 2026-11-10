@@ -20,11 +20,12 @@ import streamlit as st
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import ui
+from sensor import identificacion as idf
 from sensor import numerics as nm
 from sensor import physics as ph
 from sensor.symbolic import derivar
 
-st.set_page_config(page_title="Sensor inductivo de proximidad", page_icon=":material/sensors:", layout="wide")
+st.set_page_config(page_title="SEMP · Sensor de proximidad", page_icon=":material/sensors:", layout="wide")
 
 # ============================================================================
 # TEMA
@@ -149,8 +150,8 @@ def fmt_delta(x: float) -> str:
 # ENCABEZADO
 # ============================================================================
 ui.encabezado(
-    "Electromagnetismo · Proyecto final",
-    "Sensor inductivo de proximidad",
+    "SEMP · Electromagnetismo · Proyecto final",
+    "Sensor electromagnético de proximidad",
     "Circuito RL equivalente con corrientes de Foucault (modelo de Dodd–Deeds). "
     "Integración por Euler y Runge–Kutta 4 implementados a mano, contrastados con la solución exacta y SciPy.",
 )
@@ -165,7 +166,8 @@ ui.stats(
     estado=(detectado, "Detectado" if detectado else "Sin detección", f"Sₙ ≈ {Sn*1e3:.1f} mm"),
 )
 
-tabs = st.tabs(["Modelo", "Respuesta temporal", "Paso del objeto", "Campo", "Validación", "Derivación", "Análisis"])
+tabs = st.tabs(["Modelo", "Respuesta temporal", "Paso del objeto", "Identificación", "Campo", "Validación",
+                "Derivación", "Análisis"])
 
 # ============================================================================
 # 1. MODELO
@@ -366,9 +368,136 @@ with tabs[2]:
                 "la envolvente coincide con la curva cuasi-estática V₀/|Z(d(t))|.")
 
 # ============================================================================
-# 4. CAMPO
+# 4. IDENTIFICACIÓN (esquema D.E.P.A.)
 # ============================================================================
+@st.cache_data(show_spinner=False)
+def refs_cache(N, a, l, R0, frecs):
+    return idf.curvas_referencia(ph.Bobina(N, a, l, R0), frecs)
+
+
+@st.cache_data(show_spinner=False)
+def eficiencia_cache(N, a, l, R0, frecs, V0, ra, rf, dmax):
+    return idf.evaluar(ph.Bobina(N, a, l, R0), frecs, V0, ra, rf, d_max=dmax, n_por_material=40)
+
+
 with tabs[3]:
+    ui.seccion("Caso de estudio: línea de autopartes con piezas de distintos metales",
+               "El sensor no solo avisa que hay una pieza: identifica de qué metal es y a qué distancia está.")
+    ui.pasos([
+        ("D", "Detección", "Qué hay que detectar: el tipo de material y la distancia de la pieza."),
+        ("E", "Emisiones", "La respuesta de la pieza al campo: las corrientes de Foucault cambian la corriente "
+                           "de la bobina, que se mide en amplitud y fase."),
+        ("P", "Propiedades", "La frecuencia fija la profundidad δ y separa los materiales; la potencia "
+                             "intercambiada indica qué tan cerca está la pieza."),
+        ("A", "Alerta", "Salida del sensor: material, distancia y aviso cuando la pieza no coincide con "
+                        "ningún material conocido."),
+    ])
+    c1, c2, c3 = st.columns(3, gap="large")
+    pieza = c1.selectbox("Pieza que pasa por la línea", SOLIDOS, key="pieza_id")
+    pureza = c1.slider("Conductividad de la pieza (% del valor nominal)", 50, 120, 100, 5,
+                       help="Valores distintos de 100 % simulan una aleación diferente o impurezas.")
+    d_id_mm = c2.slider("Distancia real de la pieza (mm)", 1.0, 20.0, 6.0, 0.5, key="d_id")
+    dos_f = c2.toggle(f"Medir con dos frecuencias ({frec} Hz y {5*frec} Hz)", value=True)
+    ruido_a = c3.slider("Ruido en la amplitud medida (%)", 0.0, 2.0, 0.2, 0.1) / 100
+    ruido_f = c3.slider("Ruido en la fase medida (°)", 0.0, 2.0, 0.1, 0.1)
+    n_prom = c3.select_slider("Mediciones promediadas", [1, 4, 16, 64, 256], value=16,
+                              help="Promediar n mediciones divide el ruido entre √n, pero alarga el tiempo de medida.")
+    ruido_a, ruido_f = ruido_a / np.sqrt(n_prom), ruido_f / np.sqrt(n_prom)
+    if c3.button("Nueva medición"):
+        st.session_state.semilla_id = st.session_state.get("semilla_id", 0) + 1
+    frecs = (frec, 5 * frec) if dos_f else (frec,)
+    refs = refs_cache(N, bob.a, bob.l, R0, frecs)
+    mp = ph.MATERIALES[pieza]
+    rng = np.random.default_rng(st.session_state.get("semilla_id", 0))
+    z_med = idf.medir(bob, frecs, V0, mp["sigma"] * pureza / 100, mp["mu_r"], d_id_mm / 1000, ruido_a, ruido_f, rng)
+    m_est, d_est, residuo, ranking = idf.identificar(z_med, refs)
+    r_rel = idf.residuo_relativo(z_med, residuo)
+    # ¿la pieza supera el umbral de detección? (cambio de amplitud en la frecuencia principal)
+    Lp, Rp = ph.parametros_efectivos(bob, d_id_mm / 1000, frec, pieza)
+    s_pieza = abs(ph.amplitud_regimen(V0, Lp, Rp, frec) - A_libre) / A_libre
+    # Límite del residuo: 1 % de la firma, o tres veces el error que produce el ruido de medida en ΔZ/ωL₀
+    tam_firma = float(np.sqrt(np.sum(np.abs(z_med) ** 2)))
+    ruido_z = abs(R0 + 1j * w * L0) * (ruido_a + np.radians(ruido_f)) / (w * L0) * np.sqrt(len(frecs))
+    umbral_res = max(0.01, 3 * ruido_z / max(tam_firma, 1e-12))
+    en_rango = s_pieza >= umbral
+    acierto = m_est == pieza
+
+    if not en_rango:
+        estado, sub = "Sin pieza en rango", f"señal {s_pieza*100:.2f} % < umbral {umbral_pct:.1f} %"
+    else:
+        estado = f"{m_est} a {d_est*1e3:.1f} mm"
+        sub = ("posible impureza o aleación fuera de catálogo" if r_rel > umbral_res
+               else ("ferroso" if m_est in idf.FERROSOS else "no ferroso"))
+    ui.stats(
+        [("Pieza real", pieza.split(" (")[0], f"{d_id_mm:.1f} mm · σ {pureza} %"),
+         ("Material estimado", m_est.split(" (")[0], "correcto" if acierto else "error de identificación"),
+         ("Distancia estimada", f"{d_est*1e3:.2f} mm", f"error {abs(d_est*1e3-d_id_mm):.2f} mm"),
+         ("Residuo relativo", f"{r_rel*100:.2f} %", f"límite {umbral_res*100:.1f} %")],
+        estado=(en_rango, estado, sub),
+    )
+
+    col1, col2 = st.columns([1.2, 1], gap="large")
+    with col1:
+        fig = go.Figure()
+        for m, curva in refs.items():
+            z0 = curva[:, 0]
+            sel = idf.D_REF <= 25e-3
+            fig.add_trace(go.Scatter(x=z0.real[sel], y=z0.imag[sel], name=m.split(" (")[0], mode="lines",
+                                     line=dict(color=MC[m], width=2.4 if m == pieza else 1.3)))
+            for dm in (2, 5, 10, 20):
+                k = int(np.argmin(abs(idf.D_REF - dm / 1000)))
+                fig.add_trace(go.Scatter(x=[z0.real[k]], y=[z0.imag[k]], mode="markers+text", showlegend=False,
+                                         text=[f"{dm}"] if m == SOLIDOS[0] else None, textposition="top center",
+                                         marker=dict(size=4, color=MC[m]), hoverinfo="skip"))
+        fig.add_trace(go.Scatter(x=[z_med[0].real], y=[z_med[0].imag], name="Medición", mode="markers",
+                                 marker=dict(size=12, color=P["text"], symbol="x")))
+        fig.add_hline(y=0, line_color=P["faint"], line_width=1)
+        ui.grafica(fig, height=460, title=f"Plano de impedancia a {frec} Hz  ·  ΔZ / ωL₀",
+                   xaxis_title="Re ΔZ / ωL₀  (pérdidas)", yaxis_title="Im ΔZ / ωL₀  (cambio de inductancia)")
+        ui.nota("Cada curva es la firma de un material al variar la distancia (los puntos marcan 2, 5, 10 y 20 mm). "
+                "La <b>dirección</b> de la curva depende del material y de la frecuencia; la <b>distancia al origen</b> "
+                "depende de qué tan cerca está la pieza. La medición (×) se asigna a la curva más cercana.")
+    with col2:
+        ui.seccion("Ranking de materiales", "Distancia de la medición a cada curva de referencia")
+        st.dataframe(pd.DataFrame([{"Material": m.split(" (")[0], "Distancia a la curva": f"{r:.2e}",
+                                    "Distancia estimada (mm)": f"{dd*1e3:.2f}"} for r, m, dd in ranking]),
+                     width="stretch", hide_index=True)
+        fase = np.degrees(np.angle(z_med))
+        ui.kv([(f"Fase de ΔZ a {f_} Hz", f"{fa:.1f}°") for f_, fa in zip(frecs, fase)] +
+              [(f"|ΔZ|/ωL₀ a {f_} Hz", f"{abs(zz):.4f}") for f_, zz in zip(frecs, z_med)])
+
+    t_medida = n_prom * len(frecs) * 3 * T
+    ui.nota(f"Ruido efectivo después de promediar {n_prom} mediciones: {ruido_a*100:.3f} % en amplitud y "
+            f"{ruido_f:.3f}° en fase. Tiempo de medida ≈ {t_medida*1e3:.1f} ms (3 ciclos por medición y frecuencia): "
+            f"a 1 m/s la pieza avanza {t_medida*1e3:.0f} mm mientras se mide.")
+    ui.seccion("Eficiencia de la solución",
+               "Simulación Monte Carlo: 40 piezas de cada material a distancias aleatorias entre 1 mm y la distancia máxima")
+    e1, e2 = st.columns([1, 2], gap="large")
+    d_max_ef = e1.slider("Distancia máxima de las piezas (mm)", 4, 20, 8, 1)
+    ef = eficiencia_cache(N, bob.a, bob.l, R0, frecs, V0, ruido_a, ruido_f, d_max_ef / 1000)
+    with e1:
+        ui.kv([("Material correcto", f"{ef['exactitud']*100:.0f} %"),
+               ("Ferroso / no ferroso correcto", f"{ef['exactitud_ferroso']*100:.0f} %"),
+               ("Error medio de distancia", f"{ef['error_distancia_mm']:.2f} mm")])
+    with e2:
+        nombres = [m.split(" (")[0] for m in SOLIDOS]
+        conf = ef["confusion"]
+        fig = go.Figure(go.Heatmap(z=conf, x=nombres, y=nombres, colorscale=[[0, P["bg"]], [1, P["accent"]]],
+                                   showscale=False, text=conf, texttemplate="%{text}"))
+        fig.update_yaxes(autorange="reversed", title_text="real")
+        fig.update_xaxes(title_text="estimado")
+        ui.grafica(fig, height=340, title="Matriz de confusión", margin=dict(l=170, r=16, t=56, b=60))
+    ui.nota("Separar ferrosos de no ferrosos es robusto aun con ruido, porque la fase cambia de signo. Distinguir "
+            "cobre, aluminio y latón exige poco ruido: sus curvas están cerca. Medir con dos frecuencias separa mejor "
+            "las curvas y mejora la exactitud. Detectar impurezas es lo más exigente: un cambio del 20 % en la "
+            "conductividad desplaza la firma apenas un 1.5 %, y una pieza de cobre con el 60 % de su conductividad "
+            "es indistinguible del aluminio, porque el sensor solo ve σ y μᵣ. Por eso se necesitan muchos promedios "
+            "o, en equipos reales, una medición diferencial que anule Z₀.")
+
+# ============================================================================
+# 5. CAMPO
+# ============================================================================
+with tabs[4]:
     gamma = ph.coef_imagen(bob, d, frec, material)
     a_ = bob.a
     z_top = d + bob.l + 1.5 * a_
@@ -433,9 +562,9 @@ with tabs[3]:
         ])
 
 # ============================================================================
-# 5. VALIDACIÓN
+# 6. VALIDACIÓN
 # ============================================================================
-with tabs[4]:
+with tabs[5]:
     conv = nm.estudio_convergencia(L_eff, R_eff, V0, frec, I0, ciclos=6 if fuente == "dc" else 3, fuente=fuente,
                                    pasos=(2, 4, 8, 16, 32, 64, 128, 256) if fuente == "dc" else
                                    (10, 20, 40, 80, 160, 320, 640, 1280))
@@ -480,9 +609,9 @@ with tabs[4]:
     st.download_button("Descargar tabla de convergencia (CSV)", df.to_csv(index=False).encode(), "convergencia.csv", "text/csv")
 
 # ============================================================================
-# 6. DERIVACIÓN
+# 7. DERIVACIÓN
 # ============================================================================
-with tabs[5]:
+with tabs[6]:
     s = sympy_cache()
     ui.seccion("Ley de Faraday y Kirchhoff", "La fem inducida en la bobina es −dΦ/dt = −L dI/dt")
     st.latex(s["edo"])
@@ -509,9 +638,9 @@ with tabs[5]:
             f"<b>{'la inductancia' if abs(sL*L_eff) > abs(sR*R_eff) else 'la resistencia'}</b>.")
 
 # ============================================================================
-# 7. ANÁLISIS
+# 8. ANÁLISIS
 # ============================================================================
-with tabs[6]:
+with tabs[7]:
     ui.seccion("Interpretación del caso actual")
     dL = (L_eff / L0 - 1) * 100
     if material.startswith("Sin"):
