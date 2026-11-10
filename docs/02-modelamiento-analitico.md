@@ -129,6 +129,54 @@ Sin pieza, $\omega L_0 = 3.75\ \Omega$, $|Z| = 6.25\ \Omega$ e $I_p = 0.800$ A.
 **Energía y potencia**: energía magnética máxima $E_{max} = \tfrac12 L I_p^2$ y potencia media
 $\langle P\rangle = \tfrac12 R I_p^2 = I_{rms}^2 R$.
 
+### 2.3.5 Actividad del apunte de clase, aplicada a la bobina
+
+El apunte del circuito RC propone tres actividades. Aquí se resuelven para el circuito RL.
+
+**Actividad 1: obtener la otra variable derivando.** En el RC se pide sacar $i(t) = dq/dt$ de $q(t)$. En el RL la
+variable es la corriente, así que lo natural es obtener el **voltaje de la bobina**:
+
+$$\Delta V_L(t) = L\frac{di}{dt} = L\cdot\frac{i_{max}}{\tau}e^{-t/\tau} = \varepsilon\, e^{-t/\tau} .$$
+
+Al conectar, toda la fem cae en la bobina ($\Delta V_L = \varepsilon$) y nada en la resistencia, porque la
+corriente todavía es cero. Con el tiempo ocurre lo contrario: la corriente llega a $i_{max}$, $\Delta V_L \to 0$ y
+toda la fem cae en $R$. Es la imagen especular del RC, donde la corriente arranca en su máximo $\varepsilon/R$ y
+decae mientras la carga crece.
+
+**Actividad 2: el proceso inverso.** Al pasar el interruptor a B se hace $\varepsilon = 0$ en (1), y la corriente
+decae como $i_s e^{-(t - t_s)/\tau}$ (sección 2.3.2). El voltaje de la bobina cambia de signo: ahora la bobina
+**entrega** energía al circuito para tratar de mantener la corriente, como el capacitor que se descarga.
+
+**Actividad 3: dos ciclos con los valores de clase.** El apunte pide graficar dos ciclos de carga y descarga con
+$R = 60$ kΩ, $C = 200$ µF y $\varepsilon = 9$ V. Lo resolvimos con las **mismas funciones** `euler` y `rk4` del
+simulador, cambiando solo la ecuación:
+
+$$\tau = RC = (60\times10^3)(200\times10^{-6}) = 12\ \text{s},\qquad q_{max} = \varepsilon C = 1.8\ \text{mC},
+\qquad i_0 = \frac{\varepsilon}{R} = 150\ \mu\text{A}.$$
+
+![Ejercicio RC de clase](figuras/rc-clase-dos-ciclos.png)
+
+Que el mismo código resuelva el ejercicio de clase y el sensor demuestra que los dos problemas son la misma
+matemática.
+
+### 2.3.6 Balance de energía
+
+Si se multiplica la ecuación (1) por $i$:
+
+$$\underbrace{\varepsilon\, i}_{\text{potencia de la fuente}} = \underbrace{i^2R}_{\text{calor en } R} +
+\underbrace{L\,i\frac{di}{dt}}_{\frac{d}{dt}\left(\frac12 Li^2\right)} .$$
+
+Al integrar desde $t = 0$, la energía que entrega la fuente se reparte entre el calor de la resistencia y la
+energía guardada en el campo magnético:
+
+$$\int_0^t\varepsilon\, i\,dt = \int_0^t i^2R\,dt + \tfrac12 L\,i(t)^2 .$$
+
+Con cobre a 5 mm, durante el energizado ($5\tau$): la fuente entrega 2.145 mJ, la resistencia disipa 1.881 mJ y
+la bobina guarda 0.264 mJ. El error del balance calculado con RK4 es de $5\times10^{-7}$. Al desenergizar, esos
+0.264 mJ se convierten en calor en la resistencia. Es la conservación de la energía aplicada al circuito.
+
+![Balance de energía](figuras/balance-energia.png)
+
 ## 2.4 Efecto de la pieza metálica
 
 ### Modelo simple (el que pide la propuesta)
@@ -210,6 +258,24 @@ Las dos derivadas son negativas. En un conductor no magnético, $L$ baja (lo que
 baja $I_p$): los efectos compiten. Con el acero inoxidable casi se cancelan y la señal es muy débil
 (0.20 %). Ese resultado se discute en la [validación](06-validacion-e-impacto.md).
 
+### 2.6.1 Factor de calidad
+
+Los cambios relativos de $L$ que produce la pieza **no dependen de $N$**: $L_0$ y $\Delta L$ crecen los dos con
+$N^2$, y el cobre a 5 mm da −8.45 % con 50 espiras o con 500. Lo que sí cambia es cuánto de ese efecto llega a la
+corriente. La amplitud depende de $\sqrt{R^2 + \omega^2L^2}$, y un cambio en $L$ solo se nota si el término
+$\omega L$ pesa frente a $R$. Esa razón es el **factor de calidad**:
+
+$$Q = \frac{\omega L}{R} .$$
+
+| Configuración | $Q$ | Señal con cobre a 5 mm |
+|---|---|---|
+| $N = 50$ | 0.08 | 0.06 % |
+| $N = 150$ (referencia) | 0.75 | 2.35 % |
+| $N = 300$ | 3.0 | 7.7 % |
+| $N = 150$, $R_0 = 1\ \Omega$ | 3.7 | 8.1 % |
+
+Un sensor sensible necesita $Q$ grande: muchas espiras, alambre de baja resistencia o una frecuencia alta.
+
 ## 2.7 Análisis dimensional
 
 | Expresión | Unidades | Comprobación |
@@ -233,3 +299,18 @@ baja $I_p$): los efectos compiten. Con el acero inoxidable casi se cancelan y la
   parecida entre metales no ferrosos; los ferromagnéticos pasan de aumentar a disminuir $L$.
 - En el escalón DC la bobina se comporta como el capacitor de clase pero con la corriente como variable: crece
   hasta el 63 % en $\tau$, y la pieza, al bajar $L$, acorta $\tau$.
+
+
+## 2.9 Sensor capacitivo (clase) frente a sensor inductivo
+
+| | Pantalla o sensor capacitivo | Sensor inductivo |
+|---|---|---|
+| Campo que usa | Eléctrico, entre electrodos | Magnético, alrededor de la bobina |
+| Magnitud que cambia | $C = \varepsilon A/d$ | $L_{\text{eff}}$ y $R_{\text{eff}}$ |
+| Por qué cambia | El dedo (conductor) acorta la distancia efectiva: $C' = \varepsilon A/d'$ con $d' < d$ | Las corrientes de Foucault expulsan flujo; los ferromagnéticos lo concentran |
+| Qué detecta | Cualquier objeto conductor o dieléctrico (dedo, agua, plástico) | Solo metales |
+| Ventaja industrial | Detecta líquidos y plásticos | Inmune a polvo, aceite y suciedad no metálica |
+| Señal | $\Delta C_{ij} = C'_{ij} - C_{ij}$ en una matriz de electrodos | $\lvert I_p - I_{p,0}\rvert / I_{p,0}$ |
+
+Los dos usan la misma estrategia: un elemento cuyo valor depende solo de la geometría y de los materiales cercanos
+($C$ o $L$), y un circuito que mide su cambio.
