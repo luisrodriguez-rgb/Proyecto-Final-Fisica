@@ -1,12 +1,17 @@
 # Informe del proyecto, organizado por la rúbrica
 
-Proyecto: **Diseño y simulación de sensores electromagnéticos de proximidad**.
-El enunciado y la guía con la rúbrica están en [`enunciado/`](enunciado/).
+Proyecto: **SEMP, diseño y simulación de sensores electromagnéticos de proximidad**.
+El enunciado, la guía con la rúbrica y la [orientación del profesor](enunciado/orientacion-profesor.md) están en
+[`enunciado/`](enunciado/).
+
+**Empieza por [00 · Modelo teórico y formalismo (D.E.P.A.)](00-modelo-teorico-depa.md)**: es el esqueleto que pidió
+el profesor (insumos, detección, emisiones, propiedades, alerta y solución) y remite a los demás documentos.
 
 ## Índice por criterio
 
 | Criterio | Peso | Documento | Código | Pestaña del simulador |
 |---|---|---|---|---|
+| Esqueleto del proyecto (orientación del profesor) | – | [00 · Modelo teórico D.E.P.A.](00-modelo-teorico-depa.md) | `sensor/identificacion.py` | Identificación |
 | Fundamentación física | 15 % | [01 · Fundamentación física](01-fundamentacion-fisica.md) | `sensor/physics.py` | Modelo, Campo |
 | Modelamiento analítico | 20 % | [02 · Modelamiento analítico](02-modelamiento-analitico.md) | `sensor/symbolic.py`, `sensor/physics.py` | Derivación, Modelo |
 | Métodos numéricos | 20 % | [03 · Métodos numéricos](03-metodos-numericos.md) | `sensor/numerics.py`, `tests/` | Respuesta temporal, Validación |
