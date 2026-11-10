@@ -59,3 +59,23 @@ def test_orden_convergencia_dc():
     filas = nm.estudio_convergencia(0.6e-3, 5.0, 5.0, 1000, 0.0, ciclos=6, pasos=(10, 20, 40, 80), fuente="dc")
     assert filas[-1]["orden Euler"] == pytest.approx(1.0, abs=0.08)
     assert filas[2]["orden RK4"] == pytest.approx(4.0, abs=0.2)
+
+
+def test_balance_de_energia_al_energizar():
+    from scipy.integrate import trapezoid
+    L, R, V0 = 0.6e-3, 5.0, 5.0
+    r = nm.resolver_rl(L, R, V0, 1000, 0.0, 200, 10, fuente="dc")
+    m = r["t"] <= r["t_s"]
+    t, i = r["t"][m], r["rk4"][m]
+    entregada = trapezoid(V0 * i, t)
+    calor = trapezoid(R * i**2, t)
+    magnetica = 0.5 * L * i[-1] ** 2
+    assert entregada == pytest.approx(calor + magnetica, rel=1e-5)
+
+
+def test_campo_lejano_es_dipolo():
+    I = 1.0
+    m = BOB.N * I * np.pi * BOB.a**2
+    z = 0.3
+    _, Bz = ph.campo_bobina(BOB, 0.0, I, np.array([0.0]), np.array([BOB.l / 2 + z]), 0.0, n_esp=150)
+    assert Bz[0] == pytest.approx(ph.MU0 * 2 * m / (4 * np.pi * z**3), rel=0.01)
