@@ -45,6 +45,27 @@ Dos detalles de implementación:
 - **Inductancia variable.** $L(t)$, $R(t)$ y $\dot L(t)$ se precalculan en la malla de medio paso
   $t_k,\ t_k + h/2,\ t_k + h$, que son exactamente los instantes donde RK4 evalúa $f$.
 
+### 3.2.1 El primer paso, hecho a mano
+
+Para ver qué hace cada método, se calcula el primer paso del energizado. Cobre a 5 mm: $L = 0.5462$ mH,
+$R = 5.0503\ \Omega$, $V_0 = 5$ V, $\tau = 108.1\ \mu$s. Paso $h = \tau/10 = 10.81\ \mu$s, con $i_0 = 0$.
+
+La pendiente es $f(t, i) = (V_0 - Ri)/L$, en A/s.
+
+| Cálculo | Valor |
+|---|---|
+| $k_1 = f(0,\ 0)$ | 9154.8 A/s |
+| $k_2 = f\!\left(\tfrac h2,\ \tfrac h2 k_1\right)$ | 8697.1 A/s |
+| $k_3 = f\!\left(\tfrac h2,\ \tfrac h2 k_2\right)$ | 8720.0 A/s |
+| $k_4 = f(h,\ h k_3)$ | 8282.8 A/s |
+| **Euler**: $i_1 = h\,k_1$ | 0.099004 A |
+| **RK4**: $i_1 = \tfrac h6(k_1 + 2k_2 + 2k_3 + k_4)$ | 0.094214 A |
+| **Exacta**: $i_{max}(1 - e^{-0.1})$ | 0.094214 A |
+
+Euler usa la pendiente inicial, que es la más alta porque la corriente todavía es cero, y por eso **se pasa**
+un 5 %. RK4 "se da cuenta" de que la pendiente disminuye al avanzar ($k_4 < k_1$) y coincide con la solución exacta
+en los seis decimales mostrados.
+
 ## 3.3 Definición de los errores
 
 $$e_{abs} = \max_k\,\big|i_k - i(t_k)\big|,\qquad
@@ -95,6 +116,30 @@ Bobina de referencia con cobre a 5 mm ($L = 0.5462$ mH, $R = 5.0503\ \Omega$, $\
 - Con pasos muy pequeños el error de RK4 baja hasta el redondeo de máquina ($\sim10^{-15}$ A) y el orden deja de
   poder medirse. El simulador lo indica.
 
+### 3.4.1 Validación con el ejercicio de clase
+
+Las mismas funciones resuelven la carga del capacitor del apunte ($R = 60$ kΩ, $C = 200$ µF, $\varepsilon = 9$ V,
+$\tau = 12$ s, duración $5\tau$):
+
+| Pasos/τ | $\Delta t$ | Euler $e_{abs}$ (C) | RK4 $e_{abs}$ (C) |
+|---|---|---|---|
+| 2 | 6 s | 2.1e−4 (12 % de $q_{max}$) | 5.2e−7 |
+| 10 | 1.2 s | 3.5e−5 (1.9 %) | 6.0e−10 |
+| 50 | 0.24 s | 6.7e−6 (0.37 %) | 9.0e−13 |
+
+El comportamiento es el mismo que en la bobina, aunque las escalas son muy distintas (segundos en vez de
+microsegundos). Lo que controla el error es $\Delta t/\tau$, no el valor absoluto del paso.
+
+### 3.4.2 Costo computacional
+
+| Tarea | Tiempo |
+|---|---|
+| Resolver 6 ciclos con Euler, RK4, SciPy y la solución exacta (240 pasos) | 33 ms |
+| Integral de Dodd–Deeds para 260 distancias | 25 ms |
+
+Todo el cálculo de una pantalla del simulador toma una fracción de segundo. Por eso los parámetros se pueden
+mover en vivo.
+
 ## 3.5 Influencia del paso: estabilidad
 
 En la EDO homogénea $i' = -i/\tau$, un paso de Euler multiplica la corriente por $(1 - h/\tau)$. Para que el
@@ -119,6 +164,16 @@ $\Delta t$ solo.
   - un conductor perfecto da $\Gamma \to -1$;
   - el campo en el centro de una espira es $\mu_0 I/2a$.
 - La energía disipada es siempre positiva ($\Delta R > 0$ para todo material), como exige la segunda ley.
+
+### 3.6.1 Conservación de la energía en la solución numérica
+
+Una prueba más exigente que comparar curvas es verificar que la solución numérica conserva la energía
+(sección 2.3.6). Integrando la corriente de RK4 durante el energizado:
+
+$$\int\varepsilon\, i\,dt = 2.1449\ \text{mJ},\qquad \int i^2R\,dt + \tfrac12Li^2 = 1.8809 + 0.2641\ \text{mJ}.$$
+
+La diferencia relativa es $5\times10^{-7}$ y está fijada como prueba automática
+(`test_balance_de_energia_al_energizar`).
 
 ## 3.7 Caso sin solución analítica: pieza en movimiento
 
