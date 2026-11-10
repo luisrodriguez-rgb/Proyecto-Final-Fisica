@@ -79,3 +79,24 @@ def test_campo_lejano_es_dipolo():
     z = 0.3
     _, Bz = ph.campo_bobina(BOB, 0.0, I, np.array([0.0]), np.array([BOB.l / 2 + z]), 0.0, n_esp=150)
     assert Bz[0] == pytest.approx(ph.MU0 * 2 * m / (4 * np.pi * z**3), rel=0.01)
+
+
+def test_identifica_material_y_distancia_sin_ruido():
+    from sensor import identificacion as idf
+    refs = idf.curvas_referencia(BOB, (1000,))
+    for m in idf.SOLIDOS:
+        s, mu = ph.MATERIALES[m]["sigma"], ph.MATERIALES[m]["mu_r"]
+        z = idf.medir(BOB, (1000,), 5.0, s, mu, 0.006)
+        m_est, d_est, _, _ = idf.identificar(z, refs)
+        assert m_est == m
+        assert d_est == pytest.approx(0.006, abs=0.2e-3)
+
+
+def test_impureza_aumenta_el_residuo():
+    from sensor import identificacion as idf
+    refs = idf.curvas_referencia(BOB, (1000,))
+    puro = idf.medir(BOB, (1000,), 5.0, 5.96e7, 1.0, 0.005)
+    impuro = idf.medir(BOB, (1000,), 5.0, 0.8 * 5.96e7, 1.0, 0.005)
+    r_puro = idf.residuo_relativo(puro, idf.identificar(puro, refs)[2])
+    r_impuro = idf.residuo_relativo(impuro, idf.identificar(impuro, refs)[2])
+    assert r_impuro > 4 * r_puro
