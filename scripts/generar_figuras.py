@@ -230,6 +230,40 @@ def fig_escenarios():
     guardar(fig, "escenarios-alcance.png")
 
 
+def fig_identificacion():
+    """Plano de impedancia normalizado: una curva por material al variar la distancia, y matriz de confusión."""
+    from sensor import identificacion as idf
+    refs = idf.curvas_referencia(BOB, (F,))
+    sel = idf.D_REF <= 25e-3
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4.0), gridspec_kw={"width_ratios": [1.25, 1]})
+    for mat, c in COL.items():
+        z = refs[mat][:, 0]
+        ax[0].plot(z.real[sel], z.imag[sel], color=c, lw=1.8, label=mat.split(" (")[0])
+        for dm in (2, 5, 10):
+            k = int(np.argmin(abs(idf.D_REF - dm / 1000)))
+            ax[0].plot(z.real[k], z.imag[k], "o", color=c, ms=3)
+            if mat == "Cobre":
+                ax[0].annotate(f"{dm} mm", (z.real[k], z.imag[k]), xytext=(4, -10), textcoords="offset points",
+                               fontsize=7, color="#71717a")
+    ax[0].axhline(0, color="#a1a1aa", lw=0.8)
+    ax[0].set(xlabel="Re ΔZ / ωL₀  (pérdidas)", ylabel="Im ΔZ / ωL₀  (cambio de inductancia)",
+              title=f"Plano de impedancia a {F} Hz")
+    ax[0].legend(fontsize=7, loc="upper left")
+    r = idf.evaluar(BOB, (F, 5 * F), V0, 0.002 / 4, 0.1 / 4, d_max=8e-3, n_por_material=40)
+    nombres = ["Cobre", "Aluminio", "Latón", "Inox 304", "Acero"]
+    ax[1].imshow(r["confusion"], cmap="Blues")
+    for i in range(5):
+        for j in range(5):
+            v = r["confusion"][i, j]
+            ax[1].text(j, i, str(v), ha="center", va="center", fontsize=8, color="white" if v > 20 else "#18181b")
+    ax[1].set_xticks(range(5), nombres, rotation=35, ha="right", fontsize=8)
+    ax[1].set_yticks(range(5), nombres, fontsize=8)
+    ax[1].grid(False)
+    ax[1].set(xlabel="estimado", ylabel="real",
+              title=f"Exactitud {r['exactitud']*100:.0f} % (2 frecuencias, 16 promedios)")
+    guardar(fig, "identificacion.png")
+
+
 if __name__ == "__main__":
     print("Generando figuras en", SALIDA)
     fig_distancia()
@@ -241,3 +275,4 @@ if __name__ == "__main__":
     fig_dipolo()
     fig_energia()
     fig_escenarios()
+    fig_identificacion()
