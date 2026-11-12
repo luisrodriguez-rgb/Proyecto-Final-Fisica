@@ -139,4 +139,4 @@ El enunciado del curso y la guía con la rúbrica están en [`docs/enunciado/`](
 
 ## Equipo
 
-_Pendiente: nombres de los integrantes._
+Luis Ernesto Rodriguez, Sebastian Santander Soto, Kevin Lozano Gomez, Juan Pablo Corchuelo y Mateo Lopez
