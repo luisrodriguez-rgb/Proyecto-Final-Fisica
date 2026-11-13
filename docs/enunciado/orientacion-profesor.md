@@ -56,3 +56,15 @@ energía, fuerza, deflexión). Así la matemática queda **delimitada**: solo se
 El documento [00 · Modelo teórico y formalismo (D.E.P.A.)](../00-modelo-teorico-depa.md) sigue este esqueleto
 y remite a los documentos 01 a 06 para el detalle. El simulador tiene una pestaña **Identificación** con el caso
 de estudio de la línea de autopartes.
+
+## Indicación del 12 de noviembre: el carro
+
+En la clase del 12 de noviembre el profesor sugirió llevar el sensor a un vehículo para que el simulador sea más
+concreto que cambiar valores: *"pon un Spark, y que se pueda cambiar también a un Kwid, y lo probamos con esos dos
+carros en el simulador"*. Como referencia visual se tomó el simulador de otro equipo, que muestra el sistema
+completo en 3D con etiquetas de potencia en cada parte.
+
+Cómo se aplicó: el caso principal pasa a ser una **espira de detección en el piso de un parqueadero** que reconoce
+si el carro es un Chevrolet Spark GT o un Renault Kwid por la altura de su chasis
+([00 · Modelo teórico](../00-modelo-teorico-depa.md#02-caso-específico-de-estudio)). El plan del simulador 3D está en
+[plan-simulador-3d.md](../plan-simulador-3d.md).
