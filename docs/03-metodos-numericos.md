@@ -16,6 +16,7 @@ Toda la dinámica del sensor se escribe como una EDO de primer orden $\;i' = f(t
 | Escalón DC | $\dfrac{V_0 - Ri}{L}$, y $-\dfrac{Ri}{L}$ al desenergizar | exacta, ec. (2) |
 | Alterna | $\dfrac{V_0\sin\omega t - Ri}{L}$ | exacta, ec. (3) |
 | Pieza en movimiento | $\dfrac{V_0\sin\omega t - \left[R(t)+\dot L(t)\right] i}{L(t)}$ | `solve_ivp` con `rtol = 1e-8` |
+| Oscilador LC del detector (carro) | sistema $(q, i)$: $\dot q = i$, $\dot i = -(Ri + q/C)/L$ | exacta (sección 2.10.3) |
 
 ## 3.2 Métodos programados a mano
 
@@ -188,3 +189,75 @@ La guía aclara que Euler y RK4 bastan para modelos de EDO. Resolver directament
 3D (geometría finita de la pieza, núcleo de ferrita) requeriría diferencias finitas o elementos finitos. Aquí
 esa parte se sustituye por la solución semianalítica de Dodd–Deeds, que reduce el problema a una integral en
 una dimensión.
+
+
+## 3.9 El oscilador LC del detector
+
+El caso del carro agrega un problema numérico distinto: el oscilador LC del detector es una EDO de **segundo
+orden** (sección 2.10.3),
+
+$$L\ddot q + R\dot q + \frac{q}{C} = 0 .$$
+
+### Como sistema de primer orden
+
+Euler y RK4 se aplican a sistemas escribiendo el estado como un vector $\mathbf y = (q, i)$:
+
+$$\frac{d}{dt}\begin{pmatrix} q \\ i \end{pmatrix} = \begin{pmatrix} i \\ -\dfrac{Ri + q/C}{L} \end{pmatrix}.$$
+
+Las funciones `euler_sistema` y `rk4_sistema` de [`sensor/numerics.py`](../sensor/numerics.py) son las mismas fórmulas
+de la sección 3.2 con $y$ vectorial. El oscilador está en `oscilador()` de [`sensor/vehiculo.py`](../sensor/vehiculo.py):
+arranca con el capacitor cargado, integra 30 períodos y mide la frecuencia contando los cruces por cero de $q(t)$,
+interpolados entre pasos. Es lo mismo que hace un detector real.
+
+### Resultados (espira sin carro, 30 períodos)
+
+| Pasos por período | Error en $f$, RK4 | Error en $f$, Euler | Energía final / inicial, RK4 | Energía final / inicial, Euler |
+|---|---|---|---|---|
+| 10 | −1.1e−3 | −1.0e−1 | 0.016 | 1.3e+42 |
+| 20 | −8.1e−5 | −2.8e−2 | 0.0196 | 9.5e+22 |
+| 40 | −5.1e−6 | −6.5e−3 | 0.0197 | 1.1e+11 |
+| 80 | −3.2e−7 | −1.2e−3 | 0.0197 | 5.2e+4 |
+| 160 | −2.0e−8 | −1.1e−4 | 0.0197 | 32 |
+
+La energía exacta al final es $e^{-Rt/L} = 0.0197$: el oscilador pierde el 98 % de su energía en 30 períodos por la
+resistencia de la espira ($Q = 48$).
+
+![Oscilador LC con Euler y RK4](figuras/oscilador-lc.png)
+
+**Lectura de la tabla:**
+
+- **RK4** converge con orden 4 también aquí: al duplicar los pasos, el error de frecuencia baja unas 16 veces
+  (8.1e−5 → 5.1e−6 → 3.2e−7). Desde 20 pasos por período reproduce la pérdida de energía exacta.
+- **Euler explícito es inestable en un oscilador.** Con cualquier paso la energía crece, aunque el circuito tenga
+  resistencia: con 40 pasos por período se multiplica por $10^{11}$ en 30 períodos, y la oscilación "explota".
+
+### Por qué Euler explota
+
+Sin resistencia, el oscilador es $\dot{\mathbf y} = A\mathbf y$, con valores propios $\pm j\omega$. Un paso de Euler
+multiplica cada modo por $1 + j\omega h$, cuyo módulo es
+
+$$\lvert 1 + j\omega h\rvert = \sqrt{1 + (\omega h)^2} > 1\quad\text{para todo } h > 0 .$$
+
+La energía, que va como el cuadrado de la amplitud, crece en un factor $1 + (\omega h)^2$ por paso. Con 40 pasos por
+período, $\omega h = 2\pi/40$ y el factor por período es $(1 + 0.0247)^{40} = 2.65$. La resistencia quita un factor
+$e^{-2\pi/Q} = 0.877$ por período, de modo que la energía neta crece $2.32$ veces por período, y en 30 períodos
+$2.32^{30} \approx 10^{11}$, el valor de la tabla.
+
+En el circuito RL de las secciones anteriores Euler era estable si $\Delta t < 2\tau$. Aquí no hay paso que lo haga
+estable. La diferencia está en los valores propios: el RL tiene uno real negativo ($-1/\tau$) y el oscilador los
+tiene imaginarios. RK4 sí es estable para $\omega h < 2.83$, es decir, con más de unos 2.2 pasos por período, y su
+pequeña disipación numérica es despreciable con 20 pasos o más.
+
+### Validación de la fórmula exacta del cambio de frecuencia
+
+Se simuló el oscilador con la inductancia y la resistencia que deja el Spark encima ($\Delta L/L_0 = -12.87$ %,
+$\Delta R = +0.064\ \Omega$). El cambio de frecuencia medido en la simulación es **+7.130 %** con cualquier paso de RK4.
+La fórmula exacta $(1 + \Delta L/L_0)^{-1/2} - 1$ da +7.13 %, y la aproximación lineal $-\tfrac12\Delta L/L_0$ da
++6.44 %. **La simulación decidió cuál fórmula usar**, y todo el proyecto (simulador, escena 3D, figura de Anatomy y
+documentos) se corrigió a la exacta.
+
+Este caso tiene solución analítica (sección 2.10.3), así que también sirve para validar los métodos. Queda fijado
+como prueba automática en `test_oscilador_lc_del_detector`: frecuencia de RK4 con error menor que $10^{-4}$, caída
+de energía igual a $e^{-Rt/L}$, $\Delta f/f$ igual a la fórmula exacta y crecimiento de la energía con Euler.
+
+Costo: 30 períodos con 40 pasos por período (1 200 pasos de RK4) toman unos 6 ms.
