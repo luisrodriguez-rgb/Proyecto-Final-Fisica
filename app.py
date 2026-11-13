@@ -23,6 +23,7 @@ import ui
 from sensor import identificacion as idf
 from sensor import numerics as nm
 from sensor import physics as ph
+from sensor import vehiculo as vh
 from sensor.symbolic import derivar
 
 st.set_page_config(page_title="SEMP · Sensor de proximidad", page_icon=":material/sensors:", layout="wide")
@@ -166,13 +167,89 @@ ui.stats(
     estado=(detectado, "Detectado" if detectado else "Sin detección", f"Sₙ ≈ {Sn*1e3:.1f} mm"),
 )
 
-tabs = st.tabs(["Modelo", "Respuesta temporal", "Paso del objeto", "Identificación", "Campo", "Validación",
-                "Derivación", "Análisis"])
+tabs = st.tabs(["Caso: vehículo", "Modelo", "Respuesta temporal", "Paso del objeto", "Identificación", "Campo",
+                "Validación", "Derivación", "Análisis"])
+
+# ============================================================================
+# 0. CASO DE ESTUDIO: VEHÍCULO SOBRE UNA ESPIRA EN EL PISO
+# ============================================================================
+with tabs[0]:
+    ui.seccion("Caso de estudio: detector de vehículos con espira en el piso",
+               "Entrada de un parqueadero: una espira enterrada en el pavimento detecta el carro, reconoce el modelo "
+               "y abre la talanquera.")
+    ui.pasos([
+        ("D", "Detección", "¿Hay un carro sobre la espira? ¿Cuál es: Spark o Kwid? Su altura al piso es la distancia "
+                           "que importa."),
+        ("E", "Emisiones", "El chasis de acero responde al campo de la espira con corrientes de Foucault que bajan "
+                           "la inductancia de la espira."),
+        ("P", "Propiedades", "A la frecuencia del oscilador (decenas de kHz) el campo entra apenas una fracción de "
+                             "milímetro en el acero; la magnitud del cambio depende de la altura del chasis."),
+        ("A", "Alerta", "El oscilador cambia de frecuencia; si supera el umbral se abre la talanquera y se registra "
+                        "el modelo del carro."),
+    ])
+    v1, v2, v3 = st.columns(3, gap="large")
+    carro = v1.selectbox("Carro", list(vh.VEHICULOS), key="carro")
+    vel_kmh = v1.slider("Velocidad al cruzar (km/h)", 3, 40, 10, 1)
+    lado = v2.slider("Lado de la espira cuadrada (m)", 0.8, 2.5, 1.8, 0.1)
+    vueltas = v2.slider("Vueltas de la espira", 1, 6, 3, 1)
+    prof_cm = v3.slider("Profundidad de la espira en el pavimento (cm)", 2, 10, 5, 1)
+    sens_pct = v3.slider("Sensibilidad del detector |ΔL/L| (%)", 0.1, 5.0, 1.0, 0.1)
+    esp = vh.Espira(lado=lado, N=vueltas, profundidad=prof_cm / 100)
+    veh = vh.VEHICULOS[carro]
+    res = vh.respuesta(esp, veh)
+    pasa = vh.paso(esp, veh, vel_kmh / 3.6)
+    detecta = abs(res["dL_rel"]) * 100 >= sens_pct
+    est, h_est = vh.identificar_vehiculo(esp, res["f"], res["dL_rel"])
+    ui.stats(
+        [("Inductancia de la espira", f"{esp.L0*1e6:.1f} µH", f"{vueltas} vueltas, {lado:.1f} m"),
+         ("Oscilador sin carro", f"{esp.f0/1e3:.1f} kHz", f"δ en el acero {res['delta_acero_mm']:.3f} mm"),
+         ("ΔL/L con el carro", f"{res['dL_rel']*100:.2f} %", f"cobertura {res['cobertura']*100:.0f} %"),
+         ("Δf del oscilador", f"{res['df_rel']*esp.f0/1e3:+.2f} kHz", f"{res['df_rel']*100:+.2f} %")],
+        estado=(detecta, f"Talanquera abierta: {est.split(' ')[1] if ' ' in est else est}" if detecta
+                else "Sin vehículo", f"altura estimada {h_est*100:.1f} cm" if detecta else f"umbral {sens_pct:.1f} %"),
+    )
+    c1, c2 = st.columns(2, gap="large")
+    with c1:
+        fig = go.Figure()
+        for nombre, v in vh.VEHICULOS.items():
+            p_ = vh.paso(esp, v, vel_kmh / 3.6)
+            fig.add_trace(go.Scatter(x=p_["t"], y=-p_["dL_rel"] * 100, name=nombre,
+                                     line=dict(color=v["color"], width=2.6 if nombre == carro else 1.3)))
+        fig.add_hline(y=sens_pct, line_dash="dash", line_color=P["text"], line_width=1,
+                      annotation_text="umbral", annotation_position="top right")
+        ui.grafica(fig, height=380, title=f"Señal mientras el carro cruza a {vel_kmh} km/h",
+                   xaxis_title="t (s)", yaxis_title="−ΔL/L (%)")
+    with c2:
+        alt, curva = vh.curva_altura(esp, res["f"])
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=alt * 100, y=-curva * 100, name="cualquier carro compacto",
+                                 line=dict(color=P["muted"], width=1.6)))
+        for nombre, v in vh.VEHICULOS.items():
+            r_ = vh.respuesta(esp, v)
+            lo, hi = v["rango_altura"]
+            fig.add_vrect(x0=lo * 100, x1=hi * 100, fillcolor=v["color"], opacity=0.10, line_width=0)
+            fig.add_trace(go.Scatter(x=[v["altura_piso"] * 100], y=[-r_["dL_rel"] * 100], name=nombre,
+                                     mode="markers", marker=dict(size=11, color=v["color"])))
+        ui.grafica(fig, height=380, title="Cambio de inductancia frente a la altura libre al piso",
+                   xaxis_title="altura libre al piso (cm)", yaxis_title="−ΔL/L (%)")
+    filas = []
+    for nombre, v in vh.VEHICULOS.items():
+        r_ = vh.respuesta(esp, v)
+        filas.append({"Carro": nombre, "Largo (m)": v["largo"], "Ancho (m)": v["ancho"],
+                      "Altura al piso (cm)": f"{v['altura_piso']*100:.0f} ({v['rango_altura'][0]*100:.0f}–{v['rango_altura'][1]*100:.0f})",
+                      "Peso (kg)": v["peso"], "Distancia chasis–espira (cm)": f"{r_['d']*100:.0f}",
+                      "ΔL/L (%)": f"{r_['dL_rel']*100:.2f}", "Δf (kHz)": f"{r_['df_rel']*esp.f0/1e3:+.2f}"})
+    st.dataframe(pd.DataFrame(filas), width="stretch", hide_index=True)
+    ui.nota("La espira se modela como una espira circular de igual área y el chasis como una placa de acero a la "
+            "altura libre al piso; el resultado se multiplica por la fracción de la espira que tapa el carro. Como el "
+            "chasis real no es plano y tiene huecos, estos cambios son una <b>cota superior</b>: los detectores "
+            "comerciales reportan cambios de pocos por ciento. Los dos carros se distinguen por la altura, pero la "
+            "diferencia es pequeña: la carga (pasajeros, baúl) baja el carro y puede confundirlos.")
 
 # ============================================================================
 # 1. MODELO
 # ============================================================================
-with tabs[0]:
+with tabs[1]:
     dg = curv["d"] * 1e3
     col1, col2 = st.columns(2, gap="large")
     with col1:
@@ -242,7 +319,7 @@ with tabs[0]:
 # ============================================================================
 # 2. RESPUESTA TEMPORAL
 # ============================================================================
-with tabs[1]:
+with tabs[2]:
     r = nm.resolver_rl(L_eff, R_eff, V0, frec, I0, ppc, ciclos, fuente)
     t_ms = r["t"] * 1e3
     fig = go.Figure()
@@ -300,7 +377,7 @@ with tabs[1]:
 # ============================================================================
 # 3. PASO DEL OBJETO
 # ============================================================================
-with tabs[2]:
+with tabs[3]:
     ui.seccion("Objeto en movimiento sobre una banda transportadora",
                "La pieza se acerca hasta d y se aleja hasta d_max; la inductancia varía en el tiempo.")
     st.latex(r"\frac{dI}{dt}=\frac{V(t)-\left[R(t)+\dot L(t)\right]I}{L(t)}")
@@ -380,7 +457,7 @@ def eficiencia_cache(N, a, l, R0, frecs, V0, ra, rf, dmax):
     return idf.evaluar(ph.Bobina(N, a, l, R0), frecs, V0, ra, rf, d_max=dmax, n_por_material=40)
 
 
-with tabs[3]:
+with tabs[4]:
     ui.seccion("Caso de estudio: línea de autopartes con piezas de distintos metales",
                "El sensor no solo avisa que hay una pieza: identifica de qué metal es y a qué distancia está.")
     ui.pasos([
@@ -497,7 +574,7 @@ with tabs[3]:
 # ============================================================================
 # 5. CAMPO
 # ============================================================================
-with tabs[4]:
+with tabs[5]:
     gamma = ph.coef_imagen(bob, d, frec, material)
     a_ = bob.a
     z_top = d + bob.l + 1.5 * a_
@@ -564,7 +641,7 @@ with tabs[4]:
 # ============================================================================
 # 6. VALIDACIÓN
 # ============================================================================
-with tabs[5]:
+with tabs[6]:
     conv = nm.estudio_convergencia(L_eff, R_eff, V0, frec, I0, ciclos=6 if fuente == "dc" else 3, fuente=fuente,
                                    pasos=(2, 4, 8, 16, 32, 64, 128, 256) if fuente == "dc" else
                                    (10, 20, 40, 80, 160, 320, 640, 1280))
@@ -611,7 +688,7 @@ with tabs[5]:
 # ============================================================================
 # 7. DERIVACIÓN
 # ============================================================================
-with tabs[6]:
+with tabs[7]:
     s = sympy_cache()
     ui.seccion("Ley de Faraday y Kirchhoff", "La fem inducida en la bobina es −dΦ/dt = −L dI/dt")
     st.latex(s["edo"])
@@ -640,7 +717,7 @@ with tabs[6]:
 # ============================================================================
 # 8. ANÁLISIS
 # ============================================================================
-with tabs[7]:
+with tabs[8]:
     ui.seccion("Interpretación del caso actual")
     dL = (L_eff / L0 - 1) * 100
     if material.startswith("Sin"):
