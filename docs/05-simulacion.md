@@ -20,6 +20,21 @@
 
 El selector de la parte superior cambia entre tema claro y oscuro.
 
+**Controles de la pestaña Caso: vehículo** (caso principal):
+
+| Parámetro | Rango |
+|---|---|
+| Carro | Chevrolet Spark GT o Renault Kwid |
+| Velocidad al cruzar la espira | 3 – 40 km/h |
+| Lado de la espira cuadrada | 0.8 – 2.5 m |
+| Vueltas de la espira | 1 – 6 |
+| Profundidad de la espira en el pavimento | 2 – 10 cm |
+| Sensibilidad del detector $\lvert\Delta L/L\rvert$ | 0.1 – 5 % |
+| Pasos por período del oscilador LC | 10 – 160 |
+
+Dentro de la escena 3D: carro, reproducir o pausar, velocidad, tres cámaras y mostrar u ocultar etiquetas, campo y
+corrientes.
+
 ## 5.1.1 La escena 3D del caso del carro
 
 | Atardecer (tema oscuro) | Día (tema claro) |
@@ -33,11 +48,30 @@ distancia entre ejes); no son modelos 3D descargados. Las líneas de campo y tod
 Python. Para capturas fijas se puede abrir la escena con `?x=0&cam=ras&lab=0` (posición del carro, cámara y
 etiquetas).
 
+**Qué pasa en la escena:** el carro llega, frena y se detiene sobre la espira. La inductancia baja, el oscilador
+sube de 55.24 a 59.18 kHz (Spark) o a 58.69 kHz (Kwid), la pantalla del detector muestra el modelo reconocido y la
+talanquera se levanta. Las etiquetas muestran la inductancia de la espira, la potencia que absorbe el chasis
+(80 µW el Spark, 67 µW el Kwid) y la profundidad de penetración en el acero (0.087 mm).
+
+## 5.1.2 El oscilador LC y el corte del detector
+
+Debajo de la escena, la misma pestaña tiene:
+
+- **El oscilador LC del detector** resuelto con Euler y RK4: la carga del capacitor con y sin el carro, la energía
+  del oscilador en escala logarítmica y la comparación entre el cambio de frecuencia simulado, la fórmula exacta y la
+  aproximación lineal. Con el control de pasos por período se ve cómo cambia la precisión de RK4 y cómo Euler
+  diverge siempre.
+- **La figura del corte del detector** hecha con Anatomy: pavimento cortado por el centro de la espira, las 3
+  vueltas de alambre, el cable al detector y el chasis a la altura de cada carro. Al pasar el cursor a la izquierda
+  muestra el Spark y a la derecha el Kwid.
+
+![Figura de Anatomy del corte del detector](figuras/anatomy-corte-espira.png)
+
 ## 5.2 Pestañas
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Caso: vehículo** | **Escena 3D** de la entrada del parqueadero: el carro llega, se detiene sobre la espira, el detector cambia de frecuencia y lo reconoce, y la talanquera se abre; con líneas de campo, corrientes de Foucault en el chasis, etiquetas de potencia, mini gráfica, tres cámaras y control de velocidad. Debajo, la espira de 1.8 m con un Chevrolet Spark GT o un Renault Kwid: datos de los carros, señal mientras cruzan a la velocidad elegida, $\Delta L/L$ frente a la altura del chasis y alerta de talanquera con el modelo reconocido |
+| **Caso: vehículo** | **Escena 3D** de la entrada del parqueadero (el carro se detiene sobre la espira, el detector lo reconoce y la talanquera se abre; líneas de campo, corrientes de Foucault, etiquetas, mini gráfica, tres cámaras). Debajo: datos del Spark y el Kwid, señal mientras cruzan, $\Delta L/L$ frente a la altura del chasis, **oscilador LC con Euler y RK4** y la **figura del corte** de Anatomy |
 | **Modelo** | $\Delta L/L_0$ y $\Delta R$ frente a la distancia para todos los materiales, curva de detección con el umbral y la distancia de conmutación $S_n$, efecto de la frecuencia, ecuaciones del modelo |
 | **Respuesta temporal** | $i(t)$ exacta, RK4, Euler y SciPy. En alterna, la zona muerta del umbral; en DC, $i_{max}$, el 63 % en $t=\tau$ y el cambio del interruptor. Energía y potencia |
 | **Paso del objeto** | La pieza se acerca y se aleja: $d(t)$, $L(t)$, $i(t)$, envolvente demodulada, umbrales ON/OFF con histéresis y salida digital del sensor |
@@ -51,21 +85,27 @@ etiquetas).
 
 | Característica mínima | Dónde está |
 |---|---|
-| Parámetros físicos modificables | Barra lateral: bobina, fuente y objeto |
-| Condiciones iniciales | $I(0)$ en la barra lateral |
+| Parámetros físicos modificables | Barra lateral (bobina, fuente, objeto) y controles del caso del carro (carro, velocidad, espira, sensibilidad) |
+| Condiciones iniciales | $I(0)$ en la barra lateral; carga inicial del capacitor en el oscilador LC; posición inicial del carro en la escena |
 | Visualización de las variables electromagnéticas | $L_{\text{eff}}$, $R_{\text{eff}}$, $\lvert Z\rvert$, $\varphi$, $\delta$, $\Gamma$ en la cabecera y en Modelo |
-| Representación de campos | Pestaña Campo: líneas de $\vec B$, $\lvert\vec B\rvert$ y $B_z(z)$ |
-| Gráficas temporales | Respuesta temporal y Paso del objeto |
-| Comparación de escenarios | Cinco materiales superpuestos, con y sin pieza, AC frente a DC, Euler frente a RK4 |
-| Cálculo de energía, potencia o eficiencia | Energía $\tfrac12LI^2$, potencia total y disipada en la pieza, piezas por minuto |
+| Representación de campos | Líneas de $\vec B$ en 3D bajo el carro (escena), pestaña Campo ($\vec B$, $\lvert\vec B\rvert$, $B_z(z)$) y figura del corte |
+| Gráficas temporales | Señal del carro al cruzar, oscilador LC, Respuesta temporal y Paso del objeto |
+| Comparación de escenarios | Spark frente a Kwid, con y sin carro, cinco materiales, AC frente a DC, Euler frente a RK4 |
+| Cálculo de energía, potencia o eficiencia | Energía del oscilador, potencia absorbida por el chasis, energía $\tfrac12LI^2$, potencia en la pieza, piezas por minuto |
 | Interpretación de resultados | Texto generado según el caso en la pestaña Análisis |
-| Señal de salida y umbral (propuesta) | Indicador de estado en la cabecera, curva de detección y salida digital |
+| Señal de salida y umbral (propuesta) | Pantalla del detector y talanquera en la escena 3D, umbral de sensibilidad del carro, indicador de estado, curva de detección y salida digital |
 | Identificación del material y la distancia (orientación del profesor) | Pestaña Identificación |
 
 ## 5.4 Guion para mostrarlo en vivo
 
-0. **Caso: vehículo**: poner el Spark, ver la talanquera abierta y la altura estimada (14.9 cm); cambiar al Kwid y
-   ver que el cambio de inductancia es menor porque el carro es más alto.
+0. **Caso: vehículo, escena 3D.** Dejar que el Spark llegue y se detenga: la frecuencia sube a 59.18 kHz, la
+   pantalla dice SPARK y la talanquera se abre. Pasar a la cámara "A ras" para ver las líneas de campo bajo el chasis.
+   Cambiar al Kwid: la frecuencia sube menos (58.69 kHz) porque el carro es más alto.
+   - Cambiar el lado de la espira a 2.5 m o enterrarla a 10 cm y ver cómo se achica la diferencia entre los dos
+     carros.
+   - En el **oscilador LC**, mostrar que Euler explota y RK4 no, y que la fórmula exacta coincide con la
+     simulación.
+   - Pasar el cursor por la **figura del corte** para cambiar de carro.
 1. Con cobre a 5 mm, mostrar el indicador **Detectado** y $\Delta L = -8.45$ %.
 2. Alejar la pieza con el control de distancia hasta que el indicador pase a **Sin detección**, cerca de
    $S_n = 6.1$ mm.
@@ -79,6 +119,54 @@ etiquetas).
    frecuencias en la matriz de confusión.
 
 ## 5.5 Estudio de escenarios
+
+### Caso del carro: diseño de la espira
+
+Se movió un parámetro a la vez, con el resto en la espira de referencia (1.8 m, 3 vueltas, 5 cm de profundidad).
+
+| Lado de la espira | $L_0$ | $f_0$ | Spark $\Delta L/L$ | Kwid $\Delta L/L$ | Diferencia |
+|---|---|---|---|---|---|
+| 1.0 m | 42 µH | 77.3 kHz | −8.8 % | −7.5 % | 1.36 puntos |
+| 1.5 m | 67 µH | 61.3 kHz | −12.7 % | −11.2 % | **1.54 puntos** |
+| 1.8 m | 83 µH | 55.2 kHz | −12.9 % | −11.4 % | 1.48 puntos |
+| 2.5 m | 121 µH | 45.9 kHz | −11.3 % | −10.2 % | 1.10 puntos |
+
+- Una espira **más pequeña que el carro** queda tapada por completo, pero su campo alcanza menos altura y el cambio
+  es menor. Una espira **más grande que el carro** queda tapada solo en parte (64 % con 2.5 m) y la señal también baja.
+- El óptimo para distinguir los dos carros está entre 1.5 y 1.8 m: del tamaño del carro.
+
+| Profundidad de la espira | Spark | Kwid | Diferencia |
+|---|---|---|---|
+| 2 cm | −14.5 % | −12.8 % | 1.76 puntos |
+| 5 cm | −12.9 % | −11.4 % | 1.48 puntos |
+| 10 cm | −10.7 % | −9.5 % | 1.14 puntos |
+
+Cuanto más cerca de la superficie va la espira, más señal; en la práctica se entierra a 4 – 7 cm para protegerla del
+tránsito.
+
+| Vueltas | $L_0$ | $f_0$ | Spark $\Delta L/L$ |
+|---|---|---|---|
+| 1 | 9.2 µH | 165.7 kHz | −13.0 % |
+| 3 | 83 µH | 55.2 kHz | −12.9 % |
+| 6 | 332 µH | 27.6 kHz | −12.8 % |
+
+El cambio **relativo** de inductancia casi no depende del número de vueltas, porque $L_0$ y $\Delta L$ crecen los dos
+con $N^2$. Lo que cambian las vueltas es la frecuencia del oscilador: más vueltas, más inductancia y menos frecuencia.
+
+| Velocidad del carro | Duración de la señal (Spark) |
+|---|---|
+| 5 km/h | 3.9 s |
+| 10 km/h | 2.0 s |
+| 20 km/h | 1.0 s |
+| 40 km/h | 0.5 s |
+
+Aun a 40 km/h la señal dura medio segundo, mucho más que los milisegundos que necesita el detector para medir la
+frecuencia.
+
+**Carga del carro:** si el Kwid baja de 18 a 16 cm (pasajeros y baúl), su cambio de inductancia pasa de −11.4 % a
+−12.3 % y el detector lo confunde con un Spark. Es la limitación principal del reconocimiento solo por altura.
+
+### Segundo escenario: bobina de autopartes
 
 La guía pide comparar escenarios. Con el simulador se barrió un parámetro a la vez, con el resto en los valores de
 referencia, para ver cómo cambia el **alcance** $S_n$ (distancia máxima a la que la señal supera el 2 %).
@@ -138,6 +226,10 @@ porque $\omega L$ es pequeño frente a $R$ (factor de calidad bajo).
 Un alambre más grueso (menor $R_0$) mejora la sensibilidad sin cambiar la geometría.
 
 ## 5.6 Cómo reproducir un escenario
+
+- **Caso del carro:** fijar el carro y la espira en los controles de la pestaña Caso: vehículo; la tabla de datos
+  da $\Delta L/L$, la distancia chasis–espira y $\Delta f$ de los dos carros.
+- **Autopartes:**
 
 1. Fijar los parámetros en la barra lateral.
 2. Pestaña **Modelo**: leer $S_n$ en la leyenda de la curva de detección.
