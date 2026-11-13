@@ -32,6 +32,11 @@ inductancia ($\Delta L = L_{\text{con pieza}} - L_0$).
 La pieza ocupa la región $z<0$. La bobina, de radio $a$, longitud $l$ y $N$ espiras, está entre $z=d$ y
 $z=d+l$. A la derecha está el circuito equivalente que resuelve el simulador.
 
+**Caso principal, el carro sobre la espira.** La misma geometría, a otra escala: la "bobina" es una espira
+cuadrada de 1.8 m enterrada en el pavimento, y la "pieza" es el chasis de acero del carro, a su altura libre al piso.
+
+![Corte del detector de espira (figura hecha con Anatomy)](figuras/anatomy-corte-espira.png)
+
 ## 1.3 Variables del modelo
 
 | Variable | Símbolo | Tipo | Unidad SI |
@@ -48,6 +53,8 @@ $z=d+l$. A la derecha está el circuito equivalente que resuelve el simulador.
 | Conductividad, permeabilidad relativa | $\sigma$, $\mu_r$ | escalar | S/m, adimensional |
 | Frecuencia angular | $\omega = 2\pi f$ | escalar | rad/s |
 | Geometría | $N$, $a$, $l$, $d$ | escalar | –, m, m, m |
+| Altura libre al piso del carro, profundidad de la espira | $h_{piso}$, $p$ ($d = h_{piso} + p$) | escalar | m |
+| Capacitancia y frecuencia del oscilador del detector | $C$, $f_0 = 1/2\pi\sqrt{L_0C}$ | escalar | F, Hz |
 
 ## 1.4 Ecuaciones de Maxwell utilizadas
 
@@ -220,3 +227,49 @@ abajo):
 
 Medio ciclo después todo se invierte, y siempre se cumple lo mismo: las corrientes de Foucault se oponen al cambio
 que las produce.
+
+## 1.12 El caso del carro: la misma física a otra escala
+
+Todo lo anterior vale para la espira de parqueadero. Lo que cambia son las escalas, y conviene revisarlas una por
+una para justificar que el modelo sigue siendo válido.
+
+| Magnitud | Bobina de autopartes | Espira de parqueadero |
+|---|---|---|
+| Tamaño | radio 15 mm, 150 vueltas | cuadrado de 1.8 m (radio equivalente 1.02 m), 3 vueltas |
+| Inductancia | 0.60 mH | 83 µH |
+| Frecuencia | 1 kHz (fuente) | 55.2 kHz (oscilador LC con $C$ = 0.1 µF) |
+| Objeto y distancia | pieza a milímetros | chasis de acero a 20 – 23 cm |
+| Profundidad de penetración en el acero | 0.65 mm | 0.087 mm |
+| Efecto del acero sobre $L$ | sube (magnetización) | **baja** (apantallamiento) |
+
+**Por qué el acero baja la inductancia aquí y la subía en la bobina pequeña.** A 55 kHz el campo entra apenas
+0.087 mm en el acero, mucho menos que el espesor de la lámina del chasis (alrededor de 1 mm). Las corrientes de
+Foucault se concentran en esa capa y expulsan el flujo, así que el chasis se comporta casi como un conductor
+perfecto ($\Gamma \to -1$). La magnetización solo gana a frecuencias bajas: es la "frecuencia ciega" del acero
+encontrada en el estudio de escenarios, que para la bobina pequeña está cerca de 20 kHz. El detector de espira
+trabaja muy por encima de ella.
+
+**La aproximación cuasi-estática sigue valiendo.** A 55.2 kHz la longitud de onda es $c/f = 5.4$ km, unas 3 000
+veces el tamaño de la espira. En el acero, la razón entre corriente de desplazamiento y de conducción es
+$\omega\varepsilon_0/\sigma = 5\times10^{-13}$. Las ecuaciones necesarias son otra vez solo Faraday y Ampère, con
+Gauss magnética como condición de frontera en la cara inferior del chasis.
+
+**Un campo muy débil.** Con 50 mA en la espira, el campo en su centro es $B = \mu_0 N I / 2a \approx 0.09\ \mu$T,
+unas 500 veces menor que el campo de la Tierra (unos 50 µT). Aun así el detector funciona, porque no mide el campo:
+mide la **frecuencia** del oscilador. El campo terrestre es constante y no induce nada (Faraday solo responde a
+cambios), así que no interfiere.
+
+**El alcance depende del tamaño de la espira.** Vista de lejos, la espira es un dipolo magnético de momento
+$m = N I A = 0.49$ A·m², y su campo cae como $1/z^3$ a partir de distancias del orden de su tamaño (sección
+1.10). Por eso una espira de 1.8 m detecta un chasis a 20 cm con un cambio de inductancia de más del 10 %. Una
+bicicleta o una moto, con poco metal y estrecho, cambian mucho menos: es el problema práctico conocido de estos
+detectores.
+
+**Hipótesis adicionales del caso del carro:**
+
+1. El chasis se trata como una placa plana de acero infinita a la altura libre al piso. Un chasis real tiene huecos,
+   el túnel de la transmisión y el escape, así que el valor calculado es una **cota superior**.
+2. El tamaño finito del carro se incluye multiplicando el cambio de impedancia por la fracción de la espira que el
+   carro tapa (factor de cobertura).
+3. La espira cuadrada se representa por una espira circular de igual área.
+4. $\mu_r$ y $\sigma$ del acero son constantes; la carga del carro no cambia su altura.
