@@ -24,6 +24,7 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 
 | Pestaña | Qué muestra |
 |---|---|
+| **Caso: vehículo** | Espira de parqueadero de 1.8 m con un Chevrolet Spark GT o un Renault Kwid: datos de los carros, señal mientras cruzan a la velocidad elegida, $\Delta L/L$ frente a la altura del chasis y alerta de talanquera con el modelo reconocido |
 | **Modelo** | $\Delta L/L_0$ y $\Delta R$ frente a la distancia para todos los materiales, curva de detección con el umbral y la distancia de conmutación $S_n$, efecto de la frecuencia, ecuaciones del modelo |
 | **Respuesta temporal** | $i(t)$ exacta, RK4, Euler y SciPy. En alterna, la zona muerta del umbral; en DC, $i_{max}$, el 63 % en $t=\tau$ y el cambio del interruptor. Energía y potencia |
 | **Paso del objeto** | La pieza se acerca y se aleja: $d(t)$, $L(t)$, $i(t)$, envolvente demodulada, umbrales ON/OFF con histéresis y salida digital del sensor |
@@ -50,6 +51,8 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 
 ## 5.4 Guion para mostrarlo en vivo
 
+0. **Caso: vehículo**: poner el Spark, ver la talanquera abierta y la altura estimada (14.9 cm); cambiar al Kwid y
+   ver que el cambio de inductancia es menor porque el carro es más alto.
 1. Con cobre a 5 mm, mostrar el indicador **Detectado** y $\Delta L = -8.45$ %.
 2. Alejar la pieza con el control de distancia hasta que el indicador pase a **Sin detección**, cerca de
    $S_n = 6.1$ mm.
