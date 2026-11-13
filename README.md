@@ -9,7 +9,11 @@ con ellas la corriente del circuito. El sensor compara esa corriente con la que 
 cuando la diferencia supera un umbral. Además, por la fase y la magnitud de ese cambio, identifica **de qué metal**
 es la pieza y **a qué distancia** está.
 
-![Campo magnético de la bobina sin pieza y con cobre a 5 mm](docs/figuras/campo-magnetico.png)
+![Escena 3D del simulador: un Spark detenido sobre la espira al atardecer](docs/figuras/escena-3d-spark-atardecer.png)
+
+| Figura del informe (Anatomy) | Campo calculado por el modelo |
+|---|---|
+| ![Corte del detector de espira](docs/figuras/anatomy-corte-espira.png) | ![Campo magnético de la bobina](docs/figuras/campo-magnetico.png) |
 
 ## Esquema del proyecto: D.E.P.A.
 
