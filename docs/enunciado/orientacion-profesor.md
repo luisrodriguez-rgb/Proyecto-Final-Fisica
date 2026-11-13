@@ -55,7 +55,7 @@ energía, fuerza, deflexión). Así la matemática queda **delimitada**: solo se
 
 El documento [00 · Modelo teórico y formalismo (D.E.P.A.)](../00-modelo-teorico-depa.md) sigue este esqueleto
 y remite a los documentos 01 a 06 para el detalle. El simulador tiene una pestaña **Identificación** con el caso
-de estudio de la línea de autopartes.
+de estudio de la línea de autopartes; desde la indicación del 12 de noviembre (abajo), el caso principal es el carro.
 
 ## Indicación del 12 de noviembre: el carro
 
@@ -66,5 +66,6 @@ completo en 3D con etiquetas de potencia en cada parte.
 
 Cómo se aplicó: el caso principal pasa a ser una **espira de detección en el piso de un parqueadero** que reconoce
 si el carro es un Chevrolet Spark GT o un Renault Kwid por la altura de su chasis
-([00 · Modelo teórico](../00-modelo-teorico-depa.md#02-caso-específico-de-estudio)). El plan del simulador 3D está en
-[plan-simulador-3d.md](../plan-simulador-3d.md).
+([00 · Modelo teórico](../00-modelo-teorico-depa.md#02-caso-específico-de-estudio)). En el simulador, la pestaña
+**Caso: vehículo** tiene la escena 3D del parqueadero con los dos carros, el oscilador LC del detector y la figura
+del corte hecha con Anatomy. El plan del simulador 3D está en [plan-simulador-3d.md](../plan-simulador-3d.md).
