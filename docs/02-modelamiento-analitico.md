@@ -314,3 +314,103 @@ Un sensor sensible necesita $Q$ grande: muchas espiras, alambre de baja resisten
 
 Los dos usan la misma estrategia: un elemento cuyo valor depende solo de la geometría y de los materiales cercanos
 ($C$ o $L$), y un circuito que mide su cambio.
+
+
+## 2.10 Modelo del detector de espira (caso del carro)
+
+El caso principal usa las mismas leyes con otra geometría y agrega un capacitor, lo que convierte el circuito en un
+**oscilador LC**: la unión de los dos circuitos vistos, el RC de clase y el RL de este proyecto.
+
+### 2.10.1 Inductancia de la espira
+
+Una espira circular de radio $a$, hecha con alambre de radio $r_w$ y con $N$ vueltas, tiene
+
+$$L_0 = \mu_0 N^2 a\left[\ln\!\left(\frac{8a}{r_w}\right) - 2\right].$$
+
+La espira cuadrada de lado $s = 1.8$ m se reemplaza por una circular de igual área, $a = s/\sqrt{\pi} = 1.016$ m. Con
+$N = 3$ y alambre 14 AWG ($r_w = 0.8$ mm):
+
+$$L_0 = (4\pi\times10^{-7})(9)(1.016)\left[\ln(10\,160) - 2\right] = 83.0\ \mu\text{H}.$$
+
+La regla práctica de los manuales de instalación, $L \approx P\,(N^2 + N)/4$ (en µH, con el perímetro $P$ en pies),
+da 70.9 µH: el mismo orden de magnitud.
+
+### 2.10.2 El chasis como placa conductora
+
+Se usa la misma integral de Dodd y Deeds de la sección 2.4, con el chasis de acero a una distancia
+$d = h_{piso} + p$ de la espira ($p = 5$ cm de profundidad). El carro no tapa toda la espira, así que el cambio de
+impedancia se multiplica por la **fracción cubierta** $\eta$:
+
+$$\Delta Z_{carro} = \eta\,\Delta Z_{placa}(d),\qquad \eta = \min\!\left(1, \frac{\text{ancho}}{s}\right)\cdot\frac{\text{solape a lo largo}}{s}.$$
+
+| | Spark ($h_{piso}$ = 15 cm) | Kwid ($h_{piso}$ = 18 cm) |
+|---|---|---|
+| Distancia chasis–espira $d$ | 20 cm | 23 cm |
+| Fracción cubierta $\eta$ | 0.89 | 0.88 |
+| $\Delta L$ | −10.7 µH | −9.5 µH |
+| $\Delta L / L_0$ | −12.87 % | −11.39 % |
+| $\Delta R$ | +0.064 Ω | +0.054 Ω |
+
+### 2.10.3 El oscilador LC: Kirchhoff con capacitor y bobina
+
+El detector conecta la espira a un capacitor $C$. Recorriendo la malla con el acuerdo de signos de clase (sin
+fuente, porque el oscilador solo repone la energía que se pierde):
+
+$$-\frac{q}{C} - iR - L\frac{di}{dt} = 0,\qquad i = \frac{dq}{dt}
+\quad\Rightarrow\quad L\frac{d^2q}{dt^2} + R\frac{dq}{dt} + \frac{q}{C} = 0 .$$
+
+Es una EDO de segundo orden. Probando $q = e^{st}$:
+
+$$Ls^2 + Rs + \frac1C = 0\quad\Rightarrow\quad s = -\frac{R}{2L} \pm j\,\omega_d,\qquad
+\omega_d = \sqrt{\frac{1}{LC} - \left(\frac{R}{2L}\right)^2}\;\approx\;\omega_0 = \frac{1}{\sqrt{LC}}.$$
+
+La carga oscila como $q(t) = q_0\, e^{-Rt/2L}\cos\omega_d t$ (más un término pequeño en seno). La energía, que pasa
+del capacitor ($q^2/2C$) a la bobina ($\tfrac12 Li^2$) y de vuelta, se pierde en la resistencia como $e^{-Rt/L}$.
+
+Con $L_0 = 83.0$ µH, $C = 0.1$ µF y $R = 0.6\ \Omega$:
+
+$$f_0 = \frac{1}{2\pi\sqrt{L_0C}} = 55.25\ \text{kHz},\qquad Q = \frac{\omega_0 L_0}{R} = 48 .$$
+
+Como $Q \gg 1$, $\omega_d$ y $\omega_0$ difieren en menos de 0.01 %. Un oscilador real (Colpitts o similar) repone
+con un transistor la energía que se pierde y mantiene la oscilación indefinidamente.
+
+### 2.10.4 Cambio de frecuencia con el carro
+
+Si la inductancia pasa de $L_0$ a $L_0 + \Delta L$:
+
+$$\frac{f}{f_0} = \sqrt{\frac{L_0}{L_0 + \Delta L}} = \left(1 + \frac{\Delta L}{L_0}\right)^{-1/2}.$$
+
+Para cambios pequeños, la serie de Taylor da $\Delta f / f_0 \approx -\tfrac12 \Delta L / L_0$. Con un carro el cambio
+no es pequeño y hay que usar la expresión exacta:
+
+| | $\Delta L/L_0$ | Aproximación $-\tfrac12\Delta L/L_0$ | Exacta | Frecuencia con el carro |
+|---|---|---|---|---|
+| Spark | −12.87 % | +6.44 % | **+7.13 %** | 59.18 kHz |
+| Kwid | −11.39 % | +5.70 % | **+6.23 %** | 58.69 kHz |
+
+La simulación numérica del oscilador con RK4 da +7.13 % para el Spark y confirma la fórmula exacta
+([03 · Métodos numéricos](03-metodos-numericos.md#39-el-oscilador-lc-del-detector)).
+
+### 2.10.5 El carro cruzando la espira
+
+Mientras el carro avanza, la fracción cubierta crece linealmente desde que la nariz entra hasta que la espira queda
+tapada, se mantiene constante y luego baja. La señal $-\Delta L/L$ tiene forma de trapecio. A 10 km/h, un Spark
+(3.64 m) sobre una espira de 1.8 m produce una señal que dura $(3.64 + 1.8)/2.78 = 2.0$ s. El detector necesita
+apenas unos milisegundos para medir la frecuencia, así que cada carro da miles de mediciones.
+
+### 2.10.6 Reconocer el carro
+
+La curva $\Delta L/L$ en función de la altura libre al piso es monótona: más bajo el carro, más cambio. Basta con
+invertirla: el detector mide $\Delta L/L$ (a partir de $f$), lee en la curva la altura que le corresponde y elige el
+carro de altura más parecida. Con los valores del modelo el Spark da 14.9 cm y el Kwid 18.0 cm. Entre 15 y 18 cm la
+pendiente de la curva es de unos 0.46 puntos de $\Delta L/L$ por centímetro.
+
+### 2.10.7 Análisis dimensional del caso del carro
+
+| Expresión | Unidades | Comprobación |
+|---|---|---|
+| $\mu_0 N^2 a\,[\ln(8a/r_w) - 2]$ | $\text{H/m}\cdot\text{m}$ = H (el logaritmo es adimensional) | ✓ |
+| $q/C$, $iR$, $L\,di/dt$ | V los tres | se pueden sumar en la malla ✓ |
+| $1/\sqrt{LC}$ | $1/\sqrt{\text{H}\cdot\text{F}} = 1/\sqrt{\text{s}^2}$ = s⁻¹ | ✓ |
+| $R/2L$ | $\Omega/\text{H}$ = s⁻¹ | tasa de amortiguamiento ✓ |
+| $Q = \omega_0 L/R$ | adimensional | ✓ |
