@@ -24,7 +24,7 @@ El selector de la parte superior cambia entre tema claro y oscuro.
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Caso: vehículo** | Espira de parqueadero de 1.8 m con un Chevrolet Spark GT o un Renault Kwid: datos de los carros, señal mientras cruzan a la velocidad elegida, $\Delta L/L$ frente a la altura del chasis y alerta de talanquera con el modelo reconocido |
+| **Caso: vehículo** | **Escena 3D** de la entrada del parqueadero: el carro llega, se detiene sobre la espira, el detector cambia de frecuencia y lo reconoce, y la talanquera se abre; con líneas de campo, corrientes de Foucault en el chasis, etiquetas de potencia, mini gráfica, tres cámaras y control de velocidad. Debajo, la espira de 1.8 m con un Chevrolet Spark GT o un Renault Kwid: datos de los carros, señal mientras cruzan a la velocidad elegida, $\Delta L/L$ frente a la altura del chasis y alerta de talanquera con el modelo reconocido |
 | **Modelo** | $\Delta L/L_0$ y $\Delta R$ frente a la distancia para todos los materiales, curva de detección con el umbral y la distancia de conmutación $S_n$, efecto de la frecuencia, ecuaciones del modelo |
 | **Respuesta temporal** | $i(t)$ exacta, RK4, Euler y SciPy. En alterna, la zona muerta del umbral; en DC, $i_{max}$, el 63 % en $t=\tau$ y el cambio del interruptor. Energía y potencia |
 | **Paso del objeto** | La pieza se acerca y se aleja: $d(t)$, $L(t)$, $i(t)$, envolvente demodulada, umbrales ON/OFF con histéresis y salida digital del sensor |
