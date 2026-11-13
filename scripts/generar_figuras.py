@@ -230,6 +230,31 @@ def fig_escenarios():
     guardar(fig, "escenarios-alcance.png")
 
 
+
+def fig_oscilador():
+    """Oscilador LC del detector: Euler frente a RK4 y el cambio de frecuencia con el Spark."""
+    from sensor import vehiculo as vh
+    e = vh.Espira()
+    r = vh.respuesta(e, vh.VEHICULOS["Chevrolet Spark GT"])
+    libre = vh.oscilador(e, pasos_por_periodo=40, periodos=30)
+    spark = vh.oscilador(e, r["dL_rel"], r["dR"], 40, 30)
+    euler = vh.oscilador(e, pasos_por_periodo=40, periodos=30, metodo="euler")
+    fig, ax = plt.subplots(1, 2, figsize=(10, 3.8))
+    k = 4 * 40 + 1
+    ax[0].plot(libre["t"][:k] * 1e6, libre["q"][:k] / libre["q"][0], color="#18181b", lw=1.8, label="RK4, sin carro (55.24 kHz)")
+    ax[0].plot(spark["t"][:k] * 1e6, spark["q"][:k] / spark["q"][0], color="#c62a2a", lw=1.8, label="RK4, con el Spark (59.18 kHz)")
+    ax[0].plot(euler["t"][:k] * 1e6, euler["q"][:k] / euler["q"][0], ":", color="#dc2626", lw=1.2, label="Euler, sin carro")
+    ax[0].set(xlabel="t (µs)", ylabel="q / q₀", title="Carga del capacitor del oscilador (Δt = T/40)")
+    ax[0].legend(fontsize=8, loc="lower left")
+    per = libre["t"] * libre["f_teorica"]
+    ax[1].semilogy(per, libre["energia"] / libre["energia"][0], color="#2563eb", lw=2, label="RK4")
+    ax[1].semilogy(per, euler["energia"] / euler["energia"][0], color="#dc2626", lw=2, label="Euler")
+    ax[1].semilogy(per, np.exp(-e.R0 / e.L0 * libre["t"]), "--", color="#a1a1aa", lw=1, label="exacta e^(−Rt/L)")
+    ax[1].set(xlabel="períodos", ylabel="energía / energía inicial", title="Energía del oscilador")
+    ax[1].legend(fontsize=8)
+    guardar(fig, "oscilador-lc.png")
+
+
 if __name__ == "__main__":
     print("Generando figuras en", SALIDA)
     fig_distancia()
@@ -241,3 +266,4 @@ if __name__ == "__main__":
     fig_dipolo()
     fig_energia()
     fig_escenarios()
+    fig_oscilador()
