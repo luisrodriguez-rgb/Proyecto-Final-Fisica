@@ -39,6 +39,7 @@
   .lab span { font-family:"JetBrains Mono", ui-monospace, Menlo, monospace; color:var(--warn); }
   .lab:after { content:""; position:absolute; left:50%; top:100%; width:1px; height:14px; background:var(--muted); }
   #hint { right:12px; top:12px; padding:6px 10px; font-size:11.5px; color:var(--muted); }
+  @media (max-width: 760px) { #chartbox, #hint { display:none; } #bar { max-width:calc(100% - 24px); } }
   #sinwebgl { position:absolute; inset:0; display:none; align-items:center; justify-content:center; font-size:14px; color:var(--muted); }
 </style>
 </head>
