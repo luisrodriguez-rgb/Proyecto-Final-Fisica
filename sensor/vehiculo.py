@@ -5,7 +5,8 @@ Una espira cuadrada de cable, enterrada unos centímetros en el pavimento, forma
 un carro se detiene o pasa encima, el chasis de acero (conductor y ferromagnético) se comporta como la placa del
 modelo de Dodd–Deeds: a la frecuencia de trabajo (decenas de kHz) la profundidad de penetración en el acero es de
 centésimas de milímetro, así que domina el apantallamiento por corrientes de Foucault y la inductancia de la
-espira BAJA. El oscilador sube su frecuencia,  f = 1 / (2 pi sqrt(L C))  =>  df/f = -dL/(2L).
+espira BAJA. El oscilador sube su frecuencia,  f = 1 / (2 pi sqrt(L C))  =>  f/f0 = (1 + dL/L0)^(-1/2)
+(para cambios pequeños, df/f ~ -dL/(2 L0); con un carro el cambio es grande y se usa la fórmula exacta).
 
 Modelo:
     - Espira cuadrada de lado s con N vueltas, representada por una espira circular de igual área,
@@ -95,7 +96,7 @@ def respuesta(esp: Espira, veh: dict, f: float | None = None) -> dict:
     dz = delta_Z_vehiculo(esp, veh["altura_piso"], f, eta)[0]
     dL = dz.imag / w
     return {"f": f, "cobertura": eta, "dL": dL, "dL_rel": dL / esp.L0, "dR": dz.real,
-            "df_rel": -0.5 * dL / esp.L0, "d": veh["altura_piso"] + esp.profundidad,
+            "df_rel": 1 / np.sqrt(1 + dL / esp.L0) - 1, "d": veh["altura_piso"] + esp.profundidad,
             "delta_acero_mm": ph.profundidad_penetracion(f, ACERO["sigma"], ACERO["mu_r"]) * 1e3}
 
 
@@ -116,8 +117,8 @@ def paso(esp: Espira, veh: dict, velocidad: float, f: float | None = None, n: in
     eta = cobertura(esp, veh, x)
     dz_full = delta_Z_vehiculo(esp, veh["altura_piso"], f, 1.0)[0]
     dL_rel = eta * dz_full.imag / (2 * np.pi * f) / esp.L0
-    return {"t": t, "x": x, "cobertura": eta, "dL_rel": dL_rel, "df_rel": -0.5 * dL_rel,
-            "f_osc": esp.f0 * (1 - 0.5 * dL_rel)}
+    df_rel = 1 / np.sqrt(1 + dL_rel) - 1
+    return {"t": t, "x": x, "cobertura": eta, "dL_rel": dL_rel, "df_rel": df_rel, "f_osc": esp.f0 * (1 + df_rel)}
 
 
 def identificar_vehiculo(esp: Espira, f: float, dL_rel_medido: float):
@@ -127,3 +128,41 @@ def identificar_vehiculo(esp: Espira, f: float, dL_rel_medido: float):
     h_est = float(alturas[k])
     nombre = min(VEHICULOS, key=lambda v: abs(VEHICULOS[v]["altura_piso"] - h_est))
     return nombre, h_est
+
+
+def oscilador(esp: Espira, dL_rel: float = 0.0, dR: float = 0.0, pasos_por_periodo: int = 40, periodos: int = 30,
+              metodo: str = "rk4", q0: float = 1e-7):
+    """Oscilador LC del detector (espira + capacitor), resuelto como sistema de primer orden.
+
+    Kirchhoff en la malla LC con la resistencia de la espira:
+        L di/dt + R i + q/C = 0,   i = dq/dt
+    =>  d/dt [q, i] = [i, -(R i + q/C) / L]
+
+    Se arranca con el capacitor cargado (q0) y se mide la frecuencia contando cruces por cero de q(t).
+    Devuelve t, q, i, la frecuencia medida, la frecuencia teórica amortiguada y la energía total en el tiempo.
+    """
+    from . import numerics as nm
+
+    L = esp.L0 * (1 + dL_rel)
+    R = esp.R0 + dR
+    C = esp.C
+
+    def f(t, y):
+        q, i = y
+        return np.array([i, -(R * i + q / C) / L])
+
+    w0 = 1 / np.sqrt(L * C)
+    wd = np.sqrt(max(w0**2 - (R / (2 * L)) ** 2, 0.0))
+    T = 2 * np.pi / wd
+    h = T / pasos_por_periodo
+    n = pasos_por_periodo * periodos
+    integrador = nm.rk4_sistema if metodo == "rk4" else nm.euler_sistema
+    t, y = integrador(f, [q0, 0.0], h, n)
+    q, i = y[:, 0], y[:, 1]
+    # cruces por cero de bajada, interpolados linealmente
+    idx = np.where((q[:-1] > 0) & (q[1:] <= 0))[0]
+    cruces = t[idx] + h * q[idx] / (q[idx] - q[idx + 1])
+    f_med = (len(cruces) - 1) / (cruces[-1] - cruces[0]) if len(cruces) > 2 else float("nan")
+    energia = 0.5 * L * i**2 + 0.5 * q**2 / C
+    return {"t": t, "q": q, "i": i, "f_medida": f_med, "f_teorica": wd / (2 * np.pi), "f0": w0 / (2 * np.pi),
+            "energia": energia, "h": h, "L": L, "R": R}

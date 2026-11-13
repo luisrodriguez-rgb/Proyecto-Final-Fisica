@@ -131,3 +131,20 @@ def test_datos_de_la_escena_3d():
         # las líneas de campo con el carro no pasan del chasis
         assert max(y for perfil in c["lineas"]["perfiles"] for _, y in perfil) <= c["altura_piso"] + 1e-3
     assert "/*__DATOS__*/" not in escena.html_escena(d)
+
+
+def test_oscilador_lc_del_detector():
+    from sensor import vehiculo as vh
+    e = vh.Espira()
+    libre = vh.oscilador(e, pasos_por_periodo=40, periodos=30)
+    # RK4 reproduce la frecuencia del oscilador amortiguado y la caída de energía e^{-R t / L}
+    assert libre["f_medida"] == pytest.approx(libre["f_teorica"], rel=1e-4)
+    t_fin = libre["t"][-1]
+    assert libre["energia"][-1] / libre["energia"][0] == pytest.approx(np.exp(-e.R0 / e.L0 * t_fin), rel=0.05)
+    # con el Spark encima, el cambio de frecuencia simulado coincide con la fórmula exacta (1 + ΔL/L)^(-1/2)
+    r = vh.respuesta(e, vh.VEHICULOS["Chevrolet Spark GT"])
+    con = vh.oscilador(e, r["dL_rel"], r["dR"], 40, 30)
+    assert con["f_medida"] / libre["f_medida"] - 1 == pytest.approx(r["df_rel"], rel=2e-3)
+    # Euler explícito es inestable en un oscilador: la energía crece aunque haya resistencia
+    euler = vh.oscilador(e, pasos_por_periodo=40, periodos=30, metodo="euler")
+    assert euler["energia"][-1] > 10 * euler["energia"][0]
