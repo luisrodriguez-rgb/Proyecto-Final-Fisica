@@ -31,11 +31,53 @@ deflexión) pide su propia física, aquí cada etapa del sensor pide solo la mat
 | Velocidad de engranajes | Paso de cada diente | Frecuencia de conmutación |
 | Validadores de monedas | Aleación y tamaño de la moneda | Identificación |
 
-**Contexto de inicio elegido:** una línea de producción de autopartes por la que pasan piezas de distintos
-metales. Es el ejemplo que propuso el profesor y reúne las dos tareas de la detección: saber **qué** metal es y
-**a qué distancia** está.
+**Contexto de inicio elegido: el carro.** El profesor propuso trabajar con un vehículo y comparar dos modelos,
+un **Chevrolet Spark GT** y un **Renault Kwid**. Como un sensor inductivo detecta metal, el caso físicamente
+coherente es una **espira inductiva en el piso** de la entrada de un parqueadero (o de un semáforo), que detecta el
+chasis de acero del carro, reconoce cuál de los dos es y abre la talanquera.
+
+Se conserva un **segundo escenario**, la línea de autopartes con piezas de distintos metales (el primer ejemplo
+del profesor), para mostrar la identificación del **material**. El carro muestra la identificación por
+**distancia** (altura al piso). Entre los dos se cubren las dos tareas de la detección.
 
 ## 0.2 Caso específico de estudio
+
+### Caso principal: espira de parqueadero y dos carros
+
+Una espira cuadrada de 1.8 m de lado (6 × 6 pies, la medida más común), con 3 vueltas de alambre 14 AWG, va
+enterrada 5 cm en el pavimento. Forma parte de un oscilador LC. Un carro se detiene encima.
+
+| Dato | Chevrolet Spark GT | Renault Kwid |
+|---|---|---|
+| Largo × ancho | 3.635 × 1.597 m | 3.680 × 1.586 m |
+| Alto | 1.522 m | 1.474 m |
+| Distancia entre ejes | 2.375 m | 2.423 m |
+| Peso en vacío | 966 kg | 785 kg |
+| **Altura libre al piso** | **15 cm** (fuentes: 15 – 17 cm) | **18 cm** (fuentes: 17.2 – 18.5 cm) |
+
+Las fichas técnicas no coinciden del todo; se usa el valor central y se reporta el rango (ver fuentes al final).
+
+**Requisitos del sistema (contexto de impacto):**
+
+1. Detectar que hay un carro sobre la espira.
+2. Reconocer si es un Spark o un Kwid.
+3. Abrir la talanquera y registrar el modelo.
+4. Funcionar a la velocidad de entrada a un parqueadero (5 – 20 km/h).
+
+**Resultado del modelo** (oscilador a 55 kHz):
+
+| | Spark | Kwid |
+|---|---|---|
+| Distancia chasis–espira | 20 cm | 23 cm |
+| Fracción de la espira tapada | 89 % | 88 % |
+| $\Delta L/L_0$ | −12.9 % | −11.4 % |
+| Cambio de frecuencia del oscilador | +3.6 kHz | +3.1 kHz |
+| Altura estimada desde la señal | 14.9 cm ✓ | 18.0 cm ✓ |
+
+El Spark, más bajo, cambia más la inductancia. Esa diferencia permite reconocerlo. Simulador: pestaña
+**Caso: vehículo**. Código: [`sensor/vehiculo.py`](../sensor/vehiculo.py).
+
+### Segundo escenario: línea de autopartes
 
 Una banda transportadora lleva piezas mezcladas bajo un sensor fijo:
 
@@ -60,12 +102,15 @@ Sensor de referencia: bobina de 150 espiras, radio 15 mm, longitud 20 mm, $R_0 =
 
 ## 0.3 Descripción del proceso, etapa por etapa
 
-| Etapa | Qué pasa físicamente |
+| Etapa | Qué pasa físicamente (carro sobre la espira) |
 |---|---|
-| **D · Detección** | La bobina crea un campo magnético variable alrededor de su cara activa. Cuando una pieza entra en ese campo, el sistema debe decidir qué material es y a qué distancia está. |
-| **E · Emisiones** | La pieza responde al campo: en ella se inducen corrientes de Foucault (y, si es ferromagnética, se magnetiza). Esas corrientes crean su propio campo, que vuelve a la bobina y cambia su corriente. Esa respuesta es la "emisión" que el sensor mide. |
-| **P · Propiedades** | La respuesta depende de la **frecuencia** (que fija la profundidad de penetración), de la **energía** guardada en el campo y de la **potencia** que la pieza absorbe. Estas propiedades llevan la información del material y de la distancia. |
-| **A · Alerta** | El sistema compara la medición con lo que esperaría de cada material y entrega una alerta: material, distancia y, si corresponde, aviso de impureza. |
+| **D · Detección** | La espira crea un campo magnético que sube desde el pavimento. Cuando el carro se detiene encima, el sistema debe decidir si hay un carro y cuál de los dos es; la distancia que importa es la altura del chasis. |
+| **E · Emisiones** | El chasis de acero responde: en su cara inferior se inducen corrientes de Foucault que crean un campo opuesto (Lenz). Parte del flujo de la espira queda bloqueado y su inductancia baja. |
+| **P · Propiedades** | A la **frecuencia** del oscilador (55 kHz) el campo entra apenas 0.09 mm en el acero, así que domina el apantallamiento y la magnetización casi no cuenta. La **potencia** que absorbe el chasis y el cambio de **energía** guardada en la espira dependen de la altura del chasis. |
+| **A · Alerta** | Al bajar $L$, la frecuencia del oscilador $f = 1/2\pi\sqrt{LC}$ sube. Si el cambio supera el umbral, se abre la talanquera; la magnitud del cambio da la altura y, con ella, el modelo del carro. |
+
+En el segundo escenario (autopartes) el proceso es el mismo con una bobina pequeña y piezas a milímetros: la
+**fase** del cambio identifica el material y la **magnitud** la distancia (secciones 0.4 y 0.5).
 
 ---
 
@@ -182,7 +227,17 @@ Detalle: [01 · Fundamentación física](01-fundamentacion-fisica.md#14-ecuacion
 
 ## 0.7 A · Alerta: sistema de detección
 
-La alerta se construye en tres pasos:
+**En el carro.** El detector de espira es un oscilador LC. Al bajar la inductancia sube la frecuencia:
+
+$$f = \frac{1}{2\pi\sqrt{LC}}\quad\Rightarrow\quad \frac{\Delta f}{f} \approx -\frac{1}{2}\frac{\Delta L}{L}.$$
+
+El detector compara la frecuencia con la que tenía sin carro. Si el cambio supera la sensibilidad configurada
+(los equipos comerciales trabajan entre 0.01 % y 1 % de $\Delta L/L$), activa la salida: la talanquera se abre.
+La magnitud del cambio se convierte en altura del chasis con la curva $\Delta L/L$(altura) y se elige el carro de
+altura más parecida. Cuando el carro cruza, la señal sube mientras tapa la espira y baja cuando sale; su duración
+depende del largo del carro y de la velocidad.
+
+**En la línea de autopartes.** La alerta se construye en tres pasos:
 
 1. **¿Hay pieza?** La amplitud cambia más que el umbral: $\lvert I_p - I_{p,0}\rvert / I_{p,0} \ge$ umbral
    (2 %). Un comparador con **histéresis** evita que la salida parpadee cuando la pieza está en el límite.
@@ -220,6 +275,14 @@ Evaluación con el simulador: 40 piezas de cada material a distancias aleatorias
 
 ## 0.9 Impacto
 
+- **Parqueaderos y semáforos:** la espira detecta el carro sin cámaras y sin piezas móviles, bajo la lluvia o de
+  noche. Reconocer el tipo de vehículo permite cobrar tarifas distintas o contar el tránsito por clase.
+- **Límite del caso del carro:** el Spark y el Kwid se diferencian en solo 1.5 puntos de $\Delta L/L$. La carga
+  (pasajeros o baúl lleno) baja el carro un par de centímetros y puede confundirlos; para un reconocimiento
+  robusto habría que sumar el largo del carro (duración de la señal con dos espiras) o el peso.
+- **Valores del modelo:** el chasis se trata como una placa plana, así que los cambios calculados son una cota
+  superior; los detectores reales reportan cambios de pocos por ciento.
+
 - **Clasificación automática:** un solo sensor puede separar tornillos de acero, cables de cobre y conectores de
   latón en la misma banda.
 - **Control de calidad:** una pieza con la aleación equivocada deja un residuo alto y genera una alerta.
@@ -232,10 +295,22 @@ Análisis completo: [06 · Validación e impacto](06-validacion-e-impacto.md).
 
 | Etapa | Documento | Código | Pestaña del simulador |
 |---|---|---|---|
-| Insumos y caso de estudio | este documento | – | Identificación |
+| Insumos y caso de estudio | este documento | `sensor/vehiculo.py` | Caso: vehículo, Identificación |
 | D · Detección | [01](01-fundamentacion-fisica.md), [02](02-modelamiento-analitico.md) | `sensor/physics.py` | Modelo |
 | E · Emisiones | este documento, sección 0.5 | `sensor/identificacion.py` | Identificación |
 | P · Propiedades (Maxwell) | [01](01-fundamentacion-fisica.md), [02](02-modelamiento-analitico.md) | `sensor/physics.py`, `sensor/symbolic.py` | Campo, Derivación |
 | A · Alerta | este documento, sección 0.7 | `sensor/numerics.py` (comparador), `sensor/identificacion.py` | Paso del objeto, Identificación |
 | Simulación numérica | [03](03-metodos-numericos.md) | `sensor/numerics.py` | Respuesta temporal, Validación |
 | Solución e impacto | [06](06-validacion-e-impacto.md) | – | Análisis, Identificación |
+
+## Fuentes de los datos de los carros
+
+- Ficha técnica del Spark GT (Renting Colombia): largo, alto, entre ejes y peso.
+  https://renting.rentingcolombia.com/hubfs/(RPN)%20Renting%20Persona%20Natural/Fichas%20tecnicas%20autos%20/Ficha%20tecnica%20Spark%20GT.pdf
+- Altura libre al piso del Spark (2010–2014): https://cars-data.com/en/chevrolet/spark/dimensions ; otra fuente da
+  17 cm: https://www.91wheels.com/faqs/what-is-the-ground-clearance-of-chevrolet-spark/217164
+- Renault Kwid 1.0 (ficha de Autocosmos Perú, origen Colombia): largo, ancho, alto, peso y 180 mm de altura libre.
+  https://www.autocosmos.com.pe/catalogo/comparar?v1=169660&v2=169662
+- Kwid E-Tech en Colombia, 172 mm de altura libre: https://noticias.autocosmos.com.co/2025/10/20/renault-kwid-e-tech-2026-llega-a-colombia-escala-en-diseno-tecnologia-y-seguridad
+- Espiras de detección de vehículos (tamaños, vueltas, frecuencias): FHWA, *Traffic Detector Handbook*,
+  https://www.fhwa.dot.gov/publications/research/operations/its/06139/appendc.cfm
