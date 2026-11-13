@@ -57,7 +57,7 @@ documento impreso y de la presentación.
 | Corrientes de Foucault | Anillos que brillan en la cara inferior del chasis, con intensidad proporcional a la cobertura |
 | Detector | Caja en un poste con pantalla: $L$, $f$, $\Delta f$ y el modelo reconocido |
 | Talanquera | Se levanta cuando la señal supera el umbral |
-| Etiquetas | Al estilo de la referencia: "Espira: 83 µH", "Chasis absorbe X mW", "Oscilador: 55.2 → 58.8 kHz" |
+| Etiquetas | Al estilo de la referencia: "Espira: 83 µH", "Chasis absorbe X mW", "Oscilador: 55.2 → 59.2 kHz" |
 | Gráfica en vivo | Mini gráfica de $-\Delta L/L$ que avanza con el carro |
 
 ### Controles

@@ -367,7 +367,7 @@ const screen = [
   `<path class="cs-screen" d="${faceQuad(SCR.u + 0.6, SCR.v + 0.6, SCR.u + SCR.w - 0.6, SCR.v + SCR.h - 0.6)}"/>`,
   Ln(faceQuad(SCR.u, SCR.v, SCR.u + SCR.w, SCR.v + SCR.h), { tone: "lo" }),
   `<g transform="${faceM}"><clipPath id="cs-scr"><rect x="${SCR.u + 0.6}" y="${SCR.v + 0.6}" width="${SCR.w - 1.2}" height="${SCR.h - 1.2}"/></clipPath>` +
-    `<g clip-path="url(#cs-scr)"><text class="cs-digits" data-part="screen-f" x="${SCR.u + SCR.w - 1.6}" y="${SCR.v + 5.6}" font-size="4.4" text-anchor="end">58.8</text>` +
+    `<g clip-path="url(#cs-scr)"><text class="cs-digits" data-part="screen-f" x="${SCR.u + SCR.w - 1.6}" y="${SCR.v + 5.6}" font-size="4.4" text-anchor="end">59.2</text>` +
     `<text class="cs-digits cs-small" data-part="screen-u" x="${SCR.u + 1.6}" y="${SCR.v + 7.9}" font-size="1.7">kHz · ΔL −12.9%</text>` +
     `<text class="cs-digits cs-small" data-part="screen-car" x="${SCR.u + 1.6}" y="${SCR.v + 2.5}" font-size="1.6">SPARK</text></g></g>`,
   Dots([at([BOX.x + 6, front, BOX_Z + 7]), at([BOX.x + 9.5, front, BOX_Z + 7])], { size: 0.85, tone: "hi" }),
@@ -511,7 +511,7 @@ const body =
       { mark: "edge", label: "Líneas de campo de la espira en el plano del corte" },
     ],
     caption:
-      `Espira cuadrada de ${ESPIRA.lado / 100} m con ${ESPIRA.vueltas} vueltas de alambre 14 AWG en una ranura de ${ESPIRA.ranura.ancho * 10} mm × ${ESPIRA.ranura.profundidad} cm, sellada; el par trenzado sube por la caja de paso al detector LC. Sin carro, L₀ = ${ESPIRA.L0_uH.toFixed(1)} µH y el oscilador marca ${ESPIRA.f0_kHz.toFixed(1)} kHz. El acero no deja entrar el campo: la inductancia baja y la frecuencia sube, más cuanto más bajo va el piso (Spark −12.9 %, 58.8 kHz; Kwid −11.4 %, 58.4 kHz). Pavimento, espira y alturas a escala; el ancho de la ranura, los alambres y el espesor de la lámina están ampliados, y las corrientes, que circulan por la cara inferior, se dibujan sobre la cara visible.`,
+      `Espira cuadrada de ${ESPIRA.lado / 100} m con ${ESPIRA.vueltas} vueltas de alambre 14 AWG en una ranura de ${ESPIRA.ranura.ancho * 10} mm × ${ESPIRA.ranura.profundidad} cm, sellada; el par trenzado sube por la caja de paso al detector LC. Sin carro, L₀ = ${ESPIRA.L0_uH.toFixed(1)} µH y el oscilador marca ${ESPIRA.f0_kHz.toFixed(1)} kHz. El acero no deja entrar el campo: la inductancia baja y la frecuencia sube, más cuanto más bajo va el piso (Spark −12.9 %, 59.2 kHz; Kwid −11.4 %, 58.7 kHz). Pavimento, espira y alturas a escala; el ancho de la ranura, los alambres y el espesor de la lámina están ampliados, y las corrientes, que circulan por la cara inferior, se dibujan sobre la cara visible.`,
     body: `<div class="iso-stage cs-stage" tabindex="0" role="switch" aria-label="Corte de la espira. Flechas izquierda y derecha, o espacio, cambian entre el Spark y el Kwid" aria-valuetext="${lectura(CARROS[0])}">${svg}</div>`,
   });
 
