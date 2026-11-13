@@ -30,7 +30,7 @@ ACERO = ph.MATERIALES["Acero al carbono (ferromagnético)"]
 VEHICULOS: dict[str, dict] = {
     "Chevrolet Spark GT": {
         "largo": 3.635, "ancho": 1.597, "alto": 1.522, "altura_piso": 0.150, "rango_altura": (0.150, 0.170),
-        "entre_ejes": 2.375, "peso": 966, "color": "#d94f30",
+        "entre_ejes": 2.375, "peso": 966, "color": "#c62a2a",
     },
     "Renault Kwid": {
         "largo": 3.680, "ancho": 1.586, "alto": 1.474, "altura_piso": 0.180, "rango_altura": (0.172, 0.185),

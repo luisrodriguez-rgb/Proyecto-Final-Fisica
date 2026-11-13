@@ -120,11 +120,9 @@ ASSETS = Path(__file__).resolve().parents[1] / "assets"
 
 def html_escena(datos: dict) -> str:
     """Página completa de la escena, con Three.js y los datos incrustados (funciona sin internet)."""
-    plantilla = (ASSETS / "escena3d.html").read_text(encoding="utf-8")
-    three = (ASSETS / "three" / "three.min.js").read_text(encoding="utf-8")
-    orbit = (ASSETS / "three" / "OrbitControls.js").read_text(encoding="utf-8")
-    room = (ASSETS / "three" / "RoomEnvironment.js").read_text(encoding="utf-8")
-    return (plantilla.replace("/*__THREE__*/", three)
-            .replace("/*__ORBIT__*/", orbit)
-            .replace("/*__ROOM__*/", room)
-            .replace("/*__DATOS__*/", json.dumps(datos)))
+    leer = lambda *p: (ASSETS.joinpath(*p)).read_text(encoding="utf-8")
+    return (leer("escena3d.html")
+            .replace("/*__THREE__*/", leer("three", "three.min.js"))
+            .replace("/*__ORBIT__*/", leer("three", "OrbitControls.js"))
+            .replace("/*__DATOS__*/", json.dumps(datos))
+            .replace("/*__JS__*/", leer("escena3d.js")))
