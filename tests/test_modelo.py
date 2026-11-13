@@ -116,3 +116,18 @@ def test_espira_y_carros():
     for nombre, v in vh.VEHICULOS.items():
         r = vh.respuesta(e, v)
         assert vh.identificar_vehiculo(e, e.f0, r["dL_rel"])[0] == nombre
+
+
+def test_datos_de_la_escena_3d():
+    import json
+    from sensor import escena, vehiculo as vh
+    e = vh.Espira()
+    d = escena.escena_datos(e, 1.0, "Renault Kwid", "Claro")
+    json.dumps(d)
+    for nombre, c in d["carros"].items():
+        # la señal de la escena coincide con el modelo: máximo con el carro centrado
+        assert min(c["dL_rel"]) == pytest.approx(vh.respuesta(e, vh.VEHICULOS[nombre])["dL_rel"], rel=1e-3)
+        assert c["reconocido"] == nombre
+        # las líneas de campo con el carro no pasan del chasis
+        assert max(y for perfil in c["lineas"]["perfiles"] for _, y in perfil) <= c["altura_piso"] + 1e-3
+    assert "/*__DATOS__*/" not in escena.html_escena(d)
