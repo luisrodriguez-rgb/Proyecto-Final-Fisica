@@ -100,3 +100,19 @@ def test_impureza_aumenta_el_residuo():
     r_puro = idf.residuo_relativo(puro, idf.identificar(puro, refs)[2])
     r_impuro = idf.residuo_relativo(impuro, idf.identificar(impuro, refs)[2])
     assert r_impuro > 4 * r_puro
+
+
+def test_espira_y_carros():
+    from sensor import vehiculo as vh
+    e = vh.Espira()
+    # inductancia de una espira de 6 x 6 pies con 3 vueltas: del orden de 70 – 90 µH
+    assert 60e-6 < e.L0 < 100e-6
+    spark = vh.respuesta(e, vh.VEHICULOS["Chevrolet Spark GT"])
+    kwid = vh.respuesta(e, vh.VEHICULOS["Renault Kwid"])
+    # el chasis de acero baja la inductancia y sube la frecuencia del oscilador
+    assert spark["dL_rel"] < 0 and spark["df_rel"] > 0
+    # el Kwid es más alto: menor cambio
+    assert abs(kwid["dL_rel"]) < abs(spark["dL_rel"])
+    for nombre, v in vh.VEHICULOS.items():
+        r = vh.respuesta(e, v)
+        assert vh.identificar_vehiculo(e, e.f0, r["dL_rel"])[0] == nombre
