@@ -24,6 +24,8 @@ from sensor import identificacion as idf
 from sensor import numerics as nm
 from sensor import physics as ph
 from sensor import vehiculo as vh
+from sensor import escena as esc
+import streamlit.components.v1 as components
 from sensor.symbolic import derivar
 
 st.set_page_config(page_title="SEMP · Sensor de proximidad", page_icon=":material/sensors:", layout="wide")
@@ -170,6 +172,12 @@ ui.stats(
 tabs = st.tabs(["Caso: vehículo", "Modelo", "Respuesta temporal", "Paso del objeto", "Identificación", "Campo",
                 "Validación", "Derivación", "Análisis"])
 
+@st.cache_data(show_spinner=False)
+def escena_cache(lado, vueltas, prof_cm, sens_pct, carro, tema):
+    espira = vh.Espira(lado=lado, N=vueltas, profundidad=prof_cm / 100)
+    return esc.html_escena(esc.escena_datos(espira, sens_pct, carro, tema))
+
+
 # ============================================================================
 # 0. CASO DE ESTUDIO: VEHÍCULO SOBRE UNA ESPIRA EN EL PISO
 # ============================================================================
@@ -208,6 +216,9 @@ with tabs[0]:
         estado=(detecta, f"Talanquera abierta: {est.split(' ')[1] if ' ' in est else est}" if detecta
                 else "Sin vehículo", f"altura estimada {h_est*100:.1f} cm" if detecta else f"umbral {sens_pct:.1f} %"),
     )
+    ui.seccion("Escena 3D", "El carro llega, se detiene sobre la espira, el detector lo reconoce y la talanquera se "
+               "abre. Todos los números de la escena salen del modelo de Python.")
+    components.html(escena_cache(lado, vueltas, prof_cm, sens_pct, carro, tema or "Claro"), height=640)
     c1, c2 = st.columns(2, gap="large")
     with c1:
         fig = go.Figure()
