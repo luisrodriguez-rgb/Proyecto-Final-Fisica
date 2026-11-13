@@ -7,19 +7,26 @@ El enunciado, la guía con la rúbrica y la [orientación del profesor](enunciad
 **Empieza por [00 · Modelo teórico y formalismo (D.E.P.A.)](00-modelo-teorico-depa.md)**: es el esqueleto que pidió
 el profesor (insumos, detección, emisiones, propiedades, alerta y solución) y remite a los demás documentos.
 
+**Caso principal:** espira de parqueadero que reconoce un Chevrolet Spark GT o un Renault Kwid por la altura de su
+chasis. **Segundo escenario:** bobina de una línea de autopartes que identifica el metal de cada pieza. En cada
+documento, las secciones del carro van primero (o en una sección propia, como la 2.10 y la 3.9).
+
 ## Índice por criterio
 
 | Criterio | Peso | Documento | Código | Pestaña del simulador |
 |---|---|---|---|---|
-| Esqueleto del proyecto (orientación del profesor) | – | [00 · Modelo teórico D.E.P.A.](00-modelo-teorico-depa.md) | `sensor/identificacion.py` | Identificación |
-| Fundamentación física | 15 % | [01 · Fundamentación física](01-fundamentacion-fisica.md) | `sensor/physics.py` | Modelo, Campo |
-| Modelamiento analítico | 20 % | [02 · Modelamiento analítico](02-modelamiento-analitico.md) | `sensor/symbolic.py`, `sensor/physics.py` | Derivación, Modelo |
-| Métodos numéricos | 20 % | [03 · Métodos numéricos](03-metodos-numericos.md) | `sensor/numerics.py`, `tests/` | Respuesta temporal, Validación |
+| Esqueleto del proyecto (orientación del profesor) | – | [00 · Modelo teórico D.E.P.A.](00-modelo-teorico-depa.md) | `sensor/vehiculo.py`, `sensor/identificacion.py` | Caso: vehículo, Identificación |
+| Fundamentación física | 15 % | [01 · Fundamentación física](01-fundamentacion-fisica.md) (carro: 1.12) | `sensor/physics.py` | Caso: vehículo, Modelo, Campo |
+| Modelamiento analítico | 20 % | [02 · Modelamiento analítico](02-modelamiento-analitico.md) (carro: 2.10) | `sensor/vehiculo.py`, `sensor/symbolic.py`, `sensor/physics.py` | Caso: vehículo, Derivación, Modelo |
+| Métodos numéricos | 20 % | [03 · Métodos numéricos](03-metodos-numericos.md) (oscilador del carro: 3.9) | `sensor/numerics.py`, `sensor/vehiculo.py`, `tests/` | Caso: vehículo, Respuesta temporal, Validación |
 | Programación | 10 % | [04 · Programación](04-programacion.md) | todo el repositorio | – |
-| Simulación | 15 % | [05 · Simulación](05-simulacion.md) | `app.py`, `ui.py` | todas |
+| Simulación | 15 % | [05 · Simulación](05-simulacion.md) | `app.py`, `ui.py`, `sensor/escena.py`, `assets/escena3d.js`, `figuras-anatomy/` | todas |
 | Validación e impacto | 10 % | [06 · Validación e impacto](06-validacion-e-impacto.md) | `scripts/generar_figuras.py` | Análisis |
 | Sustentación | 10 % | [07 · Sustentación](07-sustentacion.md) | – | demostración en vivo |
 | Uso de IAG (sección 6 de la guía) | – | [08 · Uso de IAG](08-uso-de-iag.md) | – | – |
+
+Material de apoyo: [plan del simulador 3D](plan-simulador-3d.md), [prompts de imágenes](prompts-imagenes.md),
+[imágenes generadas con IA](figuras/ia/README.md) y [figura de Anatomy](../figuras-anatomy/README.md).
 
 ## Relación con la estructura de entrega de la guía (sección 4)
 
@@ -34,7 +41,7 @@ el profesor (insumos, detección, emisiones, propiedades, alerta y solución) y 
 
 | Tema de clase | Cómo se usa en el proyecto |
 |---|---|
-| Circuito RC: Kirchhoff, convención de signos, separación de variables, τ y 63 % | Misma deducción para la bobina (2.3.1 – 2.3.3) y modo **Escalón DC** del simulador |
+| Circuito RC: Kirchhoff, convención de signos, separación de variables, τ y 63 % | Misma deducción para la bobina (2.3.1 – 2.3.3) y modo **Escalón DC** del simulador; la malla LC del detector une capacitor y bobina (2.10.3) |
 | Ley de Gauss: flujo $\Phi = \vec E\cdot\vec A$ | Flujo magnético $\Phi_B = \vec B\cdot\vec A$ para deducir $L$ (2.2) y Gauss magnética en las condiciones de frontera (1.5) |
 | Capacitancia $C = Q/\Delta V$ y campos en la materia | Inductancia $L = \Lambda/i$ y respuesta de conductores y ferromagnéticos (1.1, 2.4) |
 | Pantallas táctiles capacitivas: detección por $\Delta C$ | Detección por $\Delta L$ (1.1, 7.2) |
