@@ -62,7 +62,7 @@ Otros hallazgos:
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Caso: vehículo** | Espira de parqueadero con un Spark o un Kwid: señal al cruzar, cambio de inductancia según la altura del chasis y alerta de talanquera |
+| **Caso: vehículo** | **Escena 3D** del parqueadero (Three.js): el carro se detiene sobre la espira, el detector lo reconoce y la talanquera se abre, con líneas de campo y corrientes de Foucault. Además, señal al cruzar, cambio de inductancia según la altura del chasis y alerta de talanquera |
 | **Modelo** | Inductancia y resistencia efectivas frente a la distancia para cinco materiales, curva de detección con el umbral y efecto de la frecuencia |
 | **Respuesta temporal** | Corriente en el tiempo con la solución exacta, RK4, Euler y SciPy; en modo DC, la curva del 63 % |
 | **Paso del objeto** | Una pieza que pasa por una banda transportadora y la salida ON/OFF del sensor, con histéresis |

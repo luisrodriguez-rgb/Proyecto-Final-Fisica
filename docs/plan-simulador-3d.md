@@ -1,5 +1,8 @@
 # Plan: simulador 3D del caso del carro
 
+> **Estado:** la escena 3D está hecha (`assets/escena3d.html`, `sensor/escena.py`) y se ve en la pestaña
+> **Caso: vehículo**. La figura de Anatomy está en construcción en `figuras-anatomy/`.
+
 ## Objetivo
 
 Que el simulador se vea como un sistema real y no solo como gráficas. El profesor pidió probar dos carros (un
