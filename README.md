@@ -1,13 +1,16 @@
 # Simulador de sensor electromagnético de proximidad
 
-**SEMP** · Proyecto final de **Electromagnetismo**: diseño y simulación de un sensor electromagnético de
-proximidad, el dispositivo que en las líneas de producción detecta piezas metálicas sin tocarlas.
+**SEMP** · Proyecto final de **Electromagnetismo**: diseño y simulación de sensores electromagnéticos de
+proximidad.
 
-El simulador modela una bobina alimentada con corriente cuyo campo magnético induce **corrientes de Foucault**
-en una pieza cercana. Esas corrientes, por la ley de Lenz, cambian la inductancia y la resistencia de la bobina, y
-con ellas la corriente del circuito. El sensor compara esa corriente con la que habría sin pieza y se activa
-cuando la diferencia supera un umbral. Además, por la fase y la magnitud de ese cambio, identifica **de qué metal**
-es la pieza y **a qué distancia** está.
+**Caso principal: el carro.** Una espira enterrada en la entrada de un parqueadero forma, con un capacitor, un
+oscilador LC. Cuando un carro se detiene encima, el campo de la espira induce **corrientes de Foucault** en el chasis
+de acero; por la ley de Lenz esas corrientes se oponen al campo, la inductancia de la espira baja y el oscilador sube
+de frecuencia. El detector abre la talanquera y, por cuánto cambió la frecuencia, reconoce si el carro es un
+**Chevrolet Spark GT** (59.18 kHz) o un **Renault Kwid** (58.69 kHz), que se diferencian en la altura del chasis.
+
+**Segundo escenario:** una bobina pequeña en una línea de autopartes que, por la fase y la magnitud del cambio de
+impedancia, identifica **de qué metal** es cada pieza y **a qué distancia** está.
 
 ![Escena 3D del simulador: un Spark detenido sobre la espira al atardecer](docs/figuras/escena-3d-spark-atardecer.png)
 
@@ -26,7 +29,7 @@ El proyecto sigue el esqueleto propuesto por el profesor ([orientación](docs/en
 | **E · Emisiones** | El chasis de acero responde con corrientes de Foucault que bajan la inductancia de la espira |
 | **P · Propiedades** | Frecuencia del oscilador (55 kHz, δ = 0.09 mm en el acero), potencia y energía; solo Faraday y Ampère |
 | **A · Alerta** | El oscilador sube su frecuencia; si supera el umbral se abre la talanquera y se registra el modelo |
-| **Solución** | Spark: ΔL/L = −12.9 %, Kwid: −11.4 %; cada carro se reconoce por su altura estimada |
+| **Solución** | Spark: ΔL/L = −12.9 % → 59.18 kHz; Kwid: −11.4 % → 58.69 kHz; cada carro se reconoce por su altura estimada (14.9 y 18.0 cm) |
 
 Detalle en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md).
 
@@ -39,14 +42,22 @@ Detalle en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md).
   de tiempo τ = L/R y el 63 % en t = τ, tanto al energizar con corriente continua como con alimentación alterna.
 - **Euler y Runge–Kutta 4 programados a mano**, comparados con la solución exacta y con SciPy. Los órdenes de
   convergencia medidos son 1.01 y 4.02, frente a los teóricos 1 y 4.
-- **Simulador interactivo** en el navegador, donde se cambian las espiras, la frecuencia, la distancia y el
-  material, y se ven la señal de salida y el umbral de detección.
+- **Oscilador LC del detector** resuelto con Euler y RK4 como sistema de dos ecuaciones. RK4 reproduce la frecuencia
+  y la pérdida de energía; Euler es inestable en un oscilador con cualquier paso. La simulación mostró que el cambio
+  de frecuencia con un carro sigue la fórmula exacta $(1+\Delta L/L)^{-1/2}$ y no la aproximación lineal.
+- **Simulador interactivo** en el navegador: escena 3D del parqueadero con los dos carros, figura del corte del
+  detector hecha con Anatomy y, para la bobina de autopartes, control de espiras, frecuencia, distancia y material.
 
 ## Resultados principales
 
 | Resultado | Valor |
 |---|---|
-| Inductancia de la bobina de referencia (150 espiras, radio 15 mm) | 0.60 mH |
+| Inductancia de la espira de parqueadero (1.8 m, 3 vueltas) y frecuencia del oscilador | 83.0 µH, 55.25 kHz |
+| Cambio de inductancia con el Spark (15 cm) / con el Kwid (18 cm) | −12.9 % / −11.4 % |
+| Frecuencia del oscilador con el Spark / con el Kwid | 59.18 kHz / 58.69 kHz |
+| Profundidad de penetración en el chasis de acero a 55 kHz | 0.087 mm |
+| Energía del oscilador con Euler (40 pasos por período, 30 períodos) | crece 10¹¹ veces: inestable |
+| Inductancia de la bobina de autopartes (150 espiras, radio 15 mm) | 0.60 mH |
 | Cambio de inductancia con cobre a 5 mm / con acero a 5 mm | −8.5 % / +5.5 % |
 | Alcance de detección con cobre (umbral del 2 %) | 6.1 mm |
 | Profundidad de penetración en cobre a 1 kHz | 2.1 mm |
@@ -55,6 +66,10 @@ Detalle en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md).
 
 Otros hallazgos:
 
+- A 55 kHz el chasis de acero **baja** la inductancia aunque el acero sea magnético: el campo entra apenas 0.087 mm y
+  dominan las corrientes de Foucault.
+- La espira distingue mejor los dos carros cuando mide entre 1.5 y 1.8 m, del tamaño del carro. Un Kwid cargado que
+  baje 2 cm se confunde con un Spark.
 - El **acero** aumenta la inductancia a baja frecuencia porque se magnetiza, y la disminuye a alta frecuencia.
   Cerca de 20 kHz los dos efectos se cancelan y el sensor no lo detecta (**frecuencia ciega**).
 - El **alcance** es del orden del radio de la bobina, porque de lejos la bobina es un dipolo magnético cuyo campo
@@ -66,7 +81,7 @@ Otros hallazgos:
 
 | Pestaña | Qué muestra |
 |---|---|
-| **Caso: vehículo** | **Escena 3D** del parqueadero (Three.js): el carro se detiene sobre la espira, el detector lo reconoce y la talanquera se abre, con líneas de campo y corrientes de Foucault. Además, señal al cruzar, cambio de inductancia según la altura del chasis y alerta de talanquera |
+| **Caso: vehículo** | **Escena 3D** del parqueadero (Three.js): el carro se detiene sobre la espira, el detector lo reconoce y la talanquera se abre, con líneas de campo y corrientes de Foucault. Además: señal al cruzar, cambio de inductancia según la altura del chasis, **oscilador LC con Euler y RK4** y la **figura del corte** hecha con Anatomy |
 | **Modelo** | Inductancia y resistencia efectivas frente a la distancia para cinco materiales, curva de detección con el umbral y efecto de la frecuencia |
 | **Respuesta temporal** | Corriente en el tiempo con la solución exacta, RK4, Euler y SciPy; en modo DC, la curva del 63 % |
 | **Paso del objeto** | Una pieza que pasa por una banda transportadora y la salida ON/OFF del sensor, con histéresis |
@@ -126,9 +141,18 @@ El enunciado del curso y la guía con la rúbrica están en [`docs/enunciado/`](
 | `sensor/symbolic.py` | Deducción con SymPy de la ecuación del circuito, su solución, la impedancia, la energía y las sensibilidades |
 | `app.py`, `ui.py` | Interfaz del simulador y temas claro y oscuro |
 | `scripts/generar_figuras.py` | Figuras del informe en `docs/figuras` |
-| `tests/test_modelo.py` | 11 pruebas: convergencia, límites físicos, 63 % en τ, energía, campo dipolar, identificación y carros |
+| `tests/test_modelo.py` | 13 pruebas: convergencia, límites físicos, 63 % en τ, energía, campo dipolar, identificación, carros, escena 3D y oscilador LC |
 
 ## Modelo en resumen
+
+**Espira de parqueadero (caso principal)**
+
+- Inductancia de la espira (circular de igual área, a = s/√π): L₀ = μ₀N²a [ln(8a/r_w) − 2]
+- Chasis de acero a d = altura al piso + profundidad, con la fracción η de espira tapada: ΔZ_carro = η ΔZ_placa(d)
+- Oscilador LC (Kirchhoff): L q̈ + R q̇ + q/C = 0, f₀ = 1/(2π√(L₀C))
+- Frecuencia con el carro: f/f₀ = (1 + ΔL/L₀)^(−1/2)
+
+**Bobina de autopartes (segundo escenario)**
 
 - Inductancia sin pieza: L₀ = μ₀N²πa² / (l + 0.9a)
 - Cambio por la pieza: ΔZ = jωπμ₀a²N² ∫ J₁²(αa) Γ(α) F²(α) dα, con Γ = (μᵣα − α₁)/(μᵣα + α₁) y α₁ = √(α² + jωμ₀μᵣσ)
@@ -141,6 +165,8 @@ El enunciado del curso y la guía con la rúbrica están en [`docs/enunciado/`](
 - C. V. Dodd y W. E. Deeds, "Analytical solutions to eddy-current probe-coil problems", *Journal of Applied Physics* 39, 2829 (1968).
 - H. A. Wheeler, "Simple inductance formulas for radio coils", *Proceedings of the IRE* 16, 1398 (1928).
 - D. J. Griffiths, *Introduction to Electrodynamics*, 4.ª ed.
+- FHWA, *Traffic Detector Handbook* (espiras de detección de vehículos).
+- Fichas técnicas del Chevrolet Spark GT y el Renault Kwid (enlaces en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md#fuentes-de-los-datos-de-los-carros)).
 - Apuntes de clase del curso de Electromagnetismo.
 
 ## Equipo
