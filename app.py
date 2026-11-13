@@ -173,6 +173,13 @@ tabs = st.tabs(["Caso: vehículo", "Modelo", "Respuesta temporal", "Paso del obj
                 "Validación", "Derivación", "Análisis"])
 
 @st.cache_data(show_spinner=False)
+def figura_anatomy(tema):
+    carpeta = Path(__file__).resolve().parent / "figuras-anatomy" / "corte-espira"
+    archivo = "corte-espira.html" if tema == "Oscuro" else "corte-espira-light.html"
+    return (carpeta / archivo).read_text(encoding="utf-8")
+
+
+@st.cache_data(show_spinner=False)
 def escena_cache(lado, vueltas, prof_cm, sens_pct, carro, tema):
     espira = vh.Espira(lado=lado, N=vueltas, profundidad=prof_cm / 100)
     return esc.html_escena(esc.escena_datos(espira, sens_pct, carro, tema))
@@ -219,6 +226,10 @@ with tabs[0]:
     ui.seccion("Escena 3D", "El carro llega, se detiene sobre la espira, el detector lo reconoce y la talanquera se "
                "abre. Todos los números de la escena salen del modelo de Python.")
     components.html(escena_cache(lado, vueltas, prof_cm, sens_pct, carro, tema or "Claro"), height=640)
+    ui.seccion("Corte del detector", "Figura ilustrada (Anatomy): el pavimento cortado por el centro de la espira, "
+               "las 3 vueltas de alambre en la ranura, el cable al detector y el chasis a la altura de cada carro. "
+               "Pasa el cursor a la izquierda (Spark) o a la derecha (Kwid) para cambiar de carro.")
+    components.html(figura_anatomy(tema or "Claro"), height=780, scrolling=True)
     c1, c2 = st.columns(2, gap="large")
     with c1:
         fig = go.Figure()
