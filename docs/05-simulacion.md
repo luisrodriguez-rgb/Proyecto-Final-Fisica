@@ -20,6 +20,19 @@
 
 El selector de la parte superior cambia entre tema claro y oscuro.
 
+## 5.1.1 La escena 3D del caso del carro
+
+| Atardecer (tema oscuro) | Día (tema claro) |
+|---|---|
+| ![Spark al atardecer](figuras/escena-3d-spark-atardecer.png) | ![Kwid de día](figuras/escena-3d-kwid-dia.png) |
+
+![Kwid visto a ras del piso, con las líneas de campo bajo el chasis](figuras/escena-3d-kwid-a-ras.png)
+
+Los carros se construyen por código con las medidas reales de cada modelo (largo, ancho, alto, altura al piso y
+distancia entre ejes); no son modelos 3D descargados. Las líneas de campo y todas las lecturas salen del modelo de
+Python. Para capturas fijas se puede abrir la escena con `?x=0&cam=ras&lab=0` (posición del carro, cámara y
+etiquetas).
+
 ## 5.2 Pestañas
 
 | Pestaña | Qué muestra |
