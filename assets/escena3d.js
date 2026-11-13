@@ -629,7 +629,7 @@
     for (const rg of m.userData.ruedas) rg.rotation.z -= v * dt / m.userData.r;
 
     const dl = interp(c, "dL_rel", x), cob = Math.abs(dl / c.dL_max);
-    const fr = E.f0_kHz * (1 - 0.5 * dl), dfr = fr - E.f0_kHz, pot = interp(c, "potencia_uW", x);
+    const fr = E.f0_kHz / Math.sqrt(1 + dl), dfr = fr - E.f0_kHz, pot = interp(c, "potencia_uW", x);
     const detect = -dl * 100 >= D.umbral_pct, reconocido = detect && cob > 0.97;
     const lc = lineas[actual];
     campoVacio.visible = lc.visible = mostrar.campo;
