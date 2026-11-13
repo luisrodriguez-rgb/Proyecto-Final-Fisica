@@ -1,7 +1,10 @@
 # Plan: simulador 3D del caso del carro
 
-> **Estado:** la escena 3D está hecha (`assets/escena3d.html`, `sensor/escena.py`) y se ve en la pestaña
-> **Caso: vehículo**. La figura de Anatomy está en construcción en `figuras-anatomy/`.
+> **Estado:** la escena 3D está hecha (`assets/escena3d.html`, `assets/escena3d.js`, `sensor/escena.py`) y se ve
+> en la pestaña **Caso: vehículo**, con carros detallados, cielo, asfalto mojado y luces. La figura de Anatomy está
+> en `figuras-anatomy/corte-espira/` y sus capturas en `docs/figuras/anatomy-corte-espira*.png`. Se probó el
+> postproceso de brillo (bloom) de Three.js r147, pero producía franjas en el pavimento y se quitó; el brillo de la
+> espira se simula con un halo.
 
 ## Objetivo
 
