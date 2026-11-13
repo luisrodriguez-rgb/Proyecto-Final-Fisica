@@ -50,6 +50,32 @@ def rk4(f: Callable[[float, float], float], y0: float, h: float, n: int, t0: flo
     return t, y
 
 
+def euler_sistema(f, y0, h: float, n: int, t0: float = 0.0):
+    """Euler explícito para un sistema y' = f(t, y), con y un vector de numpy."""
+    y = np.empty((n + 1, len(y0)))
+    y[0] = yk = np.asarray(y0, dtype=float)
+    for k in range(n):
+        yk = yk + h * f(t0 + k * h, yk)
+        y[k + 1] = yk
+    return t0 + h * np.arange(n + 1), y
+
+
+def rk4_sistema(f, y0, h: float, n: int, t0: float = 0.0):
+    """Runge–Kutta 4 para un sistema y' = f(t, y)."""
+    y = np.empty((n + 1, len(y0)))
+    y[0] = yk = np.asarray(y0, dtype=float)
+    h2 = 0.5 * h
+    for k in range(n):
+        tk = t0 + k * h
+        k1 = f(tk, yk)
+        k2 = f(tk + h2, yk + h2 * k1)
+        k3 = f(tk + h2, yk + h2 * k2)
+        k4 = f(tk + h, yk + h * k3)
+        yk = yk + (h / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+        y[k + 1] = yk
+    return t0 + h * np.arange(n + 1), y
+
+
 # ---------------------------------------------------------------------------
 # Circuito RL con L constante
 # ---------------------------------------------------------------------------
