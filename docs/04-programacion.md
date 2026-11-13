@@ -11,7 +11,13 @@
 ├── sensor/
 │   ├── physics.py          Modelo físico: L₀, Dodd–Deeds (ΔZ), δ, campo B (Biot–Savart)
 │   ├── numerics.py         Euler y RK4 a mano, soluciones exactas, convergencia, L(t) variable
-│   └── symbolic.py         Deducción con SymPy y verificación del residuo
+│   ├── symbolic.py         Deducción con SymPy y verificación del residuo
+│   ├── identificacion.py   Material y distancia en el plano de impedancia
+│   ├── vehiculo.py         Espira de parqueadero, Spark y Kwid
+│   └── escena.py           Datos y página de la escena 3D
+├── assets/
+│   ├── escena3d.html       Escena 3D (Three.js): parqueadero, carros, campo, talanquera
+│   └── three/              Three.js r147 guardado en el repositorio (licencia MIT)
 ├── scripts/
 │   └── generar_figuras.py  Figuras del informe en docs/figuras
 ├── tests/
