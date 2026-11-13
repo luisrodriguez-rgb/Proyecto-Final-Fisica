@@ -3,20 +3,28 @@
 > Criterio de la rúbrica: **Sustentación (10 %)**, claridad y dominio del proyecto.
 > El profesor escoge qué integrante presenta, así que **todos** deben poder recorrer este guion.
 
-## 7.1 Guion sugerido (10 minutos)
+## 7.1 Guion sugerido (15 minutos)
 
 | Minuto | Tema | Apoyo |
 |---|---|---|
-| 0 – 1 | Problema y esquema D.E.P.A.: insumos, detección, emisiones, propiedades, alerta y solución | [00 · Modelo teórico](00-modelo-teorico-depa.md) |
-| 1 – 3 | Física: Faraday → corrientes de Foucault → Lenz → cambian $L$ y $R$ | [Fundamentación](01-fundamentacion-fisica.md), diagrama |
-| 3 – 5 | Modelo: Kirchhoff, misma deducción que el RC de clase, $\tau = L/R$, solución AC, $\Delta Z$ | [Modelamiento](02-modelamiento-analitico.md) |
-| 5 – 8 | Demostración en vivo | [Guion de demo](05-simulacion.md#54-guion-para-mostrarlo-en-vivo) |
-| 8 – 9 | Euler frente a RK4: órdenes 1 y 4, estabilidad $\Delta t < 2\tau$ | Pestaña Validación |
-| 9 – 10 | Resultados, eficiencia y limitaciones frente a FEM | [Validación e impacto](06-validacion-e-impacto.md) |
+| 0 – 1.5 | El problema: abrir la talanquera de un parqueadero y saber qué carro llegó, sin cámaras ni botones. Esquema D.E.P.A. | Imagen de portada, [00 · Modelo teórico](00-modelo-teorico-depa.md) |
+| 1.5 – 4 | Física: Faraday → corrientes de Foucault en el chasis → Lenz → la inductancia de la espira baja. Por qué a 55 kHz el acero baja $L$ (δ = 0.087 mm). Solo Faraday y Ampère | Figura de Anatomy, [01 · Fundamentación](01-fundamentacion-fisica.md) |
+| 4 – 7 | Modelo: inductancia de la espira (83 µH), chasis como placa (Dodd–Deeds), Kirchhoff en la malla LC (como el RC de clase) → $f_0$ = 55.25 kHz; cambio exacto de frecuencia | [02 · Modelamiento](02-modelamiento-analitico.md), sección 2.10 |
+| 7 – 10.5 | Demostración en vivo: escena 3D con el Spark y el Kwid, oscilador LC, figura del corte | [Guion de demo](05-simulacion.md#54-guion-para-mostrarlo-en-vivo) |
+| 10.5 – 12.5 | Métodos numéricos: Euler frente a RK4 (órdenes 1 y 4), Euler explota en el oscilador; la simulación corrigió la fórmula de frecuencia | Pestaña Validación y oscilador LC, [03](03-metodos-numericos.md) |
+| 12.5 – 14 | Resultados: Spark 59.18 kHz, Kwid 58.69 kHz, reconocidos por altura; eficiencia, impacto y escenarios de diseño | [05](05-simulacion.md), [06](06-validacion-e-impacto.md) |
+| 14 – 15 | Limitaciones (chasis como placa, carga del carro, FEM) y cierre | [06](06-validacion-e-impacto.md), sección 6.4 |
+
+Si sobra tiempo o el profesor pregunta por la identificación de materiales, mostrar el segundo escenario (pestaña
+**Identificación**, bobina de autopartes).
 
 **Frase para abrir (caso del carro):** "SEMP es una espira en el piso de un parqueadero. Cuando un carro se para
 encima, su chasis de acero baja la inductancia de la espira; el detector lo nota como un cambio de frecuencia, abre
 la talanquera y, por cuánto cambió, sabe si es un Spark o un Kwid."
+
+**Frase para cerrar:** "Con las leyes de Faraday y Ampère, la ley de mallas que vimos en clase y RK4 programado a
+mano, el detector reconoce un Spark (59.18 kHz) y un Kwid (58.69 kHz) por la altura de su chasis. El modelo da el
+máximo posible del efecto; un análisis por elementos finitos con el chasis real daría el valor exacto."
 
 **Frase alternativa (autopartes):** "SEMP es un sensor para una línea de autopartes. Siguiendo el esquema D.E.P.A., detecta la
 pieza, mide cómo responde al campo, usa la frecuencia para saber de qué metal es y la potencia para saber a qué
@@ -92,6 +100,32 @@ Por la altura del chasis: el Spark (15 cm) queda más cerca de la espira que el 
 Sí, las espiras inductivas son el detector más usado en talanqueras y semáforos. Los valores de nuestro modelo
 son una cota superior porque el chasis real no es una placa plana.
 
+**¿Por qué el detector usa un capacitor?**
+Para formar un oscilador LC: su frecuencia $f = 1/2\pi\sqrt{LC}$ depende de la inductancia, y una frecuencia se mide
+con mucha precisión contando ciclos. Es la unión del RC de clase y el RL del proyecto: Kirchhoff en la malla da
+$L\ddot q + R\dot q + q/C = 0$.
+
+**¿Por qué no usaron Δf/f = −½ ΔL/L?**
+Porque es una aproximación para cambios pequeños. Con el Spark la inductancia baja 12.9 %, y la aproximación da
++6.4 % cuando el cambio real es +7.1 %. Lo descubrimos simulando el oscilador con RK4: la frecuencia simulada
+coincidía con la fórmula exacta $(1 + \Delta L/L)^{-1/2}$ y no con la aproximada.
+
+**¿Por qué Euler explota en el oscilador si en el circuito RL funcionaba?**
+En el RL el valor propio es real y negativo, y Euler es estable si $\Delta t < 2\tau$. En el oscilador los valores
+propios son imaginarios, y cada paso de Euler multiplica la amplitud por $\sqrt{1 + (\omega\Delta t)^2} > 1$: la
+energía crece con cualquier paso. Con 40 pasos por período se multiplica por $10^{11}$ en 30 períodos.
+
+**¿Qué pasa si el Kwid va cargado?**
+Baja un par de centímetros. Si llega a 16 cm, su cambio de inductancia se parece al del Spark y el detector se
+equivoca. Para evitarlo se puede sumar el largo del carro con una segunda espira.
+
+**¿Por qué no usar una cámara?**
+La espira no le teme a la lluvia, la noche ni la suciedad, no tiene partes expuestas y no guarda imágenes de nadie.
+La cámara sí reconoce el modelo exacto, pero es más frágil y costosa de mantener.
+
+**¿El campo de la espira es peligroso?**
+No: es de unos 0.09 µT, cientos de veces menor que el campo de la Tierra.
+
 ## 7.3 Más preguntas, ligadas a los temas de clase
 
 **¿Qué tiene que ver la ley de Gauss con un sensor magnético?**
@@ -138,13 +172,20 @@ Por cuatro caminos independientes: la comparación con la solución exacta, el o
 - Decir que el metal "atrae" el campo en general. Solo el ferromagnético lo concentra; el cobre lo **expulsa**.
 - Confundir $\tau = L/R$ con $\tau = RC$ al hacer la analogía: en el RL la resistencia va en el denominador.
 - Decir que RK4 es "4 veces mejor". Es de **orden** 4: al dividir el paso entre 2 el error baja 16 veces.
-- Presentar el modelo como exacto. Supone una pieza infinita y una bobina sin núcleo, y conviene decirlo antes de
-  que pregunten.
+- Presentar el modelo como exacto. Supone una pieza infinita (en el carro, un chasis plano) y una bobina sin núcleo,
+  y conviene decirlo antes de que pregunten.
+- Usar $\Delta f/f = -\tfrac12\Delta L/L$ para el carro: con cambios de más del 10 % hay que usar la fórmula exacta.
+- Decir que el acero siempre sube la inductancia. A 55 kHz la baja, porque el campo casi no entra en él.
+- Decir que el detector mide el campo magnético. Mide una frecuencia; el campo es demasiado débil para medirlo
+  directamente.
 
 ## 7.5 Lista para el día de la sustentación
 
 - [ ] Simulador abierto y probado en el computador de la exposición (`.venv/bin/streamlit run app.py`).
-- [ ] Parámetros en los valores de referencia antes de empezar: cobre, 5 mm, 1 kHz, 150 espiras.
+- [ ] Pestaña **Caso: vehículo** abierta con el Spark, la espira de 1.8 m y 3 vueltas; la escena 3D corriendo.
+- [ ] Probar la escena 3D en el computador de la exposición: funciona sin internet, pero necesita WebGL.
+- [ ] Para el segundo escenario, parámetros de referencia: cobre, 5 mm, 1 kHz, 150 espiras.
+- [ ] Imágenes de [`figuras/ia/`](figuras/ia/) citadas como generadas con IA en las diapositivas.
 - [ ] Figuras de [`figuras/`](figuras/) a mano por si falla el computador.
 - [ ] Cada integrante practicó el guion completo al menos una vez.
 - [ ] Nombres del equipo y reflexión sobre la IAG completados en [08-uso-de-iag.md](08-uso-de-iag.md).
