@@ -226,6 +226,46 @@ with tabs[0]:
     ui.seccion("Escena 3D", "El carro llega, se detiene sobre la espira, el detector lo reconoce y la talanquera se "
                "abre. Todos los números de la escena salen del modelo de Python.")
     components.html(escena_cache(lado, vueltas, prof_cm, sens_pct, carro, tema or "Claro"), height=640)
+    ui.seccion("Oscilador LC del detector", "La espira y un capacitor forman un oscilador: L di/dt + R i + q/C = 0. "
+               "Se resuelve con Euler y RK4 como sistema (q, i) y se mide la frecuencia contando cruces por cero.")
+    o1, o2 = st.columns([1, 3], gap="large")
+    ppp = o1.select_slider("Pasos por período", [10, 20, 40, 80, 160], value=40, key="ppp_lc")
+    libre_rk = vh.oscilador(esp, pasos_por_periodo=ppp, periodos=30)
+    con_rk = vh.oscilador(esp, res["dL_rel"], res["dR"], ppp, 30)
+    libre_eu = vh.oscilador(esp, pasos_por_periodo=ppp, periodos=30, metodo="euler")
+    with o1:
+        ui.kv([("f sin carro (RK4)", f"{libre_rk['f_medida']/1e3:.3f} kHz"),
+               ("f con el carro (RK4)", f"{con_rk['f_medida']/1e3:.3f} kHz"),
+               ("Δf/f simulado", f"{(con_rk['f_medida']/libre_rk['f_medida']-1)*100:+.2f} %"),
+               ("(1+ΔL/L)^(−1/2) − 1", f"{res['df_rel']*100:+.2f} %"),
+               ("−½ ΔL/L (aproximación)", f"{-0.5*res['dL_rel']*100:+.2f} %"),
+               ("Energía final / inicial, Euler", f"{libre_eu['energia'][-1]/libre_eu['energia'][0]:.2e}")])
+    with o2:
+        fig = make_subplots(rows=1, cols=2, subplot_titles=("Carga del capacitor, primeros 4 períodos", "Energía del oscilador"))
+        k4 = 4 * ppp + 1
+        T_us = 1e6
+        fig.add_trace(go.Scatter(x=libre_rk["t"][:k4] * T_us, y=libre_rk["q"][:k4] / libre_rk["q"][0], name="RK4 sin carro",
+                                 line=dict(color=S["exacta"], width=2)), 1, 1)
+        fig.add_trace(go.Scatter(x=con_rk["t"][:k4] * T_us, y=con_rk["q"][:k4] / con_rk["q"][0], name=f"RK4 con {carro.split()[1]}",
+                                 line=dict(color=vh.VEHICULOS[carro]["color"], width=2)), 1, 1)
+        fig.add_trace(go.Scatter(x=libre_eu["t"][:k4] * T_us, y=libre_eu["q"][:k4] / libre_eu["q"][0], name="Euler sin carro",
+                                 line=dict(color=S["euler"], width=1.3, dash="dot")), 1, 1)
+        per = libre_rk["t"] * libre_rk["f_teorica"]
+        fig.add_trace(go.Scatter(x=per, y=libre_rk["energia"] / libre_rk["energia"][0], name="Energía RK4",
+                                 line=dict(color=S["rk4"], width=2)), 1, 2)
+        fig.add_trace(go.Scatter(x=per, y=libre_eu["energia"] / libre_eu["energia"][0], name="Energía Euler",
+                                 line=dict(color=S["euler"], width=2)), 1, 2)
+        fig.add_trace(go.Scatter(x=per, y=np.exp(-esp.R0 / esp.L0 * libre_rk["t"]), name="Exacta e^(−Rt/L)",
+                                 line=dict(color=P["muted"], width=1, dash="dash")), 1, 2)
+        fig.update_xaxes(title_text="t (µs)", row=1, col=1)
+        fig.update_xaxes(title_text="períodos", row=1, col=2)
+        fig.update_yaxes(type="log", row=1, col=2)
+        ui.grafica(fig, height=380, margin=dict(t=60, b=50))
+    ui.nota("RK4 reproduce la frecuencia y la pérdida de energía por la resistencia de la espira. Euler explícito "
+            "multiplica la energía por 1 + (ωΔt)² en cada paso y el oscilador \"explota\" aunque tenga resistencia: "
+            "en un sistema que oscila, Euler es inestable con cualquier paso. La simulación también muestra que, con "
+            "un carro encima, la aproximación −½ ΔL/L se queda corta y hay que usar la fórmula exacta.")
+
     ui.seccion("Corte del detector", "Figura ilustrada (Anatomy): el pavimento cortado por el centro de la espira, "
                "las 3 vueltas de alambre en la ranura, el cable al detector y el chasis a la altura de cada carro. "
                "Pasa el cursor a la izquierda (Spark) o a la derecha (Kwid) para cambiar de carro.")
