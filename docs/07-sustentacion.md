@@ -14,7 +14,11 @@
 | 8 – 9 | Euler frente a RK4: órdenes 1 y 4, estabilidad $\Delta t < 2\tau$ | Pestaña Validación |
 | 9 – 10 | Resultados, eficiencia y limitaciones frente a FEM | [Validación e impacto](06-validacion-e-impacto.md) |
 
-**Frase para abrir:** "SEMP es un sensor para una línea de autopartes. Siguiendo el esquema D.E.P.A., detecta la
+**Frase para abrir (caso del carro):** "SEMP es una espira en el piso de un parqueadero. Cuando un carro se para
+encima, su chasis de acero baja la inductancia de la espira; el detector lo nota como un cambio de frecuencia, abre
+la talanquera y, por cuánto cambió, sabe si es un Spark o un Kwid."
+
+**Frase alternativa (autopartes):** "SEMP es un sensor para una línea de autopartes. Siguiendo el esquema D.E.P.A., detecta la
 pieza, mide cómo responde al campo, usa la frecuencia para saber de qué metal es y la potencia para saber a qué
 distancia está, y entrega una alerta."
 
@@ -75,6 +79,18 @@ miden pérdidas (oscilador LC); ordenando por $\Delta R$, el modelo reproduce el
 **¿Qué limita al modelo?**
 Supone una pieza infinita, una bobina sin núcleo y materiales lineales. Un análisis por elementos finitos
 resolvería la geometría real, pero tardaría minutos por punto.
+
+**¿Por qué el carro baja la inductancia si el acero es magnético?**
+Porque a 55 kHz el campo entra solo 0.09 mm en el acero: las corrientes de Foucault dominan y apantallan el
+campo. La magnetización solo gana a frecuencias bajas, como vimos con la frecuencia ciega del acero.
+
+**¿Cómo distingue el Spark del Kwid?**
+Por la altura del chasis: el Spark (15 cm) queda más cerca de la espira que el Kwid (18 cm) y la baja más
+(−12.9 % frente a −11.4 %). La carga del carro puede reducir esa diferencia; por eso conviene sumar el largo o el peso.
+
+**¿Los parqueaderos de verdad funcionan así?**
+Sí, las espiras inductivas son el detector más usado en talanqueras y semáforos. Los valores de nuestro modelo
+son una cota superior porque el chasis real no es una placa plana.
 
 ## 7.3 Más preguntas, ligadas a los temas de clase
 
