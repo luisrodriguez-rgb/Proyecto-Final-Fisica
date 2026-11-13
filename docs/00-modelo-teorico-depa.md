@@ -71,11 +71,12 @@ Las fichas técnicas no coinciden del todo; se usa el valor central y se reporta
 | Distancia chasis–espira | 20 cm | 23 cm |
 | Fracción de la espira tapada | 89 % | 88 % |
 | $\Delta L/L_0$ | −12.9 % | −11.4 % |
-| Cambio de frecuencia del oscilador | +3.6 kHz | +3.1 kHz |
+| Cambio de frecuencia del oscilador | +3.9 kHz (59.2 kHz) | +3.4 kHz (58.7 kHz) |
 | Altura estimada desde la señal | 14.9 cm ✓ | 18.0 cm ✓ |
 
 El Spark, más bajo, cambia más la inductancia. Esa diferencia permite reconocerlo. Simulador: pestaña
-**Caso: vehículo**. Código: [`sensor/vehiculo.py`](../sensor/vehiculo.py).
+**Caso: vehículo**, con la escena 3D del parqueadero, el oscilador LC resuelto con Euler y RK4 y la figura del
+corte hecha con Anatomy. Código: [`sensor/vehiculo.py`](../sensor/vehiculo.py).
 
 ### Segundo escenario: línea de autopartes
 
@@ -117,6 +118,21 @@ En el segundo escenario (autopartes) el proceso es el mismo con una bobina peque
 # Parte 2. Formalismo matemático por etapa
 
 ## 0.4 D · Detección: propiedades de los materiales y de la radiación
+
+### En el carro
+
+- **Qué se detecta:** si hay un carro sobre la espira y cuál es.
+- **Propiedad del material:** el chasis es de acero ($\sigma = 6\times10^6$ S/m, $\mu_r \approx 100$). Es igual en los
+  dos carros, así que **el material no los distingue**.
+- **Distancia:** lo que sí cambia es la altura del chasis sobre la espira, $d = h_{piso} + p$, con $p = 5$ cm de
+  profundidad de la espira: 20 cm el Spark y 23 cm el Kwid.
+- **Propiedad de la radiación:** a la frecuencia del oscilador, 55.2 kHz, la profundidad de penetración en el acero
+  es $\delta = 0.087$ mm. Como $\delta$ es mucho menor que el espesor de la lámina, el chasis se comporta casi como
+  un conductor perfecto: **la inductancia baja**. Es el caso $\Gamma \to -1$ del método de las imágenes.
+- **La distancia se lee en la intensidad:** el cambio de inductancia cae con la altura, a razón de unos 0.5 puntos de
+  $\Delta L/L$ por centímetro entre 15 y 18 cm.
+
+### En la línea de autopartes (segundo escenario)
 
 La detección necesita dos grupos de propiedades.
 
@@ -176,6 +192,20 @@ Detalle: [01 · Fundamentación física](01-fundamentacion-fisica.md) y
 
 ## 0.5 E · Emisiones: cómo se detectan, se miden y se cuantifican
 
+### En el carro
+
+La "emisión" del chasis es el campo de las corrientes de Foucault que se inducen en su cara inferior. Se mide
+de forma indirecta: ese campo reduce el flujo que enlaza la espira, la inductancia baja y el oscilador cambia de
+frecuencia. La cantidad que se mide es entonces una **frecuencia**, que un microcontrolador cuenta con mucha
+precisión.
+
+- **Cuánta energía absorbe el chasis:** con 50 mA en la espira, el Spark absorbe 80 µW y el Kwid 67 µW, que se
+  vuelven calor en la lámina.
+- **Cómo se cuantifica:** se cuentan los cruces por cero de la señal del oscilador durante un tiempo fijo y se
+  comparan con la frecuencia sin carro. El simulador hace exactamente eso con la solución de RK4.
+
+### En la línea de autopartes (segundo escenario)
+
 **Qué se mide.** El sensor no ve directamente las corrientes de Foucault: ve su efecto en la corriente de la
 bobina. Se miden dos números, la **amplitud** $I_p$ y el **desfase** $\varphi$ de la corriente respecto al
 voltaje. Con ellos se reconstruye la impedancia y el cambio que produjo la pieza:
@@ -229,7 +259,12 @@ Detalle: [01 · Fundamentación física](01-fundamentacion-fisica.md#14-ecuacion
 
 **En el carro.** El detector de espira es un oscilador LC. Al bajar la inductancia sube la frecuencia:
 
-$$f = \frac{1}{2\pi\sqrt{LC}}\quad\Rightarrow\quad \frac{\Delta f}{f} \approx -\frac{1}{2}\frac{\Delta L}{L}.$$
+$$f = \frac{1}{2\pi\sqrt{LC}}\quad\Rightarrow\quad \frac{f}{f_0} = \left(1 + \frac{\Delta L}{L_0}\right)^{-1/2}
+\;\approx\; 1 - \frac{1}{2}\frac{\Delta L}{L_0}\quad\text{(solo si } \lvert\Delta L/L_0\rvert \ll 1).$$
+
+Con un carro el cambio es grande (−12.9 % con el Spark) y la aproximación lineal se queda corta: da +6.4 % y la
+fórmula exacta +7.1 %. La simulación del oscilador con RK4 confirma el valor exacto
+([03 · Métodos numéricos](03-metodos-numericos.md#39-el-oscilador-lc-del-detector)).
 
 El detector compara la frecuencia con la que tenía sin carro. Si el cambio supera la sensibilidad configurada
 (los equipos comerciales trabajan entre 0.01 % y 1 % de $\Delta L/L$), activa la salida: la talanquera se abre.
@@ -255,6 +290,23 @@ medición se tarda unos 96 ms: a 1 m/s la pieza avanza 96 mm mientras se mide.
 # Solución e impacto
 
 ## 0.8 Eficiencia de la solución
+
+### En el carro
+
+| | Spark | Kwid | Diferencia |
+|---|---|---|---|
+| $\Delta L/L_0$ | −12.87 % | −11.39 % | 1.48 puntos |
+| Frecuencia del oscilador | 59.18 kHz | 58.69 kHz | 0.49 kHz |
+| Altura estimada | 14.9 cm | 18.0 cm | 3.1 cm |
+
+- **Detección:** los dos carros superan por mucho la sensibilidad típica de un detector comercial (0.01 – 1 %).
+- **Reconocimiento:** el criterio de corte natural está a mitad de camino, unos 16.5 cm. La diferencia de 0.49 kHz
+  se mide con facilidad, así que el límite no es el instrumento sino el carro: un Kwid muy cargado puede bajar uno o
+  dos centímetros y acercarse al Spark.
+- **Tiempo de respuesta:** un período del oscilador dura 18 µs. Contar unos 1 000 ciclos (18 ms) da una resolución
+  de frecuencia de aproximadamente 0.1 %, de sobra para separar los dos carros mientras el carro todavía se detiene.
+
+### En la línea de autopartes (segundo escenario)
 
 Evaluación con el simulador: 40 piezas de cada material a distancias aleatorias entre 1 y 8 mm, ruido de medida de
 0.2 % en amplitud y 0.1° en fase por medición.
@@ -295,11 +347,12 @@ Análisis completo: [06 · Validación e impacto](06-validacion-e-impacto.md).
 
 | Etapa | Documento | Código | Pestaña del simulador |
 |---|---|---|---|
-| Insumos y caso de estudio | este documento | `sensor/vehiculo.py` | Caso: vehículo, Identificación |
+| Insumos y caso de estudio | este documento | `sensor/vehiculo.py`, `sensor/escena.py`, `assets/escena3d.js` | Caso: vehículo (escena 3D), Identificación |
+| Figura del corte del detector | [figuras-anatomy](../figuras-anatomy/README.md) | `figuras-anatomy/corte-espira/` | Caso: vehículo |
 | D · Detección | [01](01-fundamentacion-fisica.md), [02](02-modelamiento-analitico.md) | `sensor/physics.py` | Modelo |
 | E · Emisiones | este documento, sección 0.5 | `sensor/identificacion.py` | Identificación |
 | P · Propiedades (Maxwell) | [01](01-fundamentacion-fisica.md), [02](02-modelamiento-analitico.md) | `sensor/physics.py`, `sensor/symbolic.py` | Campo, Derivación |
-| A · Alerta | este documento, sección 0.7 | `sensor/numerics.py` (comparador), `sensor/identificacion.py` | Paso del objeto, Identificación |
+| A · Alerta | este documento, sección 0.7 | `sensor/vehiculo.py` (oscilador LC), `sensor/numerics.py` (comparador), `sensor/identificacion.py` | Caso: vehículo, Paso del objeto, Identificación |
 | Simulación numérica | [03](03-metodos-numericos.md) | `sensor/numerics.py` | Respuesta temporal, Validación |
 | Solución e impacto | [06](06-validacion-e-impacto.md) | – | Análisis, Identificación |
 
