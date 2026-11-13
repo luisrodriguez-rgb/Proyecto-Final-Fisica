@@ -17,12 +17,12 @@ El proyecto sigue el esqueleto propuesto por el profesor ([orientación](docs/en
 
 | Etapa | En el sensor |
 |---|---|
-| **Insumos** | Contextos de aplicación; caso de estudio: una línea de autopartes con piezas de acero, cobre, aluminio, latón e inoxidable |
-| **D · Detección** | Identificar el material y estimar la distancia |
-| **E · Emisiones** | La respuesta de la pieza: corrientes de Foucault que cambian la corriente de la bobina (amplitud y fase) |
-| **P · Propiedades** | Frecuencia → material, potencia → distancia; solo las ecuaciones de Maxwell necesarias (Faraday y Ampère) |
-| **A · Alerta** | "Cobre a 6.0 mm", "ferroso", o aviso de posible impureza |
-| **Solución** | Identificación correcta del 100 % de las piezas con dos frecuencias y 16 promedios; ferroso / no ferroso siempre |
+| **Insumos** | Contextos de aplicación. Caso principal: espira en el piso de un parqueadero que reconoce un **Chevrolet Spark GT** o un **Renault Kwid**. Segundo escenario: línea de autopartes con piezas de distintos metales |
+| **D · Detección** | ¿Hay carro? ¿Cuál es? (la distancia que importa es la altura del chasis: 15 cm el Spark, 18 cm el Kwid) |
+| **E · Emisiones** | El chasis de acero responde con corrientes de Foucault que bajan la inductancia de la espira |
+| **P · Propiedades** | Frecuencia del oscilador (55 kHz, δ = 0.09 mm en el acero), potencia y energía; solo Faraday y Ampère |
+| **A · Alerta** | El oscilador sube su frecuencia; si supera el umbral se abre la talanquera y se registra el modelo |
+| **Solución** | Spark: ΔL/L = −12.9 %, Kwid: −11.4 %; cada carro se reconoce por su altura estimada |
 
 Detalle en [docs/00-modelo-teorico-depa.md](docs/00-modelo-teorico-depa.md).
 
@@ -62,6 +62,7 @@ Otros hallazgos:
 
 | Pestaña | Qué muestra |
 |---|---|
+| **Caso: vehículo** | Espira de parqueadero con un Spark o un Kwid: señal al cruzar, cambio de inductancia según la altura del chasis y alerta de talanquera |
 | **Modelo** | Inductancia y resistencia efectivas frente a la distancia para cinco materiales, curva de detección con el umbral y efecto de la frecuencia |
 | **Respuesta temporal** | Corriente en el tiempo con la solución exacta, RK4, Euler y SciPy; en modo DC, la curva del 63 % |
 | **Paso del objeto** | Una pieza que pasa por una banda transportadora y la salida ON/OFF del sensor, con histéresis |
@@ -116,11 +117,12 @@ El enunciado del curso y la guía con la rúbrica están en [`docs/enunciado/`](
 |---|---|
 | `sensor/physics.py` | Inductancia de la bobina (Wheeler), modelo de Dodd–Deeds, profundidad de penetración y campo magnético (Biot–Savart con integrales elípticas) |
 | `sensor/numerics.py` | Euler y RK4 a mano, soluciones exactas AC y DC, estudio de convergencia, pieza en movimiento con L(t) variable, demodulador y comparador con histéresis |
+| `sensor/vehiculo.py` | Espira de parqueadero, datos del Spark y el Kwid, paso del carro y reconocimiento por altura |
 | `sensor/identificacion.py` | Identificación del material y la distancia en el plano de impedancia, residuo de impurezas y evaluación Monte Carlo |
 | `sensor/symbolic.py` | Deducción con SymPy de la ecuación del circuito, su solución, la impedancia, la energía y las sensibilidades |
 | `app.py`, `ui.py` | Interfaz del simulador y temas claro y oscuro |
 | `scripts/generar_figuras.py` | Figuras del informe en `docs/figuras` |
-| `tests/test_modelo.py` | 10 pruebas: convergencia, límites físicos, 63 % en τ, energía, campo dipolar e identificación |
+| `tests/test_modelo.py` | 11 pruebas: convergencia, límites físicos, 63 % en τ, energía, campo dipolar, identificación y carros |
 
 ## Modelo en resumen
 
