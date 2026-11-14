@@ -135,9 +135,8 @@
 }
 
 \subtitle{
- Diseño y simulación de un sensor inductivo que detecta, identifica y ubica piezas metálicas
+ Una espira en el piso que detecta un carro y reconoce si es un Spark o un Kwid
 }
-
 
 \author{
  Luis Ernesto Rodríguez\\
@@ -157,6 +156,10 @@
  2026
 }
 
+% Crédito para las imágenes generadas con IA (lo exige la guía)
+\newcommand{\creditoia}{{\tiny\color{GrisTexto}Imagen ilustrativa generada con IA a partir de un prompt del equipo.}}
+\newcommand{\fuente}[1]{{\tiny\color{GrisTexto}#1}}
+
 % ==========================================
 % INICIO DEL DOCUMENTO
 % ==========================================
@@ -169,7 +172,11 @@
 
 \begin{frame}[plain]
 
-\vspace{0.2cm}
+\begin{columns}[T]
+
+\column{0.56\textwidth}
+
+\vspace{0.1cm}
 
 \IfFileExists{logo_icesi.png}{
  \includegraphics[width=3.4cm]{logo_icesi.png}
@@ -178,14 +185,14 @@
  \Large\bfseries Universidad Icesi}
 }
 
-\vspace{0.35cm}
+\vspace{0.3cm}
 
 {\color{VerdeIcesi}\rule{1.2cm}{2.5pt}}
 
-\vspace{0.3cm}
+\vspace{0.25cm}
 
 {\color{AzulIcesi}
-\fontsize{25}{30}\selectfont
+\fontsize{19}{23}\selectfont
 \bfseries
 SEMP: Sensor electromagnético de proximidad
 }
@@ -193,36 +200,39 @@ SEMP: Sensor electromagnético de proximidad
 \vspace{0.3cm}
 
 {\color{GrisTexto}
-\large
-Diseño y simulación de un sensor inductivo que detecta, identifica y ubica piezas metálicas
+\normalsize
+Una espira en el piso que detecta un carro y reconoce si es un Spark o un Kwid
 }
 
-\vspace{0.4cm}
+\vspace{0.2cm}
 
 {\color{AzulIcesi}\rule{\linewidth}{0.8pt}}
 
-\vspace{0.3cm}
+\vspace{0.15cm}
 
 \textbf{Autores}
 
 \vspace{0.1cm}
 
-\begin{columns}[T]
-\column{0.3\textwidth}
-Luis Ernesto Rodríguez\\
-Sebastián Santander Soto\\
-Kevin Lozano Gómez
-\column{0.3\textwidth}
-Juan Pablo Corchuelo\\
-Mateo López
-\column{0.34\textwidth}
 \small
-Electromagnetismo\\
-Universidad Icesi\\
-{\color{GrisTexto}Cali, Colombia -- 2026}
-\end{columns}
+Luis Ernesto Rodríguez, Sebastián Santander Soto,\\
+Kevin Lozano Gómez, Juan Pablo Corchuelo, Mateo López
 
-\vfill
+\vspace{0.15cm}
+
+\footnotesize
+Electromagnetismo -- Universidad Icesi\\
+{\color{GrisTexto}Cali, Colombia -- 2026}
+
+\column{0.42\textwidth}
+
+\vspace{1.2cm}
+
+\includegraphics[width=\linewidth]{ia-portada.jpg}
+
+\creditoia
+
+\end{columns}
 
 \end{frame}
 
@@ -231,6 +241,10 @@ Universidad Icesi\\
 % ==========================================
 
 \begin{frame}{Contenido}
+
+\begin{columns}[c]
+
+\column{0.45\textwidth}
 
 \begin{enumerate}
  \item Introducción
@@ -242,6 +256,14 @@ Universidad Icesi\\
  \item Referencias
 \end{enumerate}
 
+\column{0.5\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-spark-atardecer.png}
+
+\fuente{Escena 3D del simulador: el Spark detenido sobre la espira, con la talanquera abierta.}
+
+\end{columns}
+
 \end{frame}
 
 % ==========================================
@@ -252,23 +274,29 @@ Universidad Icesi\\
 
 \begin{frame}{Introducción}
 
+\begin{columns}[T]
+
+\column{0.55\textwidth}
+
 \begin{block}{Contexto del proyecto}
-En las líneas de producción hay que detectar piezas metálicas sin tocarlas. Los sensores inductivos lo hacen con
-un campo magnético variable y no les afectan el polvo, el aceite ni la suciedad.
+Los sensores inductivos detectan metal sin contacto: en fábricas, semáforos y parqueaderos, donde una espira
+enterrada detecta el carro y abre la talanquera.
 \end{block}
 
 \begin{itemize}
- \item \textbf{Problema:} una banda de autopartes lleva piezas de distintos metales mezcladas. No basta con
-       saber que pasa una pieza: hay que saber \alert{de qué metal es} y \alert{a qué distancia está}.
- \item \textbf{Motivación:} clasificar y controlar la calidad con un solo sensor, sin contacto.
- \item \textbf{Propósito:} modelar el sensor desde Maxwell y construir un simulador interactivo.
- \item \textbf{Objetivos:}
- \begin{itemize}
-  \item Deducir el modelo del sensor (Faraday, Ampère, circuito RL) y resolverlo analíticamente.
-  \item Programar Euler y RK4 a mano y validar su convergencia.
-  \item Simular la detección, la identificación del material y la estimación de la distancia.
- \end{itemize}
+ \item \textbf{Problema:} abrir la talanquera y saber \alert{qué carro llegó}, sin cámaras ni botones.
+ \item \textbf{Caso propuesto en clase:} distinguir un \textbf{Chevrolet Spark GT} de un \textbf{Renault Kwid}.
+ \item \textbf{Objetivos:} modelar el detector con Faraday y Ampère; resolverlo analíticamente y con Euler y RK4
+       a mano; simularlo en 3D y medir si reconoce cada carro.
 \end{itemize}
+
+\column{0.42\textwidth}
+
+\includegraphics[width=\linewidth]{ia-aplicaciones.jpg}
+
+\creditoia
+
+\end{columns}
 
 \end{frame}
 
@@ -280,107 +308,140 @@ un campo magnético variable y no les afectan el polvo, el aceite ni la suciedad
 
 \begin{frame}{Descripción del proceso: esquema D.E.P.A.}
 
-Como en el espectrómetro de masas, el proceso se divide en etapas y cada una usa solo la matemática que necesita.
+Como en el espectrómetro de masas, el proceso se divide en etapas y cada una usa solo la física que necesita.
 
-\vspace{0.25cm}
+\vspace{0.3cm}
 
 \begin{center}
-\begin{tikzpicture}[node distance=0.35cm, >=Stealth]
- \node[align=center, text width=1.45cm] (ins) {\small\textbf{Insumos}\\[1pt]\scriptsize contexto de inicio};
- \node[right=0.35cm of ins, draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=1.95cm,
-       minimum height=1.45cm, align=center, text width=1.85cm] (D)
-       {{\color{AzulIcesi}\bfseries\Large D}\\[2pt]{\scriptsize Detección\\material y distancia}};
- \node[right=0.35cm of D, draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=1.95cm,
-       minimum height=1.45cm, align=center, text width=1.85cm] (E)
-       {{\color{AzulIcesi}\bfseries\Large E}\\[2pt]{\scriptsize Emisiones\\respuesta de la pieza}};
- \node[right=0.35cm of E, draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=1.95cm,
-       minimum height=1.45cm, align=center, text width=1.85cm] (P)
-       {{\color{AzulIcesi}\bfseries\Large P}\\[2pt]{\scriptsize Propiedades\\$f$, energía, potencia}};
- \node[right=0.35cm of P, draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=1.95cm,
-       minimum height=1.45cm, align=center, text width=1.85cm] (A)
-       {{\color{AzulIcesi}\bfseries\Large A}\\[2pt]{\scriptsize Alerta\\material, distancia}};
- \node[right=0.35cm of A, align=center, text width=1.45cm] (S)
-       {\small\textbf{Solución}\\[1pt]\scriptsize contexto de impacto};
+\begin{tikzpicture}[>=Stealth]
+ \tikzset{caja/.style={draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=2.2cm,
+          minimum height=1.6cm, align=center, text width=2.05cm}}
+ \node[align=center, text width=1.5cm] (ins) {\small\textbf{Insumos}\\[1pt]\scriptsize parqueaderos, semáforos};
+ \node[caja, right=0.35cm of ins] (D) {{\color{AzulIcesi}\bfseries\Large D}\\[1pt]{\scriptsize\textbf{Detección}\\¿hay carro?, ¿cuál?}};
+ \node[caja, right=0.3cm of D] (E) {{\color{AzulIcesi}\bfseries\Large E}\\[1pt]{\scriptsize\textbf{Emisiones}\\corrientes de Foucault en el chasis}};
+ \node[caja, right=0.3cm of E] (P) {{\color{AzulIcesi}\bfseries\Large P}\\[1pt]{\scriptsize\textbf{Propiedades}\\$f$ = 55 kHz, energía, potencia}};
+ \node[caja, right=0.3cm of P] (A) {{\color{AzulIcesi}\bfseries\Large A}\\[1pt]{\scriptsize\textbf{Alerta}\\sube $f$, abre la talanquera}};
+ \node[align=center, text width=1.5cm, right=0.35cm of A] (S) {\small\textbf{Solución}\\[1pt]\scriptsize reconoce el carro};
  \draw[->, thick, GrisTexto] (ins) -- (D);
  \draw[->, thick, AzulIcesi] (D) -- (E);
  \draw[->, thick, AzulIcesi] (E) -- (P);
  \draw[->, thick, AzulIcesi] (P) -- (A);
  \draw[->, thick, GrisTexto] (A) -- (S);
- \node[below=0.55cm of P, xshift=-1.3cm, draw=VerdeIcesi, thick, rounded corners=2pt, align=center,
-       text width=5.2cm] (caso)
-       {\scriptsize\textbf{Caso específico de estudio} $\rightarrow$ \textbf{Simulador}};
+ \node[below=0.55cm of P, xshift=-1.25cm, draw=VerdeIcesi, thick, rounded corners=2pt, align=center,
+       text width=6.2cm] (caso)
+       {\scriptsize\textbf{Caso de estudio:} espira de 1.8 m bajo un Spark o un Kwid $\rightarrow$ \textbf{Simulador}};
  \draw[->, GrisTexto] (ins.south) |- (caso.west);
  \draw[->, GrisTexto] (S.south) |- (caso.east);
 \end{tikzpicture}
 \end{center}
 
-\vspace{0.1cm}
+\vspace{0.2cm}
 
-\begin{itemize}
- \item \textbf{Sistema:} bobina alimentada con corriente alterna y pieza metálica cercana.
- \item \textbf{Fenómeno:} el campo variable induce corrientes de Foucault (Faraday) cuyo campo se opone
-       (Lenz): cambian $L$ y $R$.
-\end{itemize}
+\begin{columns}[T]
+\column{0.48\textwidth}
+\small
+\textbf{Contexto de inicio:} un parqueadero que necesita saber qué carro entra.
+\column{0.48\textwidth}
+\small
+\textbf{Contexto de impacto:} abrir la talanquera y registrar el modelo.
+\end{columns}
 
 \end{frame}
 
-\begin{frame}{Descripción del proceso: variables y supuestos}
+\begin{frame}{Descripción del proceso: qué pasa físicamente}
 
-\begin{columns}[T]
+\begin{columns}[c]
 
 \column{0.5\textwidth}
 
-\textbf{Variables y parámetros}
+\includegraphics[width=\linewidth]{ia-campo-corrientes.jpg}
 
-\footnotesize
-\begin{tabular}{@{}lll@{}}
-\toprule
-Magnitud & Símbolo & Tipo \\
-\midrule
-Campo magnético & $\vec B$ & vectorial \\
-Campo eléctrico inducido & $\vec E$ & vectorial \\
-Corrientes de Foucault & $\vec J=\sigma\vec E$ & vectorial \\
-Corriente de la bobina & $i(t)$ & escalar \\
-Inductancia, resistencia & $L$, $R$ & escalar \\
-Conductividad, permeabilidad & $\sigma$, $\mu_r$ & escalar \\
-Frecuencia, distancia & $\omega$, $d$ & escalar \\
-\bottomrule
-\end{tabular}
+\creditoia
 
-\column{0.46\textwidth}
+\column{0.47\textwidth}
 
-\textbf{Supuestos del modelo}
+\begin{enumerate}
+ \item La espira, con corriente alterna, crea un campo $\vec B(t)$ que sube desde el pavimento.
+ \item Ese campo cambia y, por la \textbf{ley de Faraday}, induce corrientes de Foucault en el chasis de acero.
+ \item Por la \textbf{ley de Lenz}, esas corrientes crean un campo contrario: el chasis ``bloquea'' parte del flujo.
+ \item La inductancia de la espira \alert{baja} y la frecuencia del oscilador \alert{sube}.
+ \item Más bajo el carro, más efecto.
+\end{enumerate}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Representación del sistema}
+
+\begin{columns}[c]
+
+\column{0.56\textwidth}
+
+\includegraphics[width=\linewidth]{anatomy-corte-espira.png}
+
+\fuente{Corte del detector (figura hecha con la skill Anatomy de Claude). Los números salen del modelo.}
+
+\column{0.41\textwidth}
+
+\includegraphics[width=0.78\linewidth]{ia-corte-pavimento.jpg}
+
+\creditoia
+
+\vspace{0.1cm}
 
 \small
 \begin{itemize}
- \item Régimen cuasi-estático: $\lambda = c/f = 300$ km frente a una bobina de 3 cm.
- \item Materiales lineales: $\sigma$ y $\mu_r$ constantes.
- \item Pieza como semiespacio (más ancha que la bobina y más gruesa que $3\delta$).
- \item Bobina de capa delgada, sin núcleo.
- \item Para cada posición de la pieza, $L$ y $R$ constantes.
+ \item Espira de 3 vueltas en una ranura de 5 cm.
+ \item Cable al detector: un oscilador LC.
+ \item El chasis queda a 20 cm (Spark) o 23 cm (Kwid) de la espira.
 \end{itemize}
 
 \end{columns}
 
 \end{frame}
 
-\begin{frame}{Representación del proceso: el campo de la bobina y la pieza}
+\begin{frame}{Caso de estudio: Spark frente a Kwid}
 
-\begin{columns}[c]
+\begin{columns}[T]
 
-\column{0.6\textwidth}
+\column{0.5\textwidth}
 
-\includegraphics[width=\linewidth]{campo-magnetico.png}
+\includegraphics[width=\linewidth]{ia-comparacion-carros.jpg}
 
-\column{0.37\textwidth}
+\creditoia\ {\tiny\color{GrisTexto}Carros genéricos, no los modelos reales.}
+
+\vspace{0.2cm}
+
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark GT & Kwid \\
+\midrule
+Largo $\times$ ancho (m) & $3.64\times1.60$ & $3.68\times1.59$ \\
+Peso (kg) & 966 & 785 \\
+\textbf{Altura libre al piso} & \textbf{15 cm} & \textbf{18 cm} \\
+\bottomrule
+\end{tabular}
+
+\column{0.46\textwidth}
+
+\textbf{La espira}
 
 \small
-\begin{enumerate}
- \item La bobina crea un campo $\vec B(t)$ que cambia mil veces por segundo.
- \item En la pieza aparece un campo $\vec E$ inducido (Faraday) y corrientes $\vec J=\sigma\vec E$.
- \item Esas corrientes crean un campo opuesto (Lenz): las líneas se \alert{acuestan} sobre el cobre.
- \item Parte del flujo deja de enlazar la bobina: $L$ baja. Las pérdidas por efecto Joule suben $R$.
-\end{enumerate}
+\begin{itemize}
+ \item Cuadrada de 1.8 m (6 $\times$ 6 pies), 3 vueltas de alambre 14 AWG.
+ \item Enterrada a 5 cm; $R = 0.6~\Omega$.
+ \item Capacitor del oscilador: $C = 0.1~\mu$F.
+\end{itemize}
+
+\textbf{Supuestos}
+
+\begin{itemize}
+ \item Chasis = placa plana de acero ($\sigma = 6\times10^6$ S/m, $\mu_r = 100$).
+ \item El carro tapa una fracción $\eta$ de la espira (0.89 y 0.88).
+ \item Régimen cuasi-estático, materiales lineales.
+\end{itemize}
 
 \end{columns}
 
@@ -392,166 +453,122 @@ Frecuencia, distancia & $\omega$, $d$ & escalar \\
 
 \column{0.52\textwidth}
 
-\textbf{Faraday} (la central): induce las corrientes en la pieza y la fem de la bobina
+\textbf{Faraday} (la central)
 \[
- \oint_C \vec E\cdot d\vec l = -\frac{d\Phi_B}{dt},\qquad \Phi_B = \vec B\cdot\vec A
+ \oint_C \vec E\cdot d\vec l = -\frac{d\Phi_B}{dt},\qquad \Phi_B=\vec B\cdot\vec A
 \]
+induce las corrientes en el chasis y la fem $-L\,di/dt$ en la espira.
 
-\textbf{Ampère} sin corriente de desplazamiento ($\omega\varepsilon_0/\sigma\approx10^{-18}$)
+\textbf{Ampère}, sin corriente de desplazamiento
 \[
  \oint_C \vec B\cdot d\vec l = \mu_0 I_{enc}
 \]
 
-\textbf{Gauss magnética}, solo como condición de frontera
-\[
- \oint_A \vec B\cdot d\vec A = 0 \;\Rightarrow\; B_z \text{ continuo en } z=0
-\]
+\textbf{Gauss magnética}, solo como frontera: $B_z$ continuo en el chasis.
 
 \column{0.44\textwidth}
 
-En el metal queda una ecuación de difusión:
-\[
- \nabla^2\vec A = j\omega\mu_0\mu_r\sigma\,\vec A
-\]
-
-con profundidad de penetración
-\[
- \delta = \sqrt{\frac{2}{\omega\mu_0\mu_r\sigma}}
-\]
-
-\begin{block}{Condiciones de frontera}
+\begin{block}{¿Por qué baja $L$ si el acero es magnético?}
 \small
-$B_z$ y $H_\rho$ continuos en la superficie; campos nulos lejos de la bobina.
-Inicial: $i(0)=I_0$.
+Profundidad de penetración a 55 kHz:
+\[
+ \delta=\sqrt{\frac{2}{\omega\mu_0\mu_r\sigma}} = 0.087~\text{mm}
+\]
+El campo casi no entra: el chasis actúa como conductor perfecto y \alert{expulsa} el flujo.
 \end{block}
+
+\small
+\textbf{Cuasi-estático:} $\lambda = c/f = 5.4$ km, 3\,000 veces la espira; $\omega\varepsilon_0/\sigma = 5\times10^{-13}$.
 
 \end{columns}
 
 \end{frame}
 
-\begin{frame}{Formalismo matemático: el circuito RL, como el RC de clase}
+\begin{frame}{Formalismo matemático: inductancia y efecto del chasis}
 
 \begin{columns}[T]
 
 \column{0.5\textwidth}
 
-Ley de mallas de Kirchhoff:
+\textbf{Espira} (circular de igual área, $a = 1.016$ m):
 \[
- \varepsilon - iR - L\frac{di}{dt} = 0
+ L_0 = \mu_0N^2a\left[\ln\frac{8a}{r_w}-2\right] = 83.0~\mu\text{H}
 \]
 
-\textbf{Energizar} (escalón DC), por separación de variables:
+\textbf{Chasis} a $d = h_{piso} + 5$ cm (Dodd y Deeds):
 \[
- \int_0^t\frac{dt}{\tau} = \int_0^{i}\frac{di}{i_{max}-i}
- \;\Rightarrow\;
- i(t)=i_{max}\left(1-e^{-t/\tau}\right)
-\]
-\[
- i_{max}=\frac{\varepsilon}{R},\qquad \tau=\frac{L}{R},\qquad i(\tau)=0.63\,i_{max}
-\]
-
-\column{0.46\textwidth}
-
-\textbf{Alterna} $\varepsilon = V_0\sin\omega t$:
-\[
- i(t) = \left[I_0 + I_p\sin\varphi\right]e^{-t/\tau} + I_p\sin(\omega t-\varphi)
-\]
-\[
- I_p = \frac{V_0}{\sqrt{R^2+\omega^2L^2}},\qquad \varphi=\arctan\frac{\omega L}{R}
-\]
-
-Inductancia de la bobina (Wheeler):
-\[
- L_0 = \frac{\mu_0 N^2\pi a^2}{l+0.9a}
-\]
-
-\end{columns}
-
-\vspace{0.15cm}
-
-\begin{block}{Analogía}
-\small
-RC: $\tau=RC$, sube la carga $q$. \quad RL: $\tau=L/R$, sube la corriente $i$. Misma ecuación y misma curva.
-\end{block}
-
-\end{frame}
-
-\begin{frame}{Formalismo matemático: efecto de la pieza y detección}
-
-Solución de Dodd y Deeds para una bobina sobre un conductor:
-\[
- \Delta Z = j\omega\pi\mu_0 a^2N^2\int_0^\infty J_1^2(\alpha a)\,\Gamma(\alpha)\,F^2(\alpha)\,d\alpha,
- \qquad
- \Gamma=\frac{\mu_r\alpha-\alpha_1}{\mu_r\alpha+\alpha_1},\quad \alpha_1=\sqrt{\alpha^2+j\omega\mu_0\mu_r\sigma}
+ \Delta Z = \eta\; j\omega\pi\mu_0a^2N^2\!\int_0^\infty\! J_1^2(\alpha a)\,\Gamma\,F^2\,d\alpha
 \]
 \[
  L_{\text{eff}} = L_0 + \frac{\operatorname{Im}\Delta Z}{\omega},\qquad R_{\text{eff}} = R_0 + \operatorname{Re}\Delta Z
 \]
 
-\begin{columns}[T]
-
-\column{0.48\textwidth}
-
-\begin{block}{D: detección}
-\small
-Hay pieza si $\dfrac{|I_p-I_{p,0}|}{I_{p,0}}\ \ge$ umbral (2 \%).
-\end{block}
-
-\column{0.48\textwidth}
-
-\begin{block}{E y P: identificación}
-\small
-Con la \textbf{frecuencia}: la fase de $\Delta Z$ identifica el material.\\
-Con la \textbf{potencia}: $|\Delta Z|$ da la distancia.
-\end{block}
-
-\end{columns}
-
-\end{frame}
-
-\begin{frame}{Caso de estudio: línea de autopartes}
-
-\begin{columns}[T]
-
-\column{0.55\textwidth}
+\column{0.46\textwidth}
 
 \footnotesize
-\begin{tabular}{@{}llrr@{}}
+\begin{tabular}{@{}lrr@{}}
 \toprule
-Pieza & Material & $\sigma$ (S/m) & $\mu_r$ \\
+ & Spark & Kwid \\
 \midrule
-Tornillos & Acero al carbono & $6.0\times10^{6}$ & 100 \\
-Cables & Cobre & $5.96\times10^{7}$ & 1 \\
-Carcasas & Aluminio & $3.77\times10^{7}$ & 1 \\
-Conectores & Latón & $1.5\times10^{7}$ & 1 \\
-Abrazaderas & Inoxidable 304 & $1.45\times10^{6}$ & 1.02 \\
+Distancia chasis--espira & 20 cm & 23 cm \\
+Fracción tapada $\eta$ & 0.89 & 0.88 \\
+$\Delta L$ & $-10.7~\mu$H & $-9.5~\mu$H \\
+$\Delta L/L_0$ & $\mathbf{-12.9}$ \% & $\mathbf{-11.4}$ \% \\
+$\Delta R$ & $+0.064~\Omega$ & $+0.054~\Omega$ \\
 \bottomrule
 \end{tabular}
 
 \vspace{0.3cm}
 
 \small
-\textbf{Sensor de referencia:} $N=150$, $a=15$ mm, $l=20$ mm, $R_0=5\ \Omega$, $V_0=5$ V, $f=1$ kHz
-(y 5 kHz); $L_0=0.60$ mH, $\tau_0=119\ \mu$s.
+Regla de instalación de espiras: $\approx 71~\mu$H. Mismo orden que el modelo.
 
-\column{0.41\textwidth}
+\end{columns}
 
-\textbf{Requisitos}
+\end{frame}
+
+\begin{frame}{Formalismo matemático: el oscilador LC, como el RC de clase}
+
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+Kirchhoff en la malla, con la convención de signos de clase:
+\[
+ -\frac{q}{C} - iR - L\frac{di}{dt}=0,\quad i=\frac{dq}{dt}
+\]
+\[
+ \Rightarrow\; L\ddot q + R\dot q + \frac{q}{C} = 0
+\]
+Con $q=e^{st}$: $s = -\dfrac{R}{2L}\pm j\omega_d$, \; $\omega_d\approx\dfrac{1}{\sqrt{LC}}$.
+
+\[
+ f_0 = \frac{1}{2\pi\sqrt{L_0C}} = 55.25~\text{kHz},\qquad Q = \frac{\omega_0L_0}{R} = 48
+\]
+
+\column{0.46\textwidth}
+
+\begin{block}{Cambio de frecuencia (exacto)}
+\[
+ \frac{f}{f_0} = \left(1+\frac{\Delta L}{L_0}\right)^{-1/2}
+\]
+\end{block}
+
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark & Kwid \\
+\midrule
+$\Delta f/f_0$ exacto & $+7.13$ \% & $+6.23$ \% \\
+Aproximación $-\tfrac12\Delta L/L_0$ & $+6.44$ \% & $+5.70$ \% \\
+Frecuencia con el carro & \textbf{59.18 kHz} & \textbf{58.69 kHz} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.2cm}
 
 \small
-\begin{itemize}
- \item Avisar si una pieza pasa a menos de 8 mm.
- \item Identificar su material.
- \item Estimar su distancia.
- \item Avisar si no coincide con el catálogo (impureza).
-\end{itemize}
-
-\textbf{Alcance y limitaciones}
-
-\begin{itemize}
- \item Movimiento lento frente al período.
- \item Sin núcleo de ferrita ni geometría finita.
-\end{itemize}
+Condición inicial: capacitor cargado, $q(0)=q_0$, $i(0)=0$.
 
 \end{columns}
 
@@ -565,112 +582,133 @@ Abrazaderas & Inoxidable 304 & $1.45\times10^{6}$ & 1.02 \\
 
 \begin{frame}{Métodos de análisis numérico}
 
-Problema de valor inicial $\;i' = f(t,i) = \dfrac{\varepsilon(t) - Ri}{L}$, $\;i(0)=I_0$, con paso $h=\Delta t$.
-
 \begin{columns}[T]
 
-\column{0.42\textwidth}
+\column{0.46\textwidth}
 
-\textbf{Euler} (orden 1)
+El oscilador es de segundo orden; se escribe como sistema con $\mathbf y = (q, i)$:
 \[
- i_{k+1} = i_k + h\,f(t_k,i_k)
+ \frac{d}{dt}\begin{pmatrix} q\\ i\end{pmatrix} = \begin{pmatrix} i\\ -\dfrac{Ri + q/C}{L}\end{pmatrix}
 \]
 
-\textbf{Estabilidad:} $|1-h/\tau|<1 \Rightarrow h<2\tau$
+\textbf{Euler} (orden 1): $\;\mathbf y_{n+1}=\mathbf y_n+h\,\mathbf f(t_n,\mathbf y_n)$
 
-\vspace{0.2cm}
+\vspace{0.15cm}
 
-\textbf{Justificación:} la guía pide ambos; Euler es el punto de partida y RK4 el estándar de precisión.
+\textbf{Justificación:} la guía pide ambos; RK4 es el estándar de precisión para EDO.
 
-\column{0.54\textwidth}
+\column{0.5\textwidth}
 
 \textbf{Runge--Kutta 4} (orden 4)
 \[
 \begin{aligned}
- k_1 &= f(t_k,\, i_k) \\
- k_2 &= f\!\left(t_k+\tfrac h2,\, i_k+\tfrac h2k_1\right) \\
- k_3 &= f\!\left(t_k+\tfrac h2,\, i_k+\tfrac h2k_2\right) \\
- k_4 &= f(t_k+h,\, i_k+hk_3) \\
- i_{k+1} &= i_k + \tfrac h6\,(k_1+2k_2+2k_3+k_4)
+ \mathbf k_1 &= \mathbf f(t_n,\mathbf y_n) \\
+ \mathbf k_2 &= \mathbf f\!\left(t_n+\tfrac h2,\,\mathbf y_n+\tfrac h2\mathbf k_1\right) \\
+ \mathbf k_3 &= \mathbf f\!\left(t_n+\tfrac h2,\,\mathbf y_n+\tfrac h2\mathbf k_2\right) \\
+ \mathbf k_4 &= \mathbf f(t_n+h,\,\mathbf y_n+h\mathbf k_3) \\
+ \mathbf y_{n+1} &= \mathbf y_n + \tfrac h6\,(\mathbf k_1+2\mathbf k_2+2\mathbf k_3+\mathbf k_4)
 \end{aligned}
 \]
 
 \end{columns}
 
-\begin{block}{Criterios de precisión}
+\begin{block}{Procedimiento}
 \small
-$e_{abs}=\max_k|i_k-i(t_k)|$, \quad $e_{rel}=e_{abs}/\max|i|$, \quad
-orden observado $p=\dfrac{\ln(e_k/e_{k+1})}{\ln(h_k/h_{k+1})}$
+Se integra el oscilador 30 períodos y la frecuencia se \textbf{mide contando los cruces por cero} de $q(t)$,
+igual que un detector real.
 \end{block}
 
 \end{frame}
 
-\begin{frame}{Procedimiento computacional}
+\begin{frame}{Validación numérica: convergencia}
 
-\begin{columns}[T]
+\begin{columns}[c]
 
-\column{0.48\textwidth}
+\column{0.55\textwidth}
 
+\includegraphics[width=\linewidth]{convergencia.png}
+
+\fuente{Circuito RL de la bobina con solución exacta: error frente al paso.}
+
+\column{0.42\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}rrr@{}}
+\toprule
+Pasos/período & Error en $f$, RK4 & Euler \\
+\midrule
+10 & $-1.1\times10^{-3}$ & $-1.0\times10^{-1}$ \\
+20 & $-8.1\times10^{-5}$ & $-2.8\times10^{-2}$ \\
+40 & $-5.1\times10^{-6}$ & $-6.5\times10^{-3}$ \\
+80 & $-3.2\times10^{-7}$ & $-1.2\times10^{-3}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.25cm}
+
+\small
 \begin{itemize}
- \item \textbf{Herramientas:} Python, NumPy, SciPy, SymPy, Matplotlib, Plotly y Streamlit.
- \item \textbf{Datos de entrada:} $N$, $a$, $l$, $R_0$, $V_0$, $f$, material, $d$, umbral, $I_0$.
- \item \textbf{Parámetros de cálculo:} pasos por ciclo (o por $\tau$) y duración.
- \item \textbf{Validación:}
- \begin{itemize}
-  \item solución exacta y \texttt{solve\_ivp} de SciPy;
-  \item 10 pruebas automáticas;
-  \item balance de energía: error $5\times10^{-7}$;
-  \item ejercicio RC de clase con el mismo código.
- \end{itemize}
+ \item Órdenes medidos: \textbf{1.01} (Euler) y \textbf{4.02} (RK4).
+ \item Al duplicar los pasos, el error de RK4 baja \alert{16 veces}.
 \end{itemize}
-
-\column{0.48\textwidth}
-
-\begin{block}{Algoritmo}
-\scriptsize
-\textbf{1.} Leer parámetros de la bobina, la fuente y la pieza.\\
-\textbf{2.} Calcular $L_0$ (Wheeler).\\
-\textbf{3.} Calcular $\Delta Z$ (integral de Dodd--Deeds) y obtener $L_{\text{eff}}$, $R_{\text{eff}}$.\\
-\textbf{4.} Integrar $i'=f(t,i)$ con Euler y RK4.\\
-\textbf{5.} Comparar con la solución exacta: errores y orden.\\
-\textbf{6.} Medir amplitud y fase $\rightarrow$ $\Delta Z$ medido.\\
-\textbf{7.} Buscar la curva de material más cercana en el plano de impedancia $\rightarrow$ material y distancia.\\
-\textbf{8.} Emitir la alerta con histéresis.
-\end{block}
 
 \end{columns}
 
 \end{frame}
 
-\begin{frame}{Convergencia de Euler y RK4}
+\begin{frame}{En el oscilador, Euler explota}
 
-\begin{columns}[T]
+\begin{columns}[c]
 
-\column{0.6\textwidth}
+\column{0.62\textwidth}
 
-\includegraphics[width=\linewidth]{convergencia.png}
+\includegraphics[width=\linewidth]{oscilador-lc.png}
 
-\column{0.37\textwidth}
-
-\footnotesize
-\begin{tabular}{@{}rrr@{}}
-\toprule
-Pasos/ciclo & Euler $e_{rel}$ & RK4 $e_{rel}$ \\
-\midrule
-10 & 25.6 \% & 0.41 \% \\
-40 & 4.48 \% & $1.2\times10^{-3}$ \% \\
-160 & 1.09 \% & $4.2\times10^{-6}$ \% \\
-\bottomrule
-\end{tabular}
-
-\vspace{0.3cm}
+\column{0.35\textwidth}
 
 \small
-\begin{itemize}
- \item Orden medido: \textbf{1.01} (Euler) y \textbf{4.02} (RK4).
- \item Al dividir $h$ entre 2, el error de RK4 baja 16 veces.
- \item Para un 1 \% de error: Euler necesita 160 pasos por ciclo; RK4, 10.
-\end{itemize}
+Sin pérdidas, un paso de Euler multiplica cada modo por
+\[
+ |1+j\omega h| = \sqrt{1+(\omega h)^2} > 1
+\]
+para \emph{cualquier} paso: la energía crece.
+
+\vspace{0.15cm}
+
+Con 40 pasos por período: $\times10^{11}$ en 30 períodos.
+
+\vspace{0.15cm}
+
+RK4 reproduce la pérdida exacta $e^{-Rt/L}$ (0.0197).
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{La simulación corrigió una fórmula}
+
+\begin{columns}[c]
+
+\column{0.5\textwidth}
+
+Al principio se usó la aproximación
+\[
+ \frac{\Delta f}{f_0}\approx -\frac12\frac{\Delta L}{L_0} = +6.44~\%\ \text{(Spark)}
+\]
+
+Al simular el oscilador con RK4 salió
+\[
+ \frac{\Delta f}{f_0} = +7.130~\% \text{ con cualquier paso}
+\]
+
+y coincide con la fórmula exacta $(1+\Delta L/L_0)^{-1/2}-1 = +7.13$ \%.
+
+\column{0.46\textwidth}
+
+\begin{block}{Lección}
+La aproximación solo vale si $|\Delta L/L_0|\ll 1$. Con un carro el cambio es del 13 \%: \alert{el método numérico
+decidió qué fórmula usar}, y todo el proyecto se corrigió a la exacta.
+\end{block}
 
 \end{columns}
 
@@ -682,66 +720,127 @@ Pasos/ciclo & Euler $e_{rel}$ & RK4 $e_{rel}$ \\
 
 \section{Simulación computacional}
 
-\begin{frame}{Modelo de simulación}
+\begin{frame}{Modelo de simulación: escena 3D del parqueadero}
 
 \begin{columns}[T]
 
-\column{0.48\textwidth}
+\column{0.49\textwidth}
 
-\begin{itemize}
- \item \textbf{Estructura:} app web en Streamlit con 8 pestañas, de Modelo a Identificación.
- \item \textbf{Control:} espiras, radio, frecuencia, voltaje, material, distancia y umbral.
- \item \textbf{Escenarios:} 5 materiales; alterna o escalón DC; pieza fija o en movimiento.
- \item \textbf{Ejecución:} ruido de medida, promedios, una o dos frecuencias, paso $\Delta t$.
- \item \textbf{Herramientas:} Plotly y Matplotlib.
-\end{itemize}
+\includegraphics[width=\linewidth]{escena-3d-spark-atardecer.png}
 
-\column{0.48\textwidth}
+\fuente{Spark: 59.18 kHz, la pantalla dice SPARK y la talanquera se abre.}
 
-\includegraphics[width=\linewidth]{respuesta-temporal.png}
+\column{0.49\textwidth}
 
-\scriptsize
-\color{GrisTexto}
-Izquierda: energizar y desenergizar la bobina ($\Delta t=\tau/10$). Derecha: alterna a 1 kHz con cobre a 5 mm.
+\includegraphics[width=\linewidth]{escena-3d-kwid-dia.png}
+
+\fuente{Kwid: más alto, la frecuencia sube menos (58.69 kHz).}
 
 \end{columns}
 
+\vspace{0.2cm}
+
+\small
+Python (NumPy, SciPy, SymPy) para el modelo; Streamlit y Three.js para la escena. Los carros tienen sus medidas
+reales y se pueden cambiar el carro, la espira, su profundidad, las vueltas y la velocidad.
+
 \end{frame}
 
-\begin{frame}{Resultados de la simulación: parámetros y escenarios}
+\begin{frame}{Resultados de la simulación: lo que mide el detector}
 
 \begin{columns}[T]
 
-\column{0.55\textwidth}
+\column{0.62\textwidth}
 
-\begin{block}{Representación gráfica}
-\centering
-\includegraphics[height=2.75cm]{parametros-vs-distancia.png}
+\vspace{0.3cm}
 
-\vspace{0.05cm}
+\includegraphics[width=\linewidth]{carro-altura.png}
 
-\includegraphics[height=2.2cm]{escenarios-alcance.png}
-\end{block}
+\column{0.35\textwidth}
 
-\column{0.42\textwidth}
-
-\textbf{Observaciones}
+\vspace{0.3cm}
 
 \small
 \begin{itemize}
- \item El cobre baja $L$ un 8.5 \% a 5 mm (apantallamiento); el acero la sube un 5.5 \% (magnetización).
- \item El efecto desaparece a una distancia del orden del radio: el campo cae como $1/z^3$ (dipolo).
- \item El alcance crece con el radio y con $N$.
- \item \alert{Frecuencia ciega} del acero cerca de 20 kHz: los dos efectos se cancelan.
+ \item Más bajo el carro, más baja $L$ y más sube $f$.
+ \item Pendiente: unos 0.46 puntos de $\Delta L/L$ por centímetro.
+ \item Invirtiendo la curva, el detector estima la altura: \textbf{14.9 cm} (Spark) y \textbf{18.0 cm} (Kwid).
 \end{itemize}
 
 \end{columns}
 
 \end{frame}
 
-\begin{frame}{Resultados de la simulación: identificación del material}
+\begin{frame}{Resultados de la simulación: el carro cruzando la espira}
+
+\begin{columns}[c]
+
+\column{0.55\textwidth}
+
+\includegraphics[width=\linewidth]{carro-paso.png}
+
+\column{0.42\textwidth}
+
+\small
+\begin{itemize}
+ \item A 10 km/h la señal es un \textbf{trapecio} de 2 s: sube mientras el carro tapa la espira, se mantiene y baja.
+ \item El detector necesita unos 18 ms (1\,000 ciclos) para medir la frecuencia con 0.1 \% de resolución.
+ \item Aun a 40 km/h la señal dura medio segundo: miles de mediciones por carro.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Resultados de la simulación: escenarios de diseño}
 
 \begin{columns}[T]
+
+\column{0.52\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Lado de la espira & Spark & Kwid & Diferencia \\
+\midrule
+1.0 m & $-8.8$ \% & $-7.5$ \% & 1.36 \\
+1.5 m & $-12.7$ \% & $-11.2$ \% & \textbf{1.54} \\
+1.8 m & $-12.9$ \% & $-11.4$ \% & 1.48 \\
+2.5 m & $-11.3$ \% & $-10.2$ \% & 1.10 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Profundidad & Spark & Kwid & Diferencia \\
+\midrule
+2 cm & $-14.5$ \% & $-12.8$ \% & 1.76 \\
+5 cm & $-12.9$ \% & $-11.4$ \% & 1.48 \\
+10 cm & $-10.7$ \% & $-9.5$ \% & 1.14 \\
+\bottomrule
+\end{tabular}
+
+\column{0.44\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-kwid-a-ras.png}
+
+\fuente{Vista a ras del piso: las líneas de campo se acuestan bajo el chasis.}
+
+\small
+\begin{itemize}
+ \item Espira óptima: \textbf{del tamaño del carro}.
+ \item Menos profunda, más señal.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Segundo escenario: identificar el material}
+
+\begin{columns}[c]
 
 \column{0.6\textwidth}
 
@@ -749,25 +848,15 @@ Izquierda: energizar y desenergizar la bobina ($\Delta t=\tau/10$). Derecha: alt
 
 \column{0.37\textwidth}
 
-\footnotesize
-\begin{tabular}{@{}lrr@{}}
-\toprule
-Configuración & Material & Ferroso \\
-\midrule
-1 frecuencia & 84 \% & 100 \% \\
-2 frecuencias & 89 \% & 100 \% \\
-1 frec., 16 promedios & 100 \% & 100 \% \\
-2 frec., 16 promedios & 100 \% & 100 \% \\
-\bottomrule
-\end{tabular}
+\includegraphics[width=0.6\linewidth]{ia-sensor-industrial.jpg}
 
-\vspace{0.25cm}
+\creditoia
 
 \small
 \begin{itemize}
- \item La fase separa ferrosos (positiva) de no ferrosos (negativa).
- \item Cobre, aluminio y latón exigen poco ruido.
- \item Error de distancia: 0.03 mm.
+ \item Bobina pequeña en una línea de autopartes.
+ \item La \textbf{fase} de $\Delta Z$ da el material y la \textbf{magnitud}, la distancia.
+ \item 100 \% de acierto.
 \end{itemize}
 
 \end{columns}
@@ -786,30 +875,28 @@ Configuración & Material & Ferroso \\
 
 \column{0.5\textwidth}
 
-\begin{itemize}
- \item \textbf{Modelo teórico:} $L_0=0.60$ mH (la fórmula ideal da 67 \% de más); $\delta_{Cu}=2.1$ mm a 1 kHz.
- \item \textbf{Análisis numérico:} órdenes 1.01 y 4.02; balance de energía con error $5\times10^{-7}$.
- \item \textbf{Simulación:} alcance de 6.1 mm con cobre; identificación del 100 \% con dos frecuencias.
- \item \textbf{Comparación:} RK4 coincide con la solución exacta y con SciPy; el ejercicio RC de clase da
-       $\tau=12$ s y $q_{max}=1.8$ mC.
-\end{itemize}
-
-\column{0.46\textwidth}
-
-\begin{block}{Resultados (d = 5 mm, f = 1 kHz)}
+\begin{block}{Caso del carro (espira de 1.8 m)}
 \footnotesize
-\begin{tabular}{@{}lrrr@{}}
+\begin{tabular}{@{}lrr@{}}
 \toprule
-Material & $\Delta L/L_0$ & Fase $\Delta Z$ & $S_n$ \\
+ & Spark & Kwid \\
 \midrule
-Cobre & $-8.5$ \% & $-81^\circ$ & 6.1 mm \\
-Aluminio & $-8.1$ \% & $-79^\circ$ & 5.2 mm \\
-Latón & $-6.9$ \% & $-73^\circ$ & 1.5 mm \\
-Inox 304 & $-2.7$ \% & $-49^\circ$ & -- \\
-Acero & $+5.5$ \% & $+63^\circ$ & 7.9 mm \\
+$\Delta L/L_0$ & $-12.87$ \% & $-11.39$ \% \\
+Frecuencia (sin carro 55.25 kHz) & 59.18 kHz & 58.69 kHz \\
+Altura estimada & 14.9 cm & 18.0 cm \\
+Potencia absorbida (50 mA) & 80 $\mu$W & 67 $\mu$W \\
 \bottomrule
 \end{tabular}
 \end{block}
+
+\column{0.46\textwidth}
+
+\begin{itemize}
+ \item \textbf{Teoría:} $L_0 = 83~\mu$H, $f_0 = 55.25$ kHz, $\delta = 0.087$ mm.
+ \item \textbf{Numérico:} RK4 da la frecuencia con error $5\times10^{-6}$ y la energía exacta; Euler diverge.
+ \item \textbf{Simulación:} los dos carros se detectan y se reconocen; diferencia de 0.49 kHz.
+ \item \textbf{Comparación:} simulación = fórmula exacta (+7.13 \%).
+\end{itemize}
 
 \end{columns}
 
@@ -817,20 +904,41 @@ Acero & $+5.5$ \% & $+63^\circ$ & 7.9 mm \\
 
 \begin{frame}{Discusión}
 
+\begin{columns}[T]
+
+\column{0.52\textwidth}
+
 \begin{itemize}
- \item \textbf{Teoría y simulación:} los casos límite se cumplen (conductor perfecto $\Gamma\to-1$, ferromagnético
-       $L$ aumenta, pieza lejana sin efecto) y las curvas numéricas coinciden con las exactas.
- \item \textbf{Evaluación del modelo:} ordenando los metales por pérdidas ($\Delta R$) se obtiene el mismo orden de
-       detección que publican los fabricantes; por eso los sensores reales miden pérdidas con un oscilador LC.
- \item \textbf{Impacto:} un solo sensor separa tornillos de acero, cables de cobre y conectores de latón;
-       respuesta de 3.5 ms, unas 8\,500 piezas por minuto.
+ \item \textbf{Teoría y simulación:} el chasis baja $L$ como en los detectores reales; el carro más bajo cambia
+       más; la regla de instalación da el mismo orden de $L_0$.
+ \item \textbf{Impacto:} funciona de noche y con lluvia, sin partes expuestas ni cámaras; menos de 1 mW en la espira.
  \item \textbf{Limitaciones:}
  \begin{itemize}
-  \item pieza infinita y bobina sin núcleo (un modelo de elementos finitos resolvería la geometría real);
-  \item un cobre con el 60 \% de su conductividad es indistinguible del aluminio;
-  \item promediar mejora la exactitud pero alarga la medición (96 ms con 16 promedios).
+  \item el chasis como placa plana da un \alert{máximo} del efecto;
+  \item un Kwid cargado (16 cm) se confunde con un Spark;
+  \item un modelo de elementos finitos daría el valor exacto.
  \end{itemize}
 \end{itemize}
+
+\column{0.44\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & Espira & Cámara & Ultrasonido \\
+\midrule
+Noche y lluvia & Sí & Le afecta & Le afecta \\
+Partes expuestas & No & Sí & Sí \\
+Modelo exacto & No & Sí & No \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+
+\small
+\textbf{Mejora:} una segunda espira mide el largo del carro y, junto con la altura, reduce las confusiones.
+
+\end{columns}
 
 \end{frame}
 
@@ -843,15 +951,14 @@ Acero & $+5.5$ \% & $+63^\circ$ & 7.9 mm \\
 \begin{frame}{Conclusiones}
 
 \begin{enumerate}
- \item \textbf{Hallazgos:} la fase del cambio de impedancia identifica el material y su magnitud da la distancia;
-       el acero tiene una frecuencia ciega cerca de 20 kHz.
- \item \textbf{Objetivos:} el modelo se dedujo desde Faraday y Ampère, Euler y RK4 convergen con sus órdenes
-       teóricos y el simulador detecta, identifica y ubica las piezas.
- \item \textbf{Aportes:} el circuito del sensor se resuelve igual que el RC de clase, y el mismo código resuelve
-       ambos.
- \item \textbf{Limitaciones y mejoras:} medir pérdidas ($\Delta R$) en lugar de amplitud, usar dos frecuencias y una
-       medición diferencial para detectar impurezas.
- \item \textbf{Trabajo futuro:} geometría finita de la pieza, núcleo de ferrita y validación con un prototipo real.
+ \item Con solo \textbf{Faraday y Ampère} se explica el detector: el chasis induce corrientes de Foucault que bajan
+       la inductancia de la espira.
+ \item El oscilador LC se resuelve con \textbf{Kirchhoff, igual que el RC de clase}: $f_0 = 55.25$ kHz.
+ \item El detector reconoce los dos carros por su altura: \textbf{Spark 59.18 kHz} y \textbf{Kwid 58.69 kHz}.
+ \item RK4 converge con orden 4 y conserva la energía; \textbf{Euler explota} en el oscilador. La simulación
+       \textbf{corrigió la fórmula} del cambio de frecuencia.
+ \item \textbf{Trabajo futuro:} modelo de elementos finitos con el chasis real, segunda espira para medir el largo
+       y validación con un detector comercial.
 \end{enumerate}
 
 \end{frame}
@@ -864,37 +971,40 @@ Acero & $+5.5$ \% & $+63^\circ$ & 7.9 mm \\
 
 \begin{frame}{Referencias}
 
-\footnotesize
+\scriptsize
 
 \begin{thebibliography}{10}
 
 \bibitem{dodd}
 Dodd, C. V. y Deeds, W. E.
 Analytical solutions to eddy-current probe-coil problems.
-\textit{Journal of Applied Physics}, 39, 2829, 1968.
+\textit{Journal of Applied Physics}, 39, 2829--2838, 1968.
 
-\bibitem{wheeler}
-Wheeler, H. A.
-Simple inductance formulas for radio coils.
-\textit{Proceedings of the IRE}, 16, 1398, 1928.
+\bibitem{fhwa}
+Federal Highway Administration.
+\textit{Traffic Detector Handbook}, 3.\textsuperscript{a} ed., 2006.
 
 \bibitem{griffiths}
 Griffiths, D. J.
 \textit{Introduction to Electrodynamics}, 4.\textsuperscript{a} ed.
 Cambridge University Press, 2017.
 
-\bibitem{clase}
-Universidad Icesi, curso de Electromagnetismo.
-Apuntes de clase: circuito RC, ley de Gauss, campos eléctricos en la materia y pantallas táctiles
-capacitivas, 2026.
+\bibitem{grover}
+Grover, F. W.
+\textit{Inductance Calculations}. Dover, 2004.
 
-\bibitem{guia}
-Universidad Icesi.
-Guía de proyectos de Electromagnetismo, 2026.
+\bibitem{butcher}
+Butcher, J. C.
+\textit{Numerical Methods for Ordinary Differential Equations}, 3.\textsuperscript{a} ed. Wiley, 2016.
+
+\bibitem{clase}
+Universidad Icesi. Guía de proyectos y apuntes de clase de Electromagnetismo, 2026.
+
+\bibitem{fichas}
+Fichas técnicas del Chevrolet Spark GT y del Renault Kwid (Renting Colombia, Autocosmos), 2025.
 
 \bibitem{iag}
-Anthropic.
-\textit{Claude} (modelo de lenguaje), usado como asistente de programación y redacción, 2026.
+Anthropic. \textit{Claude}; OpenAI \textit{ChatGPT} y Google \textit{Gemini} (imágenes ilustrativas), 2026.
 
 \end{thebibliography}
 
@@ -906,13 +1016,17 @@ Anthropic.
 
 \begin{frame}{Material complementario}
 
+\begin{columns}[c]
+
+\column{0.5\textwidth}
+
 Los desarrollos numéricos y computacionales pueden consultarse en:
 
 \begin{itemize}
- \item Código fuente: modelo físico, Euler y RK4, identificación y simulador.
- \item Pruebas automáticas y script que genera las figuras.
- \item Informe completo organizado por los criterios de la rúbrica.
- \item Simulador interactivo: \texttt{streamlit run app.py}.
+ \item Código fuente: modelo físico, Euler y RK4, oscilador LC y escena 3D.
+ \item 13 pruebas automáticas y el script que genera las figuras.
+ \item Informe completo organizado por la rúbrica.
+ \item Simulador: \texttt{streamlit run app.py}, pestaña \textbf{Caso: vehículo}.
 \end{itemize}
 
 \vspace{0.3cm}
@@ -920,6 +1034,12 @@ Los desarrollos numéricos y computacionales pueden consultarse en:
 \textbf{Repositorio del proyecto:}
 
 \url{https://github.com/luisrodriguez-rgb/Proyecto-Final-Fisica}
+
+\column{0.45\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-kwid-a-ras.png}
+
+\end{columns}
 
 \end{frame}
 

@@ -4,9 +4,10 @@ Diapositivas de la sustentación con la plantilla que entregó el profesor.
 
 | Archivo | Contenido |
 |---|---|
-| `presentacion.tex` | Las 22 diapositivas, con el mismo preámbulo, colores y pie de página de la plantilla |
+| `presentacion.tex` | Las 25 diapositivas, con el mismo preámbulo, colores y pie de página de la plantilla |
 | `logo_icesi.png` | Logo de la universidad |
-| `figuras/` | Gráficas del proyecto (copias de `docs/figuras`) |
+| `figuras/` | Gráficas del proyecto, escena 3D y figura de Anatomy (copias de `docs/figuras`) e imágenes de apoyo generadas con IA (`ia-*.jpg`, convertidas desde `docs/figuras/ia`) |
+| `guion.md` | Guion de 15 minutos por partes, con lo que hay que recordar |
 | `presentacion.pdf` | Versión compilada para revisar sin Overleaf |
 
 ## Subir a Overleaf
@@ -26,16 +27,19 @@ Si el proyecto de Overleaf ya existe, basta con reemplazar el contenido de `form
 
 ## Estructura
 
-Sigue las secciones de la plantilla, con el modelo teórico organizado según el esquema D.E.P.A. del profesor:
+Caso principal: la espira de parqueadero que reconoce un Chevrolet Spark GT y un Renault Kwid. Sigue las secciones
+de la plantilla, con el modelo teórico organizado según el esquema D.E.P.A.:
 
-1. Portada y contenido
-2. Introducción
-3. Modelo teórico: esquema D.E.P.A., variables y supuestos, representación del campo, formalismo (Maxwell,
-   circuito RL, efecto de la pieza) y caso de estudio
-4. Implementación numérica: Euler y RK4, procedimiento computacional y convergencia
-5. Simulación computacional: modelo de simulación, parámetros y escenarios, identificación del material
-6. Resultados y discusión
-7. Conclusiones, referencias, material complementario y cierre
+1. Portada, contenido e introducción
+2. Modelo teórico: D.E.P.A., qué pasa físicamente, representación del sistema, caso de estudio y formalismo
+   (Maxwell necesario, inductancia y chasis, oscilador LC)
+3. Implementación numérica: Euler y RK4 como sistema, convergencia, Euler explota en el oscilador, la simulación
+   corrigió la fórmula
+4. Simulación: escena 3D, lo que mide el detector, el carro cruzando, escenarios de diseño, segundo escenario
+   (identificación del material)
+5. Resultados, discusión, conclusiones, referencias, material complementario y cierre
+
+Las imágenes generadas con IA llevan su crédito en la diapositiva, como pide la guía.
 
 ## Regenerar las figuras
 
