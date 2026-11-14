@@ -4,8 +4,8 @@ Documento para entregar impreso, hecho con la plantilla de artículo a dos colum
 
 | Archivo | Contenido |
 |---|---|
-| `informe.tex` | El informe: resumen, introducción, modelo teórico, implementación numérica, simulación, resultados y discusión, conclusiones, 16 referencias y las observaciones sobre IA y material complementario |
-| `figuras/` | Figuras del proyecto (`modelo_teorico.png` es el diagrama del sistema; las demás son copias de `docs/figuras`) |
+| `informe.tex` | El informe sobre el caso del carro (espira de parqueadero, Spark y Kwid, oscilador LC), con el segundo escenario de autopartes: resumen, introducción, modelo teórico, implementación numérica, simulación, resultados y discusión, conclusiones, 16 referencias y las observaciones sobre IA y material complementario |
+| `figuras/` | Figuras del proyecto (copias de `docs/figuras`: figura de Anatomy, escena 3D, oscilador, curvas de los carros) e imágenes de apoyo generadas con IA (`ia-*.jpg`) |
 | `informe.pdf` | Versión compilada, lista para imprimir en tamaño carta |
 
 ## Compilar en Overleaf
@@ -23,4 +23,4 @@ cd informe && zip -r ../informe-overleaf.zip informe.tex figuras
   decimal también dentro de las fórmulas).
 - Un comando `\usoia{...}` para la declaración de uso de IA al final de cada apartado, como exige la plantilla.
 - `\emergencystretch` para evitar líneas que se salen de la columna.
-- La figura de convergencia usa los datos reales del proyecto con `pgfplots`.
+- La figura de convergencia usa los datos reales del oscilador LC con `pgfplots`.
