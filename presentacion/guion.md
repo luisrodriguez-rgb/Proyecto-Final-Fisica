@@ -1,21 +1,25 @@
-# Guion de la sustentación (15 minutos)
+# Guion de la sustentación (15 minutos): resumen
+
+**El guion completo, con todo el texto para decir diapositiva por diapositiva, está en
+[`guion.pdf`](guion.pdf)** (fuente: [`guion.tex`](guion.tex)). Trae los tiempos de cada diapositiva, párrafos
+opcionales para cuando se va rápido y recuadros en letra pequeña que explican lo complejo. Este archivo es el
+resumen de bolsillo: ideas clave, números y preguntas.
 
 Presentación: [`presentacion.pdf`](presentacion.pdf) (25 diapositivas). El profesor escoge quién presenta, así que
-**todos** deben poder seguir el guion completo. Cada parte trae lo que hay que decir, las imágenes que hay que
-señalar y lo que hay que recordar sí o sí.
+**todos** deben poder seguir el guion completo.
 
 | Parte | Tiempo | Diapositivas | Tema |
 |---|---|---|---|
-| 1 | 0:00 – 2:00 | 1 – 4 | El problema y el esquema D.E.P.A. |
-| 2 | 2:00 – 5:00 | 5 – 8 | La física: por qué el carro cambia la espira |
-| 3 | 5:00 – 8:00 | 9 – 10 | El modelo: inductancia, chasis y oscilador LC |
-| 4 | 8:00 – 10:30 | 11 – 14 | Métodos numéricos: Euler y RK4 |
-| 5 | 10:30 – 13:30 | 15 – 19 + demo | Simulación y demostración en vivo |
-| 6 | 13:30 – 15:00 | 20 – 22, 25 | Resultados, limitaciones y cierre |
+| 1 | 0:00 – 2:35 | 1 – 4 | El problema y el esquema D.E.P.A. |
+| 2 | 2:35 – 5:30 | 5 – 8 | La física: por qué el carro cambia la espira |
+| 3 | 5:30 – 7:25 | 9 – 10 | El modelo: inductancia, chasis y oscilador LC |
+| 4 | 7:25 – 10:10 | 11 – 14 | Métodos numéricos: Euler y RK4 |
+| 5 | 10:10 – 13:20 | 15 – 19 + demo | Simulación y demostración en vivo |
+| 6 | 13:20 – 15:00 | 20 – 25 | Resultados, limitaciones y cierre |
 
 ---
 
-## Parte 1 · El problema (0:00 – 2:00)
+## Parte 1 · El problema (0:00 – 2:35)
 
 **Diapositivas 1 a 4:** portada, contenido, introducción y esquema D.E.P.A.
 
@@ -44,7 +48,7 @@ señalar y lo que hay que recordar sí o sí.
 
 ---
 
-## Parte 2 · La física (2:00 – 5:00)
+## Parte 2 · La física (2:35 – 5:30)
 
 **Diapositivas 5 a 8:** qué pasa físicamente, representación del sistema, caso de estudio, ecuaciones de Maxwell.
 
@@ -78,7 +82,7 @@ señalar y lo que hay que recordar sí o sí.
 
 ---
 
-## Parte 3 · El modelo matemático (5:00 – 8:00)
+## Parte 3 · El modelo matemático (5:30 – 7:25)
 
 **Diapositivas 9 y 10:** inductancia y efecto del chasis; oscilador LC.
 
@@ -110,7 +114,7 @@ señalar y lo que hay que recordar sí o sí.
 
 ---
 
-## Parte 4 · Métodos numéricos (8:00 – 10:30)
+## Parte 4 · Métodos numéricos (7:25 – 10:10)
 
 **Diapositivas 11 a 14:** Euler y RK4, convergencia, Euler explota, la simulación corrigió la fórmula.
 
@@ -144,7 +148,7 @@ señalar y lo que hay que recordar sí o sí.
 
 ---
 
-## Parte 5 · Simulación y demostración (10:30 – 13:30)
+## Parte 5 · Simulación y demostración (10:10 – 13:20)
 
 **Diapositivas 15 a 19** y **1.5 minutos de demostración en vivo** (pestaña **Caso: vehículo**).
 
@@ -185,7 +189,7 @@ señalar y lo que hay que recordar sí o sí.
 
 ---
 
-## Parte 6 · Resultados y cierre (13:30 – 15:00)
+## Parte 6 · Resultados y cierre (13:20 – 15:00)
 
 **Diapositivas 20 a 22 y 25:** resultados principales, discusión, conclusiones, gracias.
 

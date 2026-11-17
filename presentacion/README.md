@@ -7,7 +7,8 @@ Diapositivas de la sustentación con la plantilla que entregó el profesor.
 | `presentacion.tex` | Las 25 diapositivas, con el mismo preámbulo, colores y pie de página de la plantilla |
 | `logo_icesi.png` | Logo de la universidad |
 | `figuras/` | Gráficas del proyecto, escena 3D y figura de Anatomy (copias de `docs/figuras`) e imágenes de apoyo generadas con IA (`ia-*.jpg`, convertidas desde `docs/figuras/ia`) |
-| `guion.md` | Guion de 15 minutos por partes, con lo que hay que recordar |
+| `guion.pdf` / `guion.tex` | Guion completo de 15 minutos: texto para decir en cada diapositiva, tiempos, opcionales y explicaciones en letra pequeña |
+| `guion.md` | Resumen de bolsillo del guion: ideas clave, números y preguntas |
 | `presentacion.pdf` | Versión compilada para revisar sin Overleaf |
 
 ## Subir a Overleaf

@@ -1,0 +1,699 @@
+% Guion completo de la sustentación (15 minutos)
+% Compilar: tectonic guion.tex
+\documentclass[11pt,a4paper]{article}
+\usepackage[spanish,es-nodecimaldot]{babel}
+\usepackage[margin=2.1cm]{geometry}
+\usepackage{xcolor}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage[most]{tcolorbox}
+\usepackage[hidelinks]{hyperref}
+
+\definecolor{AzulIcesi}{RGB}{0,51,102}
+\definecolor{VerdeIcesi}{RGB}{0,122,77}
+\definecolor{GrisTexto}{RGB}{90,90,90}
+\definecolor{Naranja}{RGB}{190,90,0}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\linespread{1.08}
+
+% Encabezados
+\newcommand{\parte}[3]{%
+  \clearpage
+  {\color{AzulIcesi}\rule{\linewidth}{1.2pt}}\par\vspace{-2pt}
+  {\Large\bfseries\color{AzulIcesi} Parte #1 \,·\, #2}\hfill{\large\bfseries #3}\par
+  \vspace{2pt}}
+\newcommand{\diapo}[3]{%
+  \par\vspace{8pt}
+  {\large\bfseries Diapositiva #1 \,·\, #2}\hfill{\normalsize\bfseries\color{AzulIcesi} #3}\par
+  \vspace{1pt}}
+% Lo que hay que señalar en pantalla
+\newcommand{\senala}[1]{{\small\color{AzulIcesi}\textbf{Señalar:} #1}\par}
+% Marca de tiempo al final de cada parte
+\newcommand{\reloj}[1]{\par\vspace{4pt}{\small\color{GrisTexto}\textbf{Control de tiempo:} al terminar esta parte
+  deberías ir en \textbf{#1}.}\par}
+% Transición a la parte siguiente
+\newcommand{\pasa}[1]{\par{\small\color{GrisTexto}\textbf{Transición:}} \emph{#1}\par}
+
+% Letra pequeña: para entender (no se lee en voz alta)
+\newtcolorbox{nota}[1][Para entender (no se lee)]{breakable, enhanced, colback=black!3, colframe=black!25,
+  boxrule=0.3pt, arc=1pt, left=5pt, right=5pt, top=3pt, bottom=3pt, fontupper=\footnotesize,
+  title={#1}, fonttitle=\footnotesize\bfseries, coltitle=GrisTexto, colbacktitle=black!7,
+  attach title to upper={\ \ }, before skip=4pt, after skip=6pt}
+% Párrafo opcional: se dice solo si vas bien de tiempo
+\newtcolorbox{opcional}{breakable, enhanced, frame hidden, colback=white, borderline west={2pt}{0pt}{VerdeIcesi},
+  left=8pt, right=0pt, top=1pt, bottom=1pt, before skip=4pt, after skip=4pt,
+  before upper={{\color{VerdeIcesi}\scriptsize\bfseries OPCIONAL}\par\vspace{1pt}}}
+
+\begin{document}
+
+% ------------------------------------------------------------------
+\begin{center}
+{\LARGE\bfseries\color{AzulIcesi} Guion de la sustentación}\par\vspace{4pt}
+{\large SEMP: detector de espira para reconocer un Spark y un Kwid}\par\vspace{2pt}
+{\color{GrisTexto} Electromagnetismo · Universidad Icesi · 15 minutos · 25 diapositivas}
+\end{center}
+
+\section*{Cómo usar este guion}
+
+El profesor escoge quién presenta, así que \textbf{todos} deben poder decir el guion completo. Cada diapositiva
+trae tres tipos de texto:
+
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt]
+ \item \textbf{Texto normal:} lo que se dice en voz alta. No hay que leerlo palabra por palabra, pero sí decir
+       todas las ideas y todos los números en \textbf{negrita}.
+ \item {\color{AzulIcesi}\textbf{Señalar:}} qué parte de la imagen mostrar con el puntero mientras se habla.
+ \item \textbf{Recuadros grises en letra pequeña:} la explicación de lo que está detrás. No se leen; sirven para
+       entender y para responder si el profesor pregunta.
+\end{itemize}
+
+Los párrafos con una barra verde y la marca {\color{VerdeIcesi}\scriptsize\bfseries OPCIONAL} se dicen solo si
+vas bien de tiempo. Sin ellos la presentación dura unos 15 minutos hablando tranquilo; los opcionales suman unos
+3 minutos más, para cuando vas rápido. Al final de cada parte hay
+un \textbf{control de tiempo}: si vas más de 30 segundos atrasado, salta los opcionales de la parte siguiente.
+
+\begin{center}
+\begin{tabular}{@{}clcl@{}}
+\toprule
+Parte & Tema & Diapositivas & Tiempo \\
+\midrule
+1 & El problema y el esquema D.E.P.A. & 1 -- 4 & 0:00 -- 2:35 \\
+2 & La física: por qué el carro cambia la espira & 5 -- 8 & 2:35 -- 5:30 \\
+3 & El modelo: inductancia y oscilador LC & 9 -- 10 & 5:30 -- 7:25 \\
+4 & Métodos numéricos: Euler y RK4 & 11 -- 14 & 7:25 -- 10:10 \\
+5 & Simulación y demostración en vivo & 15 -- 19 & 10:10 -- 13:20 \\
+6 & Resultados, limitaciones y cierre & 20 -- 25 & 13:20 -- 15:00 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{nota}[Ritmo]
+Una persona que habla tranquila en una exposición dice unas 140 palabras por minuto. El texto normal de este guion
+tiene unas 2\,100 palabras y los opcionales unas 400, así que el texto normal con la demostración da unos 15
+minutos, y con todos los opcionales unos 18. Los tiempos de cada diapositiva se calcularon con ese ritmo. Ensayar una vez con cronómetro es lo que más ayuda: si una parte se pasa del tiempo, quitar opcionales;
+si queda corta, decir los opcionales o explicar uno de los recuadros grises con sus palabras.
+\end{nota}
+
+% ==================================================================
+\parte{1}{El problema y el esquema D.E.P.A.}{0:00 -- 2:35}
+
+\diapo{1}{Portada}{0:00 -- 0:25}
+\senala{el carro llegando a la talanquera.}
+
+Buenos días, profesor; buenos días a todos. Somos Luis Ernesto Rodríguez, Sebastián Santander, Kevin Lozano,
+Juan Pablo Corchuelo y Mateo López. Nuestro proyecto se llama \textbf{SEMP}, Sensores ElectroMagnéticos de
+Proximidad, y lo que hicimos fue modelar y simular el detector que abre la talanquera de un parqueadero. La imagen
+de la portada la generamos con inteligencia artificial y es solo ilustrativa.
+
+\begin{nota}
+Cada diapositiva que usa una imagen hecha con IA lo dice en una esquina. Decirlo desde el principio evita la
+pregunta: la guía permite usar IA generativa siempre que se cite y se use con criterio.
+\end{nota}
+
+\diapo{2}{Contenido}{0:25 -- 0:40}
+\senala{la captura del simulador: el Spark parado sobre la espira.}
+
+Vamos en este orden: modelo teórico, implementación numérica, simulación, resultados y conclusiones. La imagen es
+una captura de nuestro simulador: un Spark parado sobre la espira, con las líneas del campo magnético que salen del
+piso. Más adelante la vamos a ver funcionando.
+
+\diapo{3}{Introducción}{0:40 -- 1:30}
+\senala{el collage de aplicaciones: fábrica, semáforo, parqueadero.}
+
+Un sensor inductivo detecta metal sin tocarlo: en las fábricas cuenta piezas en una banda, en algunos semáforos
+sabe si hay carros esperando y en los parqueaderos abre la talanquera.
+
+\begin{opcional}
+Casi nunca se ve, porque va enterrado. Si uno mira el pavimento justo antes de una talanquera, a veces se nota un
+cuadrado cortado en el asfalto: ahí adentro está la espira de alambre.
+\end{opcional}
+
+Nuestra pregunta fue: ¿esa misma espira, además de abrir la talanquera, puede decir \textbf{qué carro llegó}? Sin
+cámara y sin oprimir nada. El profesor nos propuso un caso concreto: distinguir un \textbf{Chevrolet Spark GT} de
+un \textbf{Renault Kwid}, dos carros muy comunes en Colombia y casi del mismo tamaño.
+
+Nos pusimos tres objetivos: modelar el detector con las leyes de \textbf{Faraday y Ampère}; resolver el modelo
+analíticamente y con \textbf{Euler y Runge-Kutta 4} programados por nosotros; y armar un \textbf{simulador} para
+medir si de verdad reconoce cada carro.
+
+\begin{nota}
+¿Por qué sin cámaras? La cámara necesita luz, se ensucia, se moja y es más costosa; la espira va protegida bajo el
+asfalto y dura años. Esa comparación vuelve en la diapositiva 21, así que aquí basta con mencionarla.
+\end{nota}
+
+\diapo{4}{Esquema D.E.P.A.}{1:30 -- 2:35}
+\senala{las cuatro cajas de izquierda a derecha y, al final, el recuadro verde de abajo.}
+
+Para ordenar el proyecto usamos el esquema \textbf{D.E.P.A.} que nos dio el profesor. La idea es la misma del
+espectrómetro de masas que vimos en clase: primero se divide el aparato en etapas, y cada etapa usa solo la física
+que necesita.
+
+A la izquierda están los insumos, los lugares donde se usan estos sensores, y después las cuatro letras.
+\textbf{D, Detección:} qué detectamos; aquí son dos cosas, si hay carro y cuál es. \textbf{E, Emisiones:} cómo
+responde el carro al campo; el chasis responde con corrientes de Foucault. \textbf{P, Propiedades} de la onda: la
+frecuencia de \textbf{55 kilohertz}, la energía y la potencia. Y \textbf{A, Alerta:} lo que entrega el sensor; la
+frecuencia sube, se abre la talanquera y el sistema dice el modelo.
+
+Uniendo el contexto de inicio y el de impacto sale el caso de estudio que llevamos al simulador: una espira de
+\textbf{1.8 metros} bajo un Spark o un Kwid.
+
+\begin{opcional}
+El contexto de inicio es un parqueadero que necesita saber qué carro entra, y el de impacto es abrir la talanquera
+y dejar registrado qué modelo entró.
+\end{opcional}
+
+\begin{nota}
+El profesor pidió decir \emph{alerta} y no \emph{señal}, para no confundirla con la señal eléctrica. Si pregunta
+para qué sirve el esquema: delimita la matemática. Por eso en la diapositiva 8 aparecen solo dos ecuaciones de
+Maxwell y no las cuatro. En el espectrómetro de masas las etapas eran acelerar (conservación de la energía),
+desviar (fuerza magnética) y medir el radio; aquí son detectar, responder, medir la frecuencia y alertar.
+\end{nota}
+
+\pasa{``¿Y por qué un carro cambia algo en un alambre que está enterrado? Esa es la parte física.''}
+\reloj{2:35}
+
+% ==================================================================
+\parte{2}{La física: por qué el carro cambia la espira}{2:35 -- 5:30}
+
+\diapo{5}{Qué pasa físicamente}{2:35 -- 3:35}
+\senala{las líneas de campo que suben desde la espira y la placa encima; seguir los cinco pasos.}
+
+Esto es lo que pasa, en cinco pasos.
+
+\textbf{Uno:} por la espira pasa una corriente alterna, que va y viene 55 mil veces por segundo, y crea un campo
+magnético que sube desde el pavimento y cambia todo el tiempo.
+
+\textbf{Dos:} cuando un carro se para encima, ese campo atraviesa el chasis de acero. Como el campo cambia, por la
+\textbf{ley de Faraday} se induce un campo eléctrico, que en el metal mueve cargas en círculos: son las
+\textbf{corrientes de Foucault}.
+
+\textbf{Tres:} por la \textbf{ley de Lenz}, esas corrientes crean su propio campo, en contra del de la espira:
+el chasis bloquea parte del flujo.
+
+\textbf{Cuatro:} con menos flujo por cada amperio, la \textbf{inductancia de la espira baja}, y eso hace que la
+frecuencia del detector \textbf{suba}.
+
+\textbf{Cinco:} entre más cerca el chasis, más fuerte el efecto. Esa es la clave para distinguir los carros.
+
+\begin{nota}
+\textbf{Inductancia:} es el flujo magnético que atraviesa la espira por cada amperio de corriente, $L=\Phi/I$. Es
+la misma idea de la capacitancia de clase ($C=Q/V$, carga por voltio), pero con flujo por amperio. Si el chasis le
+quita flujo, $L$ baja.
+
+\textbf{Imagen mental útil:} el chasis se comporta como un espejo. Es como si encima hubiera una ``espira imagen''
+con la corriente al revés; esa espira imagen le resta flujo a la real. Entre más cerca el espejo, más resta.
+
+\textbf{Si preguntan el sentido de las corrientes:} si en un instante la corriente de la espira va en sentido
+horario visto desde arriba y está creciendo, el campo bajo la espira apunta hacia abajo y crece; en el chasis se
+induce una corriente antihoraria, que crea un campo hacia arriba y se opone al cambio.
+\end{nota}
+
+\diapo{6}{Representación del sistema}{3:35 -- 4:10}
+\senala{en la figura del corte: la espira en la ranura, el cable al detector y el chasis con las cotas de 20 y
+23 cm.}
+
+Esta figura es el corte del sistema. Abajo, en una ranura de \textbf{5 centímetros} en el pavimento, va la espira:
+\textbf{tres vueltas} de alambre. Un cable la conecta al detector, que tiene adentro un \textbf{oscilador LC}. Y
+arriba está el chasis del carro.
+
+Fíjense en un detalle: la distancia que importa no es la altura del carro al piso, sino la distancia hasta la
+espira, que está enterrada. Por eso son \textbf{20 centímetros para el Spark y 23 para el Kwid}: la altura libre
+más los 5 de la ranura.
+
+\begin{nota}
+La figura se hizo con la skill Anatomy de Claude, y se cita en la diapositiva; las medidas que muestra salen del
+modelo en Python. En la vida real la ranura se rellena con un sellante, y por eso la espira aguanta años de tráfico
+sin mantenimiento.
+\end{nota}
+
+\diapo{7}{Caso de estudio: Spark frente a Kwid}{4:10 -- 4:40}
+\senala{la tabla; primero las dos primeras filas y después la fila en negrita (15 cm frente a 18 cm).}
+
+Estos son los dos carros. Miden casi lo mismo, así que por tamaño no se distinguen. La diferencia está en la fila
+en negrita: la \textbf{altura libre al piso}, \textbf{15 centímetros el Spark y 18 el Kwid}.
+
+\begin{opcional}
+Miren las dos primeras filas: 3.64 por 1.60 metros el Spark y 3.68 por 1.59 el Kwid. El Kwid es más alto porque
+está diseñado con un estilo más de camioneta.
+\end{opcional}
+
+Supusimos tres cosas: que el chasis es una placa plana de acero, que el carro tapa casi el 90~\% de la espira y
+que el régimen es cuasi-estático, que explicamos en la siguiente.
+
+\begin{opcional}
+La espira es la estándar de instalación: un cuadrado de 1.8 metros, que son 6 por 6 pies, con tres vueltas de
+alambre calibre 14, enterrada a 5 centímetros.
+\end{opcional}
+
+\begin{nota}
+\textbf{$\eta$ (eta)} es la fracción del área de la espira que queda bajo el carro. El carro mide 1.60 m de ancho y la
+espira 1.8 m, así que no la tapa completa: 0.89 con el Spark y 0.88 con el Kwid.
+
+\textbf{El acero:} conductividad $\sigma = 6\times10^6$ S/m (unas diez veces menos que el cobre) y permeabilidad
+relativa $\mu_r = 100$. \textbf{El circuito:} $R = 0.6~\Omega$ y $C = 0.1~\mu$F. Las medidas de los carros salen de
+las fichas técnicas (diapositiva 23). Las fotos de los carros son genéricas, hechas con IA: no son los modelos
+reales, y la diapositiva lo dice.
+\end{nota}
+
+\diapo{8}{Solo las ecuaciones de Maxwell necesarias}{4:40 -- 5:30}
+\senala{la ley de Faraday, luego la de Ampère y al final el recuadro de la profundidad de penetración.}
+
+Como pidió el profesor, usamos solo las ecuaciones de Maxwell que hacen falta. La central es la \textbf{ley de
+Faraday}: un flujo que cambia induce un campo eléctrico. En el chasis eso da las corrientes de Foucault, y en la
+espira, el voltaje $L\,di/dt$ del circuito. La segunda es la \textbf{ley de Ampère}, sin corriente de
+desplazamiento, que dice cuánto campo crea la espira. Gauss magnética solo entra como condición de frontera.
+
+Uno se puede preguntar: si el acero es magnético, ¿no debería subir la inductancia? La respuesta está en el
+recuadro, la \textbf{profundidad de penetración}. A 55 kilohertz el campo solo entra \textbf{0.087 milímetros} en el
+acero, menos que una hoja de papel. El chasis se porta como un conductor perfecto y \textbf{expulsa} el flujo.
+
+\begin{nota}
+\textbf{Cuasi-estático (por qué no hay corriente de desplazamiento):} la longitud de onda a 55 kHz es
+$\lambda = c/f = 5.4$ km, unas 3\,000 veces el tamaño de la espira. Entonces el campo se acomoda prácticamente al
+instante en toda la región y no hay onda que se propague. Además, dentro del acero la corriente de desplazamiento es
+$5\times10^{-13}$ veces la de conducción.
+
+\textbf{Profundidad de penetración:} $\delta = \sqrt{2/(\omega\mu_0\mu_r\sigma)}$. Entre más alta la frecuencia, más
+conductor o más magnético el material, menos entra el campo. Una hoja de papel mide unos 0.1 mm.
+
+\textbf{¿Y cuándo gana el magnetismo?} A frecuencias bajas. En el segundo escenario (diapositiva 19), a 1 kHz, una
+pieza de acero hace \emph{subir} $L$ un 5.5~\% y una de cobre la hace bajar un 8.5~\%. Esa diferencia es la que
+permite distinguir materiales.
+\end{nota}
+
+\pasa{``Ya sabemos qué pasa. Ahora le ponemos números.''}
+\reloj{5:30}
+
+% ==================================================================
+\parte{3}{El modelo matemático}{5:30 -- 7:25}
+
+\diapo{9}{Inductancia y efecto del chasis}{5:30 -- 6:20}
+\senala{la fórmula de $L_0$, después la integral y al final la tabla con $-12.9$~\% y $-11.4$~\%.}
+
+Primero, la espira sola. La aproximamos por una circular con la misma área, de radio 1.016 metros, y con la
+fórmula de arriba, con tres vueltas, da \textbf{83 microhenrios}.
+
+\begin{opcional}
+Para comprobarlo usamos la regla que aplican los instaladores de espiras, que da unos 71 microhenrios. Es el mismo
+orden de magnitud, así que el valor es razonable.
+\end{opcional}
+
+Para el chasis usamos la solución de \textbf{Dodd y Deeds}, un resultado clásico de 1968 que resuelve Maxwell para
+una bobina encima de una placa conductora y da el cambio de impedancia, $\Delta Z$. Lo importante de la integral es
+que la \textbf{parte imaginaria} de $\Delta Z$ cambia la inductancia y la \textbf{parte real}, la resistencia. Eso
+se multiplica por $\eta$, la fracción de la espira que el carro tapa.
+
+En la tabla: con el Spark la inductancia baja un \textbf{12.9~\%} y con el Kwid un \textbf{11.4~\%}. Baja más con
+el Spark porque está más cerca.
+
+\begin{opcional}
+La resistencia sube un poquito: es la energía que se pierde calentando el chasis con las corrientes de Foucault.
+\end{opcional}
+
+\begin{nota}
+\textbf{La fórmula de $L_0$:} $L_0=\mu_0N^2a\,[\ln(8a/r_w)-2]$, con $a$ el radio de la espira y $r_w = 0.8$ mm el
+radio del alambre. Va con $N^2$ porque cada vuelta crea campo y además cada vuelta lo recoge.
+
+\textbf{La integral, por partes:} suma la respuesta del chasis a todas las ``formas'' posibles del campo (cada
+valor de $\alpha$). $J_1$, una función de Bessel, describe la forma de una espira circular. $\Gamma$ compara la
+placa con el aire: si la placa fuera un conductor perfecto, $\Gamma \to -1$, que es justo la espira imagen de la
+diapositiva 5. $F$ lleva el factor $e^{-\alpha d}$, que hace que el efecto caiga rápido con la distancia $d$. La
+integral se calcula numéricamente con SciPy; el error de la malla es de $1.3\times10^{-6}$.
+
+\textbf{De $\Delta Z$ a $L$ y $R$:} una bobina tiene impedancia $Z = R + j\omega L$. Por eso
+$L_\text{eff} = L_0 + \operatorname{Im}\Delta Z/\omega$ y $R_\text{eff} = R_0 + \operatorname{Re}\Delta Z$. En
+números: $\Delta L = -10.7~\mu$H (Spark) y $-9.5~\mu$H (Kwid); $\Delta R = +0.064~\Omega$ y $+0.054~\Omega$.
+\end{nota}
+
+\diapo{10}{El oscilador LC, como el RC de clase}{6:20 -- 7:25}
+\senala{la ecuación de Kirchhoff, el recuadro de la fórmula exacta y la tabla de frecuencias.}
+
+¿Cómo se da cuenta el detector de que la inductancia cambió? Conecta la espira a un capacitor y forma un
+\textbf{oscilador LC}. Lo analizamos igual que el \textbf{circuito RC de clase}: ley de mallas de Kirchhoff, con
+la misma convención de signos. La diferencia es que ahora está la bobina, que aporta $L\,di/dt$, y como la
+corriente es la derivada de la carga, sale una ecuación de segundo orden: $L\ddot q + R\dot q + q/C = 0$.
+
+\begin{opcional}
+Es la misma ecuación de una masa con un resorte y un poco de fricción: la carga va y viene entre las placas del
+capacitor, y se va apagando poco a poco por la resistencia.
+\end{opcional}
+
+Proponiendo $q = e^{st}$, como en el RC, sale la frecuencia de oscilación: \textbf{55.25 kilohertz sin carro}. El
+factor de calidad es \textbf{48}, o sea que la resistencia casi no frena la oscilación.
+
+Y aquí está la idea central: la frecuencia va como uno sobre la raíz de $L$. Si $L$ \textbf{baja}, la frecuencia
+\textbf{sube}. Con el Spark encima llega a \textbf{59.18 kilohertz} y con el Kwid a \textbf{58.69}. Esa es la
+alerta: el detector ve que la frecuencia subió y abre la talanquera, y según cuánto subió, sabe qué carro es.
+
+\begin{opcional}
+Ojo con el recuadro: es la fórmula \emph{exacta}. Hay una aproximación que se usa mucho y que nosotros también
+usamos al principio; en la parte numérica les contamos por qué la cambiamos.
+\end{opcional}
+
+\begin{nota}
+\textbf{Analogía masa-resorte:} $L$ hace de masa (es la ``inercia'' de la corriente), $1/C$ hace de constante del
+resorte, $R$ de fricción y $q$ de posición. Por eso $\omega_0 = 1/\sqrt{LC}$, igual que $\omega = \sqrt{k/m}$.
+
+\textbf{Las raíces:} con $q=e^{st}$ queda $Ls^2 + Rs + 1/C = 0$, y $s = -R/2L \pm j\omega_d$. Como
+$R/2L \approx 3\,600~\text{s}^{-1}$ es mucho menor que $\omega_0 \approx 347\,000$ rad/s, el circuito es
+subamortiguado y $\omega_d \approx \omega_0$. La parte real da el decaimiento: en unos 10 ciclos la amplitud cae a
+la mitad. Un detector real le repone energía en cada ciclo para que no se apague; para el modelo basta el circuito
+libre.
+
+\textbf{Condición inicial:} capacitor cargado y corriente cero, $q(0)=q_0$, $i(0)=0$, igual que el capacitor
+cargado que se descarga en el RC de clase.
+
+\textbf{Factor de calidad:} $Q = \omega_0L_0/R = 48$. Un $Q$ alto significa que la oscilación dura muchos ciclos y
+que la frecuencia queda bien definida, lo que facilita medirla.
+
+\textbf{Fórmula exacta:} como $f\propto 1/\sqrt{L}$, $f/f_0 = (L/L_0)^{-1/2} = (1+\Delta L/L_0)^{-1/2}$. Con el
+Spark: $(1-0.1287)^{-1/2} = 1.0713$, o sea $+7.13~\%$, y $55.25 \times 1.0713 \approx 59.18$ kHz.
+\end{nota}
+
+\pasa{``Esta ecuación también la resolvimos numéricamente, y ahí pasó algo interesante.''}
+\reloj{7:25}
+
+% ==================================================================
+\parte{4}{Métodos numéricos: Euler y RK4}{7:25 -- 10:10}
+
+\diapo{11}{Métodos de análisis numérico}{7:25 -- 8:15}
+\senala{el sistema con $(q, i)$, la fórmula de Euler, los cuatro $k$ de RK4 y el recuadro del procedimiento.}
+
+Los dos métodos los programamos a mano, sin los integradores de las librerías. Como trabajan con ecuaciones de
+primer orden, escribimos el oscilador como un sistema de dos: la derivada de la carga es la corriente, y la de la
+corriente sale de la ley de mallas.
+
+\textbf{Euler} es el más sencillo: toma la pendiente en el punto donde está y avanza en línea recta un paso $h$.
+\textbf{Runge-Kutta 4} es más cuidadoso: en cada paso calcula la pendiente cuatro veces, una al inicio, dos en la
+mitad y una al final, y avanza con un promedio de las cuatro.
+
+Integramos 30 períodos y medimos la frecuencia \textbf{contando los cruces por cero} de la carga, que es como lo
+hace un detector real.
+
+\begin{nota}
+\textbf{Pesos 1-2-2-1 de RK4:} es la misma idea de la regla de Simpson para integrales; los puntos del medio pesan
+el doble. \textbf{Justificación de los métodos:} la guía pide los dos; Euler sirve de referencia y RK4 es el
+estándar de precisión para ecuaciones diferenciales ordinarias.
+
+\textbf{Cruces por cero:} hay dos por período. El código toma los de bajada y, entre los dos pasos donde la carga
+cambia de signo, interpola con una recta para encontrar el instante exacto. La frecuencia es el número de períodos
+entre el primer y el último cruce dividido por el tiempo que pasó.
+\end{nota}
+
+\diapo{12}{Validación numérica: convergencia}{8:15 -- 8:50}
+\senala{la gráfica log-log y las pendientes de las dos rectas; después la tabla.}
+
+¿Cómo sabemos que el código está bien? Lo probamos con el circuito RL de la bobina, que tiene solución exacta, como
+el RC de clase. La gráfica muestra el error contra el tamaño del paso en escala logarítmica, donde la pendiente es
+el orden del método. Medimos \textbf{1.01 para Euler y 4.02 para RK4}: justo lo que dice la teoría.
+
+En la práctica eso significa que si duplicamos los pasos, el error de Euler baja a la mitad y el de RK4 baja
+\textbf{16 veces}.
+
+\begin{opcional}
+En la tabla se ve con la frecuencia del oscilador: con 40 pasos por período, RK4 ya tiene un error de 5 en un
+millón.
+\end{opcional}
+
+\begin{nota}
+\textbf{Por qué 16:} $2^4 = 16$. En la tabla, de 20 a 40 pasos el error de RK4 pasa de $8.1\times10^{-5}$ a
+$5.1\times10^{-6}$: $8.1/0.51 \approx 16$.
+
+\textbf{Por qué sirve el RL:} tiene solución exacta, $i(t) = (V/R)(1-e^{-t/\tau})$ con $\tau = L/R$, igual que la
+carga del capacitor en el RC de clase (en un $\tau$ llega al 63~\%). Si el código reproduce una solución que se
+conoce, se puede confiar en él para la que no se conoce.
+
+\textbf{Por qué log-log:} si $\text{error} = C\,h^p$, entonces $\log(\text{error}) = \log C + p\log h$, que es una
+recta de pendiente $p$.
+\end{nota}
+
+\diapo{13}{En el oscilador, Euler explota}{8:50 -- 9:25}
+\senala{la gráfica de energía: la línea roja de Euler subiendo y la azul de RK4 bajando.}
+
+Pero en el oscilador Euler \textbf{explota}. En la gráfica de energía, la línea azul es RK4: la energía baja poco a
+poco, porque la resistencia la gasta. La roja es Euler: la energía \textbf{crece} hasta \textbf{cien mil millones
+de veces} la inicial, y eso es imposible, porque el circuito no tiene de dónde sacarla.
+
+La razón es que en un oscilador cada paso de Euler multiplica la amplitud por un número un poquito mayor que uno,
+sin importar qué tan pequeño sea el paso. Achicar el paso solo retrasa la explosión.
+
+\begin{nota}
+\textbf{Intuición geométrica:} sin pérdidas, la oscilación dibuja un círculo en el plano carga-corriente. Euler
+avanza por la tangente, y la tangente de un círculo siempre lleva hacia afuera: cada paso cae en un círculo un poco
+más grande, y la solución se va en espiral.
+
+\textbf{La cuenta:} el factor por paso es $|1+j\omega h| = \sqrt{1+(\omega h)^2}$. Con 40 pasos por período,
+$\omega h = 2\pi/40 \approx 0.157$, y la energía se multiplica por $1+(\omega h)^2 \approx 1.025$ en cada paso. En
+30 períodos hay 1\,200 pasos: $1.025^{1200} \approx e^{29}$. Quitando la pérdida real por la resistencia
+($e^{-3.9}$) queda $\approx 10^{11}$.
+
+\textbf{¿Y en el RL?} Allí Euler sí es estable si $\Delta t < 2\tau$, porque la solución decae sin oscilar.
+\textbf{RK4:} deja un 0.0197 de la energía inicial, que es exactamente $e^{-Rt/L}$.
+\end{nota}
+
+\diapo{14}{La simulación corrigió una fórmula}{9:25 -- 10:10}
+\senala{el 6.44~\% de arriba, el 7.130~\% de abajo y el recuadro de la lección.}
+
+Y esta es la parte de la que estamos más orgullosos. Al principio usamos la aproximación que aparece en muchos
+textos: el cambio de frecuencia es menos la mitad del cambio de inductancia. Con el Spark daba \textbf{6.44~\%}.
+Pero la simulación con RK4 daba \textbf{7.13~\%}, igual con cualquier paso, así que no era un error numérico.
+
+La simulación tenía razón: esa aproximación solo vale para cambios pequeños, de un 1 o 2~\%, y un carro cambia la
+inductancia casi un 13~\%. La fórmula exacta, la de la diapositiva 10, da 7.13~\%. Así que \textbf{el método
+numérico decidió qué fórmula usar}, y corregimos todo el proyecto.
+
+\begin{opcional}
+Para nosotros esa es la mejor prueba de por qué vale la pena validar con simulación: la fórmula aproximada parecía
+correcta y daba un número razonable, y solo la comparación con RK4 mostró el error.
+\end{opcional}
+
+\begin{nota}
+\textbf{De dónde sale la diferencia:} $(1+x)^{-1/2} \approx 1 - x/2 + 3x^2/8 - \dots$ La aproximación se queda con
+los dos primeros términos. Con $x = -0.129$, el término $3x^2/8$ vale 0.0062, o sea 0.6 puntos: casi toda la
+diferencia entre 6.44 y 7.13. Si $x$ fuera 0.01, ese término valdría 0.004~\% y la aproximación sería perfecta.
+
+\textbf{Si preguntan de dónde salió la aproximación:} la propuso la IA y aparece en textos de detectores; está
+documentado en el uso de IA generativa (docs/08) como una de las decisiones críticas del equipo.
+\end{nota}
+
+\pasa{``Todo esto lo juntamos en un simulador. Vamos a verlo.''}
+\reloj{10:10}
+
+% ==================================================================
+\parte{5}{Simulación y demostración en vivo}{10:10 -- 13:20}
+
+\diapo{15}{Escena 3D del parqueadero}{10:10 -- 10:25}
+\senala{las dos capturas: el Spark con 59.18 kHz y el Kwid con 58.69 kHz.}
+
+El simulador está hecho en Python, con una escena 3D del parqueadero. Los carros tienen sus medidas reales, y todo
+número que aparece en pantalla sale del modelo que acabamos de explicar.
+
+\begin{opcional}
+Usamos NumPy y SciPy para el modelo, SymPy para las deducciones, Streamlit para la interfaz y Three.js para la
+escena.
+\end{opcional}
+
+\subsection*{Demostración en vivo \hfill {\normalsize\color{AzulIcesi} 10:25 -- 12:00}}
+
+Cambiar al simulador, pestaña \textbf{Caso: vehículo}, con el Spark y la espira de 1.8 m.
+
+\begin{enumerate}[leftmargin=1.4em, itemsep=3pt]
+ \item \textbf{Dejar que llegue el Spark.} ``Aquí llega el Spark y se detiene sobre la espira. Miren el indicador:
+       la frecuencia pasó de 55.25 a \textbf{59.18 kilohertz}, la pantalla dice SPARK y la talanquera se abre.''
+ \item \textbf{Cámara ``A ras''.} ``Si bajamos la cámara al nivel del piso, se ve cómo las líneas de campo se
+       acuestan debajo del chasis. Es el chasis expulsando el flujo, lo que explicamos con la profundidad de
+       penetración.''
+ \item \textbf{Cambiar al Kwid.} ``Ahora el Kwid. Como está tres centímetros más alto, la frecuencia sube menos:
+       \textbf{58.69}. Y la pantalla dice KWID.''
+ \item {\color{VerdeIcesi}\scriptsize\bfseries OPCIONAL} \textbf{Pestaña del oscilador LC.} ``Aquí se ve lo de
+       Euler: con el mismo paso, RK4 oscila bien y Euler se sale de la gráfica.''
+\end{enumerate}
+
+\begin{nota}[Plan B]
+Si el computador falla o la escena 3D no carga, no perder tiempo: volver a la diapositiva 15 y decir lo mismo
+señalando las capturas, que muestran exactamente esos dos momentos. La diapositiva 18 tiene la vista a ras del piso.
+\end{nota}
+
+\diapo{16}{Lo que mide el detector}{12:00 -- 12:20}
+\senala{la curva que baja con la altura y los dos puntos marcados.}
+
+Esta gráfica resume el proyecto: entre más bajo el carro, más baja la inductancia, unos \textbf{0.46 puntos por
+centímetro}. El detector hace el camino al revés: mide la frecuencia, saca la inductancia y con la curva estima la
+altura. Da
+\textbf{14.9 centímetros para el Spark y 18.0 para el Kwid}: los reconoce.
+
+\begin{nota}
+Tres centímetros de diferencia por 0.46 da unos 1.4 puntos, que es la diferencia entre $-12.87$ y $-11.39~\%$. La
+curva siempre baja (es monótona), y por eso se puede invertir: a cada frecuencia le corresponde una sola altura.
+\end{nota}
+
+\diapo{17}{El carro cruzando la espira}{12:20 -- 12:40}
+\senala{el trapecio: la subida, la parte plana y la bajada.}
+
+Esto es lo que ve el detector cuando el carro pasa sin detenerse. La frecuencia forma un \textbf{trapecio}: sube
+mientras el carro va tapando la espira, se queda arriba mientras la tapa completa y baja cuando sale. A 10 km/h dura
+unos \textbf{2 segundos}, y el detector necesita solo \textbf{18 milisegundos} para medir: hay tiempo de sobra.
+
+\begin{nota}
+\textbf{2 segundos:} el carro tiene que recorrer su largo más el lado de la espira, $3.64 + 1.8 \approx 5.4$ m, a
+2.8 m/s. \textbf{18 ms:} son 1\,000 ciclos de 55 kHz; contar 1\,000 ciclos da una resolución de 1/1\,000, o sea
+0.1~\%. A 40 km/h la señal dura medio segundo: miles de mediciones por carro.
+\end{nota}
+
+\diapo{18}{Escenarios de diseño}{12:40 -- 12:55}
+\senala{la columna ``Diferencia'' de las dos tablas y la vista a ras del piso.}
+
+También usamos el simulador para diseñar. La mejor diferencia entre los dos carros sale con una espira de
+\textbf{1.5 a 1.8 metros}, o sea \textbf{del tamaño del carro}. Y entre menos profunda, más señal.
+
+\begin{opcional}
+Si la espira es muy pequeña, el campo no alcanza a llegar al chasis; si es muy grande, el carro tapa solo una
+parte.
+\end{opcional}
+
+\begin{nota}
+El campo de una espira se debilita en una distancia parecida a su tamaño; una espira de 1 m ``ve'' poco a 20 cm de
+altura comparada con una de 1.8 m. \textbf{Las vueltas:} $L$ crece con $N^2$ y $\Delta L$ también, así que el
+cambio relativo no depende de $N$; las vueltas solo cambian la frecuencia de base.
+\end{nota}
+
+\diapo{19}{Segundo escenario: identificar el material}{12:55 -- 13:20}
+\senala{el plano de impedancia, con cada material en una dirección distinta.}
+
+El mismo modelo sirve para el otro caso del que habló el profesor, una línea de autopartes. Con una bobina pequeña
+se mide el cambio de impedancia de cada pieza: la \textbf{fase} dice de qué metal es y la \textbf{magnitud}, a qué
+distancia está. En las pruebas acertó el \textbf{100~\%}.
+
+\begin{nota}
+\textbf{Plano de impedancia:} se grafica $\Delta R$ contra $\Delta X$. Cada material sale en una dirección (un
+ángulo) que depende de $\sigma$ y $\mu$ y casi no de la distancia; la distancia solo cambia qué tan lejos del origen
+queda el punto. Cobre y aluminio bajan $L$; el acero, a 1 kHz, la sube. El 100~\% se logró con dos frecuencias y
+16 promedios por medición. Se usan dos frecuencias porque cerca de 20 kHz el acero queda ``ciego'': el efecto
+magnético y el de las corrientes se cancelan.
+\end{nota}
+
+\pasa{``Para cerrar, qué tan bien funciona y qué le falta.''}
+\reloj{13:20}
+
+% ==================================================================
+\parte{6}{Resultados, limitaciones y cierre}{13:20 -- 15:00}
+
+\diapo{20}{Resultados principales}{13:20 -- 13:40}
+\senala{la tabla del caso del carro y después las cuatro viñetas.}
+
+Resumiendo: la espira tiene \textbf{83 microhenrios} y oscila a \textbf{55.25 kilohertz}; RK4 da la frecuencia con
+un error de 5 en un millón, mientras que Euler diverge; y en la simulación los dos carros se distinguen, con una
+diferencia de \textbf{0.49 kilohertz}, que es fácil de medir.
+
+\begin{opcional}
+Y la potencia que el carro absorbe es de unos 80 microvatios con el Spark: el detector consume menos de un
+milivatio en la espira.
+\end{opcional}
+
+\diapo{21}{Discusión}{13:40 -- 14:15}
+\senala{las limitaciones en rojo y la tabla de comparación.}
+
+El modelo coincide con cómo funcionan los detectores reales: el chasis baja la inductancia y el carro más bajo la
+baja más.
+
+\begin{opcional}
+Comparada con una cámara o un sensor de ultrasonido, la espira funciona de noche y con lluvia y no tiene partes
+expuestas; lo que no puede es leer el modelo exacto, como haría una cámara.
+\end{opcional}
+
+También tiene limitaciones, y queremos decirlas. Tratamos el chasis como una placa plana, así que el efecto que
+calculamos es un \textbf{máximo}: el chasis real tiene huecos y partes a distintas alturas. Además, un Kwid muy
+cargado baja a unos 16 centímetros y se podría confundir con un Spark. Eso se arregla con una segunda espira que
+mida el largo del carro, y un análisis por elementos finitos daría el valor exacto.
+
+\begin{nota}
+Decir las limitaciones \emph{antes} de que pregunten muestra que se entiende el modelo. \textbf{Potencia:}
+$P = \tfrac12 I^2\,\Delta R = \tfrac12(0.05)^2(0.064) = 80~\mu$W con 50 mA. \textbf{Elementos finitos:} dividir el
+chasis real en millones de pedacitos y resolver Maxwell en cada uno con un programa como COMSOL; da el valor exacto
+pero no se puede hacer a mano.
+\end{nota}
+
+\diapo{22}{Conclusiones}{14:15 -- 14:50}
+\senala{los cinco puntos, uno por uno.}
+
+Para cerrar, cinco conclusiones. \textbf{Uno:} con solo Faraday y Ampère se explica el detector. \textbf{Dos:} el
+oscilador se resuelve con Kirchhoff, igual que el RC de clase. \textbf{Tres:} el detector reconoce los carros por su
+altura: el \textbf{Spark a 59.18} y el \textbf{Kwid a 58.69 kilohertz}. \textbf{Cuatro:} RK4 converge con orden 4,
+Euler explota en el oscilador, y la simulación nos corrigió una fórmula. \textbf{Cinco}, como trabajo futuro: el
+modelo con el chasis real, la segunda espira y probarlo con un detector comercial.
+
+\diapo{23 y 24}{Referencias y material complementario}{pasar rápido}
+
+Las referencias y el enlace al repositorio, con el código, las 13 pruebas automáticas y el informe, quedan en estas
+dos diapositivas.
+
+\diapo{25}{Gracias}{14:50 -- 15:00}
+
+Gracias. Quedamos atentos a sus preguntas.
+
+% ==================================================================
+\clearpage
+\section*{Números que hay que saber de memoria}
+
+\begin{center}
+\small\begin{tabular}{@{}p{8.2cm}p{7.8cm}@{}}
+\toprule
+Qué & Valor \\
+\midrule
+Espira & 1.8 m, 3 vueltas, 5 cm de profundidad, $R = 0.6~\Omega$, $C = 0.1~\mu$F \\
+Inductancia sin carro & 83 µH \\
+Frecuencia sin carro / factor de calidad & 55.25 kHz / $Q = 48$ \\
+Altura del Spark / Kwid (distancia a la espira) & 15 cm / 18 cm (20 cm / 23 cm) \\
+Cambio de inductancia Spark / Kwid & $-12.9~\%$ / $-11.4~\%$ \\
+Frecuencia con Spark / Kwid & \textbf{59.18 kHz / 58.69 kHz} \\
+Diferencia entre los carros & 0.49 kHz \\
+Altura estimada & 14.9 cm / 18.0 cm \\
+Profundidad de penetración en el acero a 55 kHz & 0.087 mm \\
+Orden de Euler / RK4 & 1 / 4 (medidos 1.01 / 4.02) \\
+Aproximación lineal frente a fórmula exacta & 6.44~\% frente a 7.13~\% \\
+Crecimiento de la energía con Euler & $\times 10^{11}$ en 30 períodos \\
+Longitud de onda a 55 kHz & 5.4 km \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Preguntas más probables}
+
+\sloppy\begin{description}[leftmargin=0pt, itemsep=4pt, font=\normalfont\bfseries, style=unboxed]
+ \item[¿Qué ecuación de Maxwell es la clave?] Faraday: el campo que cambia induce las corrientes en el chasis y la
+       fem en la espira.
+ \item[¿Por qué baja la inductancia si el acero es magnético?] A 55 kHz el campo entra solo 0.087 mm y domina el
+       apantallamiento de las corrientes de Foucault. El magnetismo gana a frecuencias bajas, como a 1 kHz en el
+       escenario de las autopartes.
+ \item[¿Cómo se relaciona con la clase?] El oscilador se resuelve con la ley de mallas y la misma convención de
+       signos del RC, y la inductancia se define como la capacitancia, pero con flujo por amperio.
+ \item[¿Por qué no usaron $\Delta f/f = -\tfrac12\Delta L/L$?] Porque solo vale para cambios pequeños; con un 13~\%
+       de cambio la fórmula exacta da 7.13~\% y la aproximada 6.44~\%, y la simulación con RK4 confirmó la exacta.
+ \item[¿Por qué Euler explota?] En un oscilador, cada paso de Euler multiplica la amplitud por $\sqrt{1+(\omega h)^2}$, que es
+       mayor que uno: la solución sale en espiral.
+ \item[¿Cómo saben que el código está bien?] Se probó con el circuito RL, que tiene solución exacta, y dio los
+       órdenes teóricos (1.01 y 4.02). Además hay 13 pruebas automáticas.
+ \item[¿Qué pasa si el Kwid va cargado?] Baja a unos 16 cm y se puede confundir con el Spark; se arregla midiendo
+       también el largo con una segunda espira.
+ \item[¿Por qué no una cámara?] La espira no le teme a la lluvia ni a la noche y no tiene partes expuestas; la cámara
+       reconoce el modelo exacto, pero es más frágil y costosa.
+ \item[¿El campo es peligroso?] No: unos 0.09 µT, cientos de veces menos que el campo magnético de la Tierra.
+ \item[¿Dónde usaron inteligencia artificial?] Para escribir parte del código y los borradores, la figura del corte y
+       las imágenes ilustrativas. Todo resultado se comprobó ejecutando el código, y la fórmula aproximada que propuso
+       se corrigió con la simulación.
+\end{description}
+
+Más preguntas y respuestas en \texttt{docs/07-sustentacion.md}.
+
+\section*{Antes de empezar}
+
+\begin{itemize}[leftmargin=1.2em, itemsep=2pt]
+ \item[$\square$] Simulador abierto en la pestaña \textbf{Caso: vehículo}, con el Spark y la espira de 1.8 m.
+ \item[$\square$] Escena 3D probada en el computador de la exposición (necesita WebGL, no necesita internet).
+ \item[$\square$] PDF de la presentación abierto como respaldo.
+ \item[$\square$] Cada integrante ensayó el guion completo una vez con cronómetro.
+\end{itemize}
+
+\end{document}
