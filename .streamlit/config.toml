@@ -1,0 +1,9 @@
+[theme]
+base = "light"
+font = "sans-serif"
+codeFont = "monospace"
+baseRadius = "small"
+showWidgetBorder = true
+
+[client]
+toolbarMode = "minimal"
