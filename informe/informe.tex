@@ -1,0 +1,878 @@
+\documentclass[10pt,onecolumn]{article}
+
+% ------------------------------------------------
+% PAQUETES
+% ------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla,es-nodecimaldot]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{cite}
+\usepackage{url}
+\usepackage{titlesec}
+\usepackage{abstract}
+\usepackage{fancyhdr}
+
+% ------------------------------------------------
+% PAQUETES PARA ECUACIONES, FIGURAS Y GRÁFICAS
+% ------------------------------------------------
+
+\usepackage{mathtools}
+\usepackage{bm}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{subcaption}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{xcolor}
+
+% Gráficas científicas
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+
+% Hipervínculos y referencias
+\usepackage[colorlinks=true,
+            linkcolor=blue,
+            citecolor=blue,
+            urlcolor=blue]{hyperref}
+
+% Configuración de numeración de ecuaciones
+\numberwithin{equation}{section}
+
+% Configuración de numeración de figuras y tablas
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+% Espaciado de figuras
+\setlength{\textfloatsep}{10pt}
+\setlength{\floatsep}{8pt}
+\setlength{\intextsep}{8pt}
+
+% Formato de captions
+\usepackage[font=small,
+            labelfont=bf,
+            justification=centering]{caption}
+
+\sisetup{output-decimal-marker={.}, group-digits=false}
+\graphicspath{{figuras/}}
+
+% Párrafo de declaración de uso de IA al final de cada apartado
+\newcommand{\usoia}[1]{%
+ \par\smallskip\noindent{\footnotesize\textbf{Uso de IA en este apartado.} #1}\par}
+
+% ------------------------------------------------
+% CONFIGURACIÓN DE PÁGINA
+% ------------------------------------------------
+\geometry{
+    letterpaper,
+    left=1.7cm,
+    right=1.7cm,
+    top=2cm,
+    bottom=2cm,
+    columnsep=0.7cm
+}
+
+\setlength{\parindent}{1em}
+\setlength{\emergencystretch}{1.5em}
+\setlength{\parskip}{3pt}
+
+\titleformat{\section}
+{\normalfont\bfseries\normalsize}
+{\thesection.}{0.5em}{}
+
+\titleformat{\subsection}
+{\normalfont\bfseries\small}
+{\thesubsection}{0.5em}{}
+
+% ------------------------------------------------
+% INFORMACIÓN DEL PROYECTO
+% ------------------------------------------------
+
+\title{
+    \textbf{\Large SEMP: DISEÑO Y SIMULACIÓN DE UN SENSOR ELECTROMAGNÉTICO DE PROXIMIDAD QUE DETECTA UN
+    VEHÍCULO Y RECONOCE SI ES UN SPARK O UN KWID}
+}
+
+\author{
+    Luis Ernesto Rodríguez$^{1}$,
+    Sebastián Santander Soto$^{1}$,
+    Kevin Lozano Gómez$^{1}$,\\
+    Juan Pablo Corchuelo$^{1}$,
+    Mateo López$^{1}$\\[0.3cm]
+    \small
+    $^{1}$ Curso de Electromagnetismo,
+    Universidad Icesi, Cali, Colombia\\
+    \small
+    Repositorio: \url{https://github.com/luisrodriguez-rgb/Proyecto-Final-Fisica}
+}
+
+\date{}
+
+% ------------------------------------------------
+% DOCUMENTO
+% ------------------------------------------------
+
+\begin{document}
+
+% ------------------------------------------------
+% TÍTULO Y AUTORES
+% ------------------------------------------------
+
+\twocolumn[
+\begin{@twocolumnfalse}
+
+\maketitle
+
+% ------------------------------------------------
+% RESUMEN
+% ------------------------------------------------
+
+\begin{center}
+    \textbf{RESUMEN}
+\end{center}
+
+\noindent
+Las espiras inductivas enterradas en el pavimento son el detector de vehículos más usado en parqueaderos y
+semáforos. En este proyecto se modela, se resuelve y se simula un detector de este tipo que, además de detectar un
+carro, reconoce si es un Chevrolet Spark GT o un Renault Kwid. El estudio se organiza con el esquema Detección,
+Emisiones, Propiedades y Alerta (D.E.P.A.) y usa solo las leyes de Maxwell que el fenómeno necesita: la de Faraday y
+la de Ampère en régimen cuasi-estático. El campo de la espira induce corrientes de Foucault en el chasis de acero;
+a 55~kHz el campo penetra apenas 0.087~mm, el chasis expulsa el flujo y la inductancia de la espira baja. Ese cambio
+se calcula con la solución semianalítica de Dodd y Deeds y se convierte en un cambio de frecuencia de un oscilador
+LC, cuya ecuación se obtiene por la ley de mallas de Kirchhoff con el mismo procedimiento del circuito RC visto en
+clase. La ecuación se integra con los métodos de Euler y Runge--Kutta de cuarto orden programados manualmente: RK4
+converge con orden 4 y conserva la energía, mientras que Euler es inestable en el oscilador para cualquier paso. La
+simulación mostró además que la aproximación lineal del cambio de frecuencia subestima el efecto, y se adoptó la
+fórmula exacta. Se construyó un simulador interactivo con una escena 3D del parqueadero. Con una espira de 1.8~m, el
+Spark (15~cm de altura libre) reduce la inductancia un 12.9\,\% y lleva el oscilador de 55.25 a 59.18~kHz, y el Kwid
+(18~cm) la reduce un 11.4\,\% y lo lleva a 58.69~kHz; invirtiendo la curva se estiman alturas de 14.9 y 18.0~cm,
+con lo que ambos carros se reconocen.
+
+\vspace{0.2cm}
+\noindent
+\textbf{Palabras clave:} espira inductiva, corrientes de Foucault, ley de Faraday, oscilador LC, Runge--Kutta,
+detección de vehículos.
+
+\vspace{0.4cm}
+
+\end{@twocolumnfalse}
+]
+
+% =================================================
+% SECCIONES DEL PROYECTO
+% =================================================
+
+\section{Introducción}
+
+Los sensores inductivos de proximidad detectan metal sin contacto mediante un campo magnético variable. Se usan en
+líneas de producción, en semáforos y en las entradas de los parqueaderos, donde una espira de alambre enterrada en
+el pavimento detecta el carro y abre la talanquera \cite{fhwa2006,klein2006}. A diferencia de una cámara o de un
+sensor ultrasónico, la espira no se ve afectada por la noche, la lluvia o la suciedad y no tiene partes expuestas.
+Su principio es la inducción electromagnética: la corriente de la espira crea un campo que induce corrientes en el
+chasis del vehículo, y la reacción de esas corrientes cambia la inductancia de la espira
+\cite{griffiths2017,libby1971}.
+
+\textbf{Problema.} Un parqueadero necesita abrir la talanquera cuando llega un carro y, además, saber qué carro
+llegó, sin cámaras ni botones. Siguiendo la propuesta del curso, se estudian dos modelos de uso común en Colombia:
+el Chevrolet Spark GT y el Renault Kwid.
+
+\textbf{Propósito.} Modelar el detector a partir de las ecuaciones de Maxwell, resolverlo analítica y
+numéricamente, y construir un simulador que permita evaluar si reconoce cada carro.
+
+\textbf{Objetivos.}
+\begin{enumerate}
+ \item Deducir el cambio de inductancia de la espira por la presencia del chasis desde las leyes de Faraday y
+       Ampère.
+ \item Obtener la ecuación del oscilador LC del detector por la ley de mallas de Kirchhoff y resolverla
+       analíticamente.
+ \item Implementar manualmente los métodos de Euler y Runge--Kutta de cuarto orden (RK4), validarlos y usarlos
+       para simular el oscilador.
+ \item Simular el detector con los dos carros y evaluar si los reconoce por la altura de su chasis.
+\end{enumerate}
+
+\textbf{Alcance.} El chasis se modela como una placa plana de acero, la espira cuadrada como una circular de igual
+área y los materiales como lineales. El estudio se organiza con el esquema D.E.P.A. propuesto en el curso:
+\emph{Detección} (qué detectar), \emph{Emisiones} (cómo responde el objeto), \emph{Propiedades} de los campos
+(frecuencia, energía, potencia) y \emph{Alerta} (lo que entrega el sistema). Como segundo escenario se presenta una
+bobina pequeña en una línea de autopartes, que identifica el material de cada pieza.
+
+\usoia{Se usó Claude (Anthropic) para redactar un primer borrador de la introducción. El caso del carro fue
+propuesto por el profesor, y el equipo definió el problema, los objetivos y revisó el texto.}
+
+\section{Modelo teórico}
+
+\subsection{Descripción del proceso}
+
+Como se hizo en clase con el espectrómetro de masas, el proceso se describe por etapas para usar en cada una solo la
+física que necesita:
+
+\begin{enumerate}
+ \item \textbf{Detección.} La espira crea un campo magnético que sube desde el pavimento. Hay que decidir si hay un
+       carro y cuál es; la distancia que importa es la altura del chasis.
+ \item \textbf{Emisiones.} El campo variable induce en la cara inferior del chasis un campo eléctrico (ley de
+       Faraday) que mueve las cargas libres: aparecen corrientes de Foucault $\vec J=\sigma\vec E$. Por la ley de
+       Lenz, su campo se opone al de la espira; parte del flujo queda bloqueado y la inductancia baja.
+ \item \textbf{Propiedades.} A la frecuencia del oscilador (55~kHz) el campo penetra muy poco en el acero, así que
+       domina el apantallamiento sobre la magnetización. La potencia que absorbe el chasis y la energía guardada en
+       la espira dependen de la altura del carro.
+ \item \textbf{Alerta.} Al bajar la inductancia sube la frecuencia del oscilador. Si el cambio supera un umbral se
+       abre la talanquera, y la magnitud del cambio da la altura y, con ella, el modelo del carro.
+\end{enumerate}
+
+\textbf{Variables.} Vectoriales: $\vec B$ (T), $\vec E$ (V/m), $\vec J$ (A/m$^2$) y el potencial vector $\vec A$, con
+$\vec B=\nabla\times\vec A$. Escalares: la carga del capacitor $q$ (C), la corriente $i$ (A), la inductancia $L$ (H),
+la resistencia $R$ ($\Omega$), la capacitancia $C$ (F), el flujo $\Phi_B$ (Wb), la conductividad $\sigma$ (S/m), la
+permeabilidad relativa $\mu_r$, la frecuencia $f$ y la geometría: vueltas $N$, radio equivalente $a$, radio del
+alambre $r_w$, altura libre al piso $h$ y profundidad de la espira $p$.
+
+\textbf{Hipótesis.} (i) Régimen cuasi-estático; (ii) materiales lineales; (iii) chasis como placa plana de acero a
+la altura libre al piso; (iv) el tamaño finito del carro se representa con la fracción $\eta$ de la espira que tapa;
+(v) espira cuadrada representada por una circular de igual área; (vi) la carga del carro no cambia su altura.
+
+\subsection{Fundamentación matemática}
+
+\textbf{Ecuaciones de Maxwell necesarias.} Siguiendo la orientación del curso, solo se usan las que el fenómeno
+requiere \cite{griffiths2017,jackson1999}. La ley de Faraday es la central:
+\begin{equation}
+ \oint_C \vec E\cdot d\vec l = -\frac{d\Phi_B}{dt},\qquad \Phi_B=\vec B\cdot\vec A .
+ \label{eq:faraday}
+\end{equation}
+La ley de Ampère, sin corriente de desplazamiento, da los campos de la espira y del chasis:
+\begin{equation}
+ \oint_C \vec B\cdot d\vec l = \mu_0 I_{enc}.
+ \label{eq:ampere}
+\end{equation}
+A 55~kHz la longitud de onda es $\lambda=c/f=5.4$~km, unas 3\,000 veces el tamaño de la espira, y en el acero
+$\omega\varepsilon_0/\sigma=5\times10^{-13}$: la corriente de desplazamiento es despreciable. La ley de Gauss
+magnética solo da una condición de frontera, y la de Gauss eléctrica no interviene porque las corrientes de Foucault
+forman lazos cerrados. Combinando \eqref{eq:faraday}, \eqref{eq:ampere} y $\vec J=\sigma\vec E$, dentro del metal
+se obtiene una ecuación de difusión con una profundidad de penetración característica:
+\begin{equation}
+ \nabla^2\vec A = j\omega\mu_0\mu_r\sigma\,\vec A ,
+ \qquad
+ \delta=\sqrt{\frac{2}{\omega\mu_0\mu_r\sigma}} .
+ \label{eq:difusion}
+\end{equation}
+Para el acero ($\sigma=6\times10^6$~S/m, $\mu_r=100$) a 55.25~kHz, $\delta=0.087$~mm, mucho menor que el espesor de
+la lámina del chasis (cerca de 1~mm).
+
+\textbf{Inductancia de la espira.} Igual que la capacitancia es la razón entre carga y potencial, la inductancia
+es la razón entre el flujo enlazado y la corriente. Para una espira circular de $N$ vueltas \cite{grover2004}:
+\begin{equation}
+ L_0=\mu_0N^2a\left[\ln\left(\frac{8a}{r_w}\right)-2\right].
+ \label{eq:espira}
+\end{equation}
+La espira cuadrada de lado $s=1.8$~m se reemplaza por una circular de igual área, $a=s/\sqrt\pi=1.016$~m. Con
+$N=3$ y alambre 14~AWG ($r_w=0.8$~mm), $L_0=83.0~\mu$H. La regla práctica de instalación da 70.9~$\mu$H
+\cite{fhwa2006}, del mismo orden.
+
+\textbf{Efecto del chasis.} Dodd y Deeds resolvieron \eqref{eq:difusion} para una bobina sobre un conductor plano
+\cite{dodd1968}. Multiplicando por la fracción tapada $\eta$, el cambio de impedancia es
+\begin{equation}
+ \Delta Z=\eta\, j\omega\pi\mu_0a^2N^2\!\int_0^\infty\! J_1^2(\alpha a)\,\Gamma(\alpha)\,F^2(\alpha)\,d\alpha,
+ \label{eq:dodd}
+\end{equation}
+con $\Gamma=(\mu_r\alpha-\alpha_1)/(\mu_r\alpha+\alpha_1)$, $\alpha_1=\sqrt{\alpha^2+j\omega\mu_0\mu_r\sigma}$ y
+$F(\alpha)$ el factor geométrico de la espira a la distancia $d=h+p$. De ahí salen los parámetros efectivos:
+\begin{equation}
+ L_{\text{eff}}=L_0+\frac{\operatorname{Im}\Delta Z}{\omega},\qquad R_{\text{eff}}=R_0+\operatorname{Re}\Delta Z .
+ \label{eq:efectivos}
+\end{equation}
+Cuando $\delta\to0$, $\Gamma\to-1$: el chasis actúa como un espejo que crea una espira imagen con corriente opuesta
+(método de las imágenes) y la inductancia baja.
+
+\textbf{Oscilador LC.} El detector conecta la espira a un capacitor. Recorriendo la malla con la convención de
+signos de clase (capacitor $-q/C$, resistor $-iR$, espira $-L\,di/dt$), la ley de Kirchhoff da, con $i=dq/dt$,
+\begin{equation}
+ L\frac{d^2q}{dt^2}+R\frac{dq}{dt}+\frac{q}{C}=0 .
+ \label{eq:lc}
+\end{equation}
+Es la unión del circuito RC visto en clase y del RL de la espira. Escrita como sistema de primer orden, que es la
+forma que integran los métodos numéricos:
+\begin{equation}
+\begin{aligned}
+    \frac{dq}{dt} &= i,\\
+    \frac{di}{dt} &= -\frac{Ri+q/C}{L}.
+\end{aligned}
+\label{eq:sistema}
+\end{equation}
+Probando $q=e^{st}$ se obtiene $s=-R/2L\pm j\omega_d$, con
+$\omega_d=\sqrt{1/LC-(R/2L)^2}$. La solución es una oscilación amortiguada,
+\begin{equation}
+ q(t)=q_0\,e^{-Rt/2L}\cos\omega_d t\;(+\text{término en seno}),
+ \label{eq:sol_lc}
+\end{equation}
+cuya energía decae como $e^{-Rt/L}$. Con $L_0=83.0~\mu$H, $C=0.1~\mu$F y $R=0.6~\Omega$:
+\begin{equation}
+ f_0=\frac{1}{2\pi\sqrt{L_0C}}=55.25~\text{kHz},\qquad Q=\frac{\omega_0L_0}{R}=48 .
+ \label{eq:f0}
+\end{equation}
+
+\textbf{Cambio de frecuencia con el carro.} Si la inductancia pasa de $L_0$ a $L_0+\Delta L$,
+\begin{equation}
+ \frac{f}{f_0}=\left(1+\frac{\Delta L}{L_0}\right)^{-1/2}\;\approx\;1-\frac12\frac{\Delta L}{L_0}.
+ \label{eq:df}
+\end{equation}
+La aproximación lineal solo vale si $|\Delta L/L_0|\ll1$; con un carro el cambio supera el 10\,\% y se usa la forma
+exacta (sección 3).
+
+\textbf{Reconocimiento.} La curva $\Delta L/L_0$ en función de la altura $h$ es monótona. El detector mide $f$,
+obtiene $\Delta L/L_0$ invirtiendo \eqref{eq:df}, lee la altura en la curva y elige el carro de altura más parecida.
+
+\subsection{Representación del sistema}
+
+La Figura \ref{fig:modelo} muestra un corte del detector: la espira de tres vueltas en una ranura del pavimento, el
+cable al oscilador y el chasis de cada carro a su altura.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.62\textwidth]{anatomy-corte-espira.png}\hfill
+    \includegraphics[width=0.36\textwidth]{ia-corte-pavimento.jpg}
+    \caption{Izquierda: corte del detector de espira con el chasis del Spark (15~cm) y el Kwid (18~cm); figura
+    isométrica construida con la skill Anatomy, con valores del modelo. Derecha: ilustración de la espira en la
+    ranura del pavimento (imagen generada con IA a partir de un prompt del equipo).}
+    \label{fig:modelo}
+\end{figure*}
+
+\subsection{Condiciones iniciales y de frontera}
+
+El oscilador arranca con el capacitor cargado y sin corriente:
+\begin{equation}
+    q(0)=q_0,\qquad i(0)=0 .
+    \label{eq:condicion_inicial}
+\end{equation}
+En la cara inferior del chasis ($z=0$) son continuas $B_z$ (de la ley de Gauss magnética) y $H_\rho$ (de la ley de
+Ampère), y los campos se anulan lejos de la espira. Un oscilador real repone con un transistor la energía que se
+pierde en $R$ y mantiene la oscilación; en la simulación se observa la oscilación libre durante 30 períodos.
+
+\subsection{Caso de estudio}
+
+La Tabla \ref{tab:caso} resume los dos carros. La espira es cuadrada de 1.8~m (la medida más común, 6~$\times$~6
+pies), de 3 vueltas, enterrada a $p=5$~cm, con $R=0.6~\Omega$ y $C=0.1~\mu$F \cite{fhwa2006}. Los requisitos son
+detectar el carro, reconocer el modelo y funcionar a velocidades de entrada de 5 a 20~km/h.
+
+\begin{table}[H]
+    \centering
+    \caption{Datos de los carros (fichas técnicas \cite{fichas2025}).}
+    \label{tab:caso}
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & Spark GT & Kwid \\
+        \midrule
+        Largo $\times$ ancho (m) & $3.635\times1.597$ & $3.680\times1.586$ \\
+        Peso en vacío (kg) & 966 & 785 \\
+        Altura libre al piso & 15 cm & 18 cm \\
+        Distancia chasis--espira $d$ & 20 cm & 23 cm \\
+        Fracción tapada $\eta$ & 0.89 & 0.88 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Las fichas técnicas no coinciden del todo (Spark 15--17~cm, Kwid 17.2--18.5~cm); se usa el valor central.
+
+\usoia{Claude (Anthropic) se usó para buscar y explicar el modelo de Dodd y Deeds y la inductancia de una espira,
+redactar borradores de las deducciones y construir la figura del corte con la skill Anatomy. La imagen del
+pavimento se generó con IA. Las deducciones se contrastaron con los apuntes de clase del circuito RC y de la ley de
+Gauss, y los valores numéricos se obtuvieron ejecutando el código del proyecto.}
+
+\section{Implementación numérica}
+
+El sistema \eqref{eq:sistema} es un problema de valor inicial de primer orden, $\mathbf y'=\mathbf f(t,\mathbf y)$
+con $\mathbf y=(q,i)$, para el cual los métodos de Euler y RK4 son adecuados \cite{burden2017,butcher2016}. La guía
+del curso exige programarlos manualmente; \texttt{solve\_ivp} de SciPy \cite{virtanen2020} se usa solo como
+contraste.
+
+\subsection{Método numérico empleado}
+
+La derivada temporal se aproxima mediante diferencias finitas,
+\begin{equation}
+    \frac{d\mathbf y}{dt}
+    \approx
+    \frac{\mathbf y_{n+1}-\mathbf y_n}{\Delta t},
+    \label{eq:diferencias_finitas}
+\end{equation}
+donde $\Delta t$ es el paso de tiempo. Para mayor precisión se usa RK4, que promedia cuatro pendientes en cada paso:
+\begin{equation}
+\begin{aligned}
+ \mathbf k_1&=\mathbf f(t_n,\,\mathbf y_n),\\
+ \mathbf k_2&=\mathbf f\!\left(t_n+\tfrac{\Delta t}{2},\,\mathbf y_n+\tfrac{\Delta t}{2}\mathbf k_1\right),\\
+ \mathbf k_3&=\mathbf f\!\left(t_n+\tfrac{\Delta t}{2},\,\mathbf y_n+\tfrac{\Delta t}{2}\mathbf k_2\right),\\
+ \mathbf k_4&=\mathbf f(t_n+\Delta t,\,\mathbf y_n+\Delta t\,\mathbf k_3),
+\end{aligned}
+\label{eq:rk4_k}
+\end{equation}
+\begin{equation}
+ \mathbf y_{n+1}=\mathbf y_n+\frac{\Delta t}{6}\left(\mathbf k_1+2\mathbf k_2+2\mathbf k_3+\mathbf k_4\right).
+ \label{eq:rk4}
+\end{equation}
+
+\subsection{Procedimiento de cálculo}
+
+El método de Euler se implementa mediante el procedimiento iterativo
+\begin{equation}
+    \mathbf y_{n+1}=\mathbf y_n+\Delta t\, \mathbf f(t_n,\mathbf y_n),
+    \label{eq:euler}
+\end{equation}
+con error global de orden $\Delta t$, mientras que RK4 tiene error de orden $\Delta t^4$. El oscilador se integra
+durante 30 períodos y la frecuencia se \emph{mide} contando los cruces por cero de $q(t)$, interpolados entre pasos,
+igual que hace un detector real. La integral \eqref{eq:dodd} se evalúa con la regla del trapecio sobre 6\,000
+puntos logarítmicos; frente a una malla diez veces más fina, su error relativo es $1.3\times10^{-6}$.
+
+\textbf{Estabilidad.} Sin resistencia, el oscilador tiene valores propios $\pm j\omega$. Un paso de Euler multiplica
+cada modo por $1+j\omega\Delta t$, de módulo
+\begin{equation}
+ |1+j\omega\Delta t|=\sqrt{1+(\omega\Delta t)^2}>1 \quad\text{para todo }\Delta t>0,
+ \label{eq:euler_inestable}
+\end{equation}
+así que Euler hace crecer la energía con \emph{cualquier} paso. Con 40 pasos por período la energía crece 2.65 veces
+por período, la resistencia quita un factor $e^{-2\pi/Q}=0.877$, y en 30 períodos queda multiplicada por
+$\approx10^{11}$. RK4 es estable si $\omega\Delta t<2.83$, es decir, con más de unos 2.2 pasos por período. En un
+circuito RL, en cambio, el valor propio es real ($-1/\tau$) y Euler es estable si $\Delta t<2\tau$.
+
+\subsection{Análisis de convergencia}
+
+El error absoluto en la frecuencia y el error relativo se calculan como
+\begin{equation}
+    E_{\mathrm{abs}}=
+    |f_{\mathrm{exacta}}-f_{\mathrm{numérica}}|,
+    \label{eq:error}
+\end{equation}
+\begin{equation}
+    E_{\mathrm{rel}}=
+    \frac{|f_{\mathrm{exacta}}-f_{\mathrm{numérica}}|}
+    {|f_{\mathrm{exacta}}|}
+    \times 100\%,
+    \label{eq:error_relativo}
+\end{equation}
+donde $f_{\mathrm{exacta}}=\omega_d/2\pi$. El orden observado entre dos pasos sucesivos es
+\begin{equation}
+ p=\frac{\ln(E_k/E_{k+1})}{\ln(\Delta t_k/\Delta t_{k+1})}.
+ \label{eq:orden}
+\end{equation}
+
+\begin{table}[H]
+    \centering
+    \caption{Error relativo en la frecuencia del oscilador sin carro y energía al final de 30 períodos (exacta:
+    $e^{-Rt/L}=0.0197$).}
+    \label{tab:oscilador}
+    \small
+    \begin{tabular}{rcccc}
+        \toprule
+        Pasos & \multicolumn{2}{c}{Error en $f$} & \multicolumn{2}{c}{Energía final} \\
+        por período & RK4 & Euler & RK4 & Euler \\
+        \midrule
+        10 & $1.1\times10^{-3}$ & $1.0\times10^{-1}$ & 0.016 & $1.3\times10^{42}$ \\
+        20 & $8.1\times10^{-5}$ & $2.8\times10^{-2}$ & 0.0196 & $9.5\times10^{22}$ \\
+        40 & $5.1\times10^{-6}$ & $6.5\times10^{-3}$ & 0.0197 & $1.1\times10^{11}$ \\
+        80 & $3.2\times10^{-7}$ & $1.2\times10^{-3}$ & 0.0197 & $5.2\times10^{4}$ \\
+        160 & $2.0\times10^{-8}$ & $1.1\times10^{-4}$ & 0.0197 & 32 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+\subsection{Gráfica de convergencia}
+
+\begin{figure}[H]
+    \centering
+    \begin{tikzpicture}
+    \begin{axis}[
+        width=0.95\columnwidth,
+        height=5.4cm,
+        xlabel={Pasos por período},
+        ylabel={Error relativo en $f$},
+        title={Análisis de convergencia (oscilador LC)},
+        grid=major,
+        legend pos=south west,
+        legend style={font=\scriptsize},
+        ymode=log,
+        xmode=log,
+        log basis x=2,
+        xtick={10,20,40,80,160},
+        xticklabels={10,20,40,80,160}
+    ]
+    \addplot[red, thick, mark=square*] coordinates {
+        (10,1.0e-1) (20,2.8e-2) (40,6.5e-3) (80,1.2e-3) (160,1.1e-4)
+    };
+    \addlegendentry{Euler}
+    \addplot[blue, thick, mark=*] coordinates {
+        (10,1.1e-3) (20,8.1e-5) (40,5.1e-6) (80,3.2e-7) (160,2.0e-8)
+    };
+    \addlegendentry{RK4 ($p\approx4$)}
+    \addplot[gray, dashed, domain=10:160] {5.1e-6*(40/x)^4};
+    \addlegendentry{pendiente $-4$}
+    \end{axis}
+    \end{tikzpicture}
+    \caption{Error relativo en la frecuencia del oscilador frente al número de pasos por período. Al duplicar los
+    pasos, el error de RK4 baja unas 16 veces.}
+    \label{fig:convergencia}
+\end{figure}
+
+La Figura \ref{fig:convergencia} confirma el orden 4 de RK4 (8.1e−5 $\rightarrow$ 5.1e−6 $\rightarrow$ 3.2e−7). Con
+el circuito RL de la bobina, que tiene solución exacta, los órdenes medidos son 1.01 para Euler y 4.02 para RK4. La
+Figura \ref{fig:oscilador} muestra el comportamiento en el tiempo: RK4 reproduce la oscilación y la pérdida exacta
+de energía, y Euler hace crecer la amplitud sin límite.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{oscilador-lc.png}
+    \caption{Oscilador LC del detector con $\Delta t=T/40$. Izquierda: carga del capacitor sin carro y con el Spark
+    (RK4) y con Euler. Derecha: energía del oscilador; Euler crece $10^{11}$ veces en 30 períodos.}
+    \label{fig:oscilador}
+\end{figure}
+
+\usoia{Claude (Anthropic) se usó para escribir el código de Euler, RK4 y la simulación del oscilador. El equipo
+verificó los resultados con la solución analítica, con SciPy, con el balance de energía y con 13 pruebas automáticas.}
+
+\section{Simulación computacional}
+
+\subsection{Implementación del modelo}
+
+El simulador está escrito en Python con NumPy \cite{harris2020}, SciPy \cite{virtanen2020}, SymPy
+\cite{meurer2017} y Matplotlib \cite{hunter2007}; la interfaz usa Streamlit y la escena 3D Three.js. El algoritmo es:
+\begin{enumerate}
+ \item Leer el carro (altura, largo y ancho) y la espira (lado, vueltas, profundidad, $R$, $C$).
+ \item Calcular $L_0$ con \eqref{eq:espira} y $f_0$ con \eqref{eq:f0}.
+ \item Calcular $\Delta Z$ con \eqref{eq:dodd} a la altura del chasis y obtener $L_{\text{eff}}$ y $R_{\text{eff}}$.
+ \item Integrar \eqref{eq:sistema} con Euler y RK4 y medir la frecuencia contando cruces por cero.
+ \item Comparar el cambio de frecuencia con \eqref{eq:df}, invertir la curva $\Delta L/L_0(h)$ y elegir el carro.
+ \item Abrir la talanquera en la escena 3D y mostrar el modelo reconocido.
+\end{enumerate}
+La escena 3D construye los carros con sus medidas reales y toma todas sus lecturas del modelo de Python
+(Figura \ref{fig:escena}). Se pueden cambiar el carro, el lado de la espira, su profundidad, las vueltas y la
+velocidad. Las instrucciones de ejecución están en el repositorio.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{escena-3d-spark-atardecer.png}
+    \caption{Escena 3D del simulador: el Spark detenido sobre la espira, con la frecuencia, la inductancia y la
+    potencia absorbida por el chasis.}
+    \label{fig:escena}
+\end{figure}
+
+\subsection{Resultados de simulación}
+
+La Figura \ref{fig:simulacion} muestra la frecuencia del oscilador mientras cada carro cruza la espira a 10~km/h. La
+señal tiene forma de trapecio: sube mientras el carro tapa la espira, se mantiene cuando la cubre y baja al salir.
+Dura unos 2~s, mientras que medir la frecuencia con 0.1\,\% de resolución toma unos 18~ms (1\,000 ciclos), así que
+cada carro da miles de mediciones. Aun a 40~km/h la señal dura medio segundo.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.95\columnwidth]{carro-paso.png}
+    \caption{Frecuencia del oscilador mientras el Spark y el Kwid cruzan la espira a 10~km/h.}
+    \label{fig:simulacion}
+\end{figure}
+
+\subsection{Análisis de parámetros}
+
+La sensibilidad de la frecuencia a la inductancia se obtiene derivando \eqref{eq:df}:
+\begin{equation}
+    S_{L}=
+    \frac{\partial f}{\partial L}=-\frac{f}{2L},
+    \label{eq:sensibilidad}
+\end{equation}
+de modo que un cambio relativo de $L$ produce la mitad de cambio relativo en $f$, con signo opuesto. Con
+$f=59.18$~kHz y $L=72.3~\mu$H (Spark), $S_L=-0.41$~kHz/$\mu$H. La Tabla \ref{tab:escenarios} resume el estudio de
+escenarios moviendo un parámetro de la espira a la vez.
+
+\begin{table}[H]
+    \centering
+    \caption{Cambio de inductancia con cada carro según el diseño de la espira.}
+    \label{tab:escenarios}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Diseño & Spark & Kwid & Diferencia \\
+        \midrule
+        Lado 1.0 m & $-8.8$\,\% & $-7.5$\,\% & 1.36 \\
+        Lado 1.5 m & $-12.7$\,\% & $-11.2$\,\% & 1.54 \\
+        Lado 1.8 m & $-12.9$\,\% & $-11.4$\,\% & 1.48 \\
+        Lado 2.5 m & $-11.3$\,\% & $-10.2$\,\% & 1.10 \\
+        \midrule
+        Profundidad 2 cm & $-14.5$\,\% & $-12.8$\,\% & 1.76 \\
+        Profundidad 10 cm & $-10.7$\,\% & $-9.5$\,\% & 1.14 \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Una espira más pequeña que el carro queda tapada por completo, pero su campo alcanza menos altura; una más grande
+queda tapada solo en parte. El óptimo está entre 1.5 y 1.8~m, del tamaño del carro. Cuanto menos profunda va la
+espira, más señal. El número de vueltas casi no cambia $\Delta L/L_0$, porque $L_0$ y $\Delta L$ crecen los dos con
+$N^2$; solo cambia la frecuencia del oscilador (165.7~kHz con 1 vuelta, 27.6~kHz con 6).
+
+\usoia{Claude (Anthropic) se usó para programar el simulador, la escena 3D y los barridos de parámetros. El equipo
+definió los escenarios, revisó la coherencia física de los resultados y los interpretó.}
+
+\section{Resultados y discusión}
+
+\subsection{Presentación de resultados}
+
+La Figura \ref{fig:resultados} presenta el resultado central: el cambio de inductancia y la frecuencia del oscilador
+en función de la altura libre al piso, con los dos carros marcados.
+
+\begin{figure*}[t]
+    \centering
+    \includegraphics[width=0.85\textwidth]{carro-altura.png}
+    \caption{Izquierda: reducción de la inductancia frente a la altura del chasis (las franjas son los rangos de las
+    fichas técnicas). Derecha: frecuencia del oscilador, que es lo que mide el detector.}
+    \label{fig:resultados}
+\end{figure*}
+
+\begin{table}[H]
+    \centering
+    \caption{Resultados del detector con una espira de 1.8~m.}
+    \label{tab:resultados}
+    \small
+    \begin{tabular}{lcc}
+        \toprule
+        & Spark & Kwid \\
+        \midrule
+        $\Delta L/L_0$ & $-12.87$\,\% & $-11.39$\,\% \\
+        $\Delta R$ ($\Omega$) & $+0.064$ & $+0.054$ \\
+        $\Delta f/f_0$ (exacto) & $+7.13$\,\% & $+6.23$\,\% \\
+        Frecuencia & 59.18 kHz & 58.69 kHz \\
+        Altura estimada & 14.9 cm & 18.0 cm \\
+        Potencia en el chasis (50 mA) & 80 $\mu$W & 67 $\mu$W \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+Los dos carros superan con amplitud la sensibilidad de un detector comercial (0.01--1\,\% de $\Delta L/L$)
+\cite{fhwa2006}, y la diferencia de 0.49~kHz entre ellos se mide con facilidad. Invirtiendo la curva se estiman
+14.9~cm para el Spark y 18.0~cm para el Kwid, de modo que ambos se reconocen.
+
+\subsection{Comparación de resultados}
+
+La Tabla \ref{tab:comparacion} compara las soluciones analíticas con las numéricas, con 40 pasos por período.
+
+\begin{table}[H]
+    \centering
+    \caption{Comparación de resultados teóricos y numéricos del oscilador.}
+    \label{tab:comparacion}
+    \small
+    \begin{tabular}{lccc}
+        \toprule
+        Magnitud & Teórico & RK4 & Euler \\
+        \midrule
+        $f$ sin carro (kHz) & 55.2433 & 55.2430 & 54.8840 \\
+        $f$ con el Spark (kHz) & 59.1821 & 59.1818 & 58.8147 \\
+        $f$ con el Kwid (kHz) & 58.6858 & 58.6855 & 58.3189 \\
+        $\Delta f/f_0$, Spark & 7.13\,\% & 7.130\,\% & -- \\
+        Energía final (30 períodos) & 0.0197 & 0.0197 & $1.1\times10^{11}$ \\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+La aproximación lineal de \eqref{eq:df} da $+6.44$\,\% para el Spark, mientras que la simulación con RK4 da
+$+7.130$\,\% con cualquier paso, igual a la fórmula exacta. \textbf{La simulación decidió qué fórmula usar}, y todo el
+proyecto se corrigió a la exacta.
+
+\subsection{Discusión de resultados}
+
+\textbf{Correspondencia entre teoría y simulación.} El chasis baja la inductancia y sube la frecuencia, como en los
+detectores comerciales; el carro más bajo cambia más; la regla de instalación da el mismo orden de $L_0$; RK4
+reproduce la frecuencia con error $5\times10^{-6}$ y la pérdida exacta de energía. Las diferencias con Euler se deben
+a su inestabilidad en sistemas oscilatorios, no al modelo.
+
+\textbf{Evaluación del modelo.} El chasis se trata como una placa plana infinita; un chasis real tiene huecos, el
+túnel de la transmisión y el escape, así que los cambios calculados son una \emph{cota superior}: los detectores
+reales reportan cambios de pocos por ciento. Lo que el modelo predice con confianza es la tendencia: un carro más
+bajo y más ancho cambia más la inductancia.
+
+\textbf{Impacto.} La espira funciona de noche, con lluvia y sin partes expuestas; consume menos de 1~mW y su campo
+(unos 0.09~$\mu$T) es cientos de veces menor que el de la Tierra. Reconocer el tipo de vehículo permite cobrar
+tarifas distintas o contar el tránsito por clase. Una cámara sí reconoce el modelo exacto, pero es más frágil y
+costosa de mantener.
+
+\textbf{Limitaciones.} Un Kwid cargado que baje a 16~cm pasa de $-11.4$ a $-12.3$\,\% y se confunde con un Spark;
+otros carros de altura parecida no se distinguen; las motos y bicicletas cambian muy poco la inductancia. Una
+segunda espira, que mida el largo del carro, reduciría las confusiones. Un análisis por elementos finitos con la
+geometría real del chasis daría valores exactos, pero tardaría minutos por posición.
+
+\textbf{Segundo escenario.} Con una bobina de 15~mm de radio en una línea de autopartes, la fase del cambio de
+impedancia identifica el material (cobre $-81^\circ$, aluminio $-79^\circ$, latón $-73^\circ$, inoxidable
+$-49^\circ$, acero $+63^\circ$ a 5~mm y 1~kHz) y su magnitud da la distancia. Con dos frecuencias y 16 promedios se
+identifica el 100\,\% de las piezas con un error de distancia de 0.03~mm (Figura \ref{fig:identificacion}). A esa
+frecuencia el acero \emph{aumenta} la inductancia (domina la magnetización); en el carro, a 55~kHz, la reduce: es
+la misma física con otra profundidad de penetración.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\columnwidth]{identificacion.png}
+    \caption{Segundo escenario: plano de impedancia de cinco materiales y matriz de confusión de la identificación.}
+    \label{fig:identificacion}
+\end{figure}
+
+\subsection{Análisis del error}
+
+La diferencia porcentual entre los resultados teóricos y numéricos se calcula como
+\begin{equation}
+    \varepsilon(\%)=
+    \frac{|R_{\mathrm{teórico}}-R_{\mathrm{numérico}}|}
+    {|R_{\mathrm{teórico}}|}
+    \times 100 .
+    \label{eq:error_porcentual}
+\end{equation}
+Para la frecuencia con el Spark, RK4 da $\varepsilon=5\times10^{-4}$\,\% y Euler $\varepsilon=0.62$\,\%. Entre la
+aproximación lineal y la fórmula exacta del cambio de frecuencia la diferencia es
+$|7.13-6.44|/7.13=9.7$\,\%, mucho mayor que el error numérico: por eso la aproximación se descartó.
+
+\usoia{Claude (Anthropic) se usó para generar tablas y figuras a partir del código y redactar un borrador de la
+discusión. La interpretación física, la identificación de las limitaciones y la corrección de la fórmula de
+frecuencia fueron revisadas y validadas por el equipo.}
+
+\section{Conclusiones}
+
+\begin{enumerate}
+ \item El detector de espira se explica con solo las leyes de Faraday y Ampère: el chasis de acero induce
+       corrientes de Foucault que, a 55~kHz ($\delta=0.087$~mm), bajan la inductancia de la espira. Se cumplió el
+       objetivo de deducción.
+ \item El oscilador LC del detector se obtuvo con la ley de mallas de Kirchhoff, como el circuito RC de clase, y se
+       resolvió analíticamente: $f_0=55.25$~kHz y $Q=48$.
+ \item RK4, programado manualmente, converge con orden 4 y conserva la energía; Euler es inestable en el oscilador
+       para cualquier paso. La simulación mostró que la aproximación lineal del cambio de frecuencia subestima el
+       efecto en un 10\,\% y se adoptó la fórmula exacta.
+ \item El detector reconoce los dos carros por la altura del chasis: Spark 59.18~kHz (14.9~cm estimados) y Kwid
+       58.69~kHz (18.0~cm). La espira óptima es del tamaño del carro y poco profunda.
+ \item Como mejoras se proponen una segunda espira para medir el largo del carro, un modelo de elementos finitos con
+       el chasis real y la validación con un detector comercial y vehículos reales.
+\end{enumerate}
+
+\usoia{Las conclusiones se redactaron con apoyo de Claude (Anthropic) a partir de los resultados del proyecto y
+fueron revisadas por el equipo.}
+
+\section{Referencias}
+
+% La sección ya tiene título: se omite el encabezado propio de la bibliografía
+\begingroup
+\renewcommand{\section}[2]{}
+\begin{thebibliography}{99}
+
+\bibitem{dodd1968}
+Dodd, C. V., y Deeds, W. E.
+``Analytical solutions to eddy-current probe-coil problems.''
+\textit{Journal of Applied Physics}, vol. 39, no. 6, pp. 2829--2838, 1968.
+
+\bibitem{fhwa2006}
+Klein, L. A., Mills, M. K., y Gibson, D. R. P.
+\textit{Traffic Detector Handbook}, 3.\textsuperscript{a} ed., vol. I.
+Federal Highway Administration, FHWA-HRT-06-108, 2006.
+
+\bibitem{klein2006}
+Klein, L. A.
+\textit{Sensor Technologies and Data Requirements for ITS}.
+Artech House, 2001.
+
+\bibitem{griffiths2017}
+Griffiths, D. J.
+\textit{Introduction to Electrodynamics}, 4.\textsuperscript{a} ed.
+Cambridge University Press, 2017.
+
+\bibitem{jackson1999}
+Jackson, J. D.
+\textit{Classical Electrodynamics}, 3.\textsuperscript{a} ed.
+John Wiley \& Sons, 1999.
+
+\bibitem{grover2004}
+Grover, F. W.
+\textit{Inductance Calculations: Working Formulas and Tables}.
+Dover Publications, 2004.
+
+\bibitem{libby1971}
+Libby, H. L.
+\textit{Introduction to Electromagnetic Nondestructive Test Methods}.
+Wiley-Interscience, 1971.
+
+\bibitem{burden2017}
+Burden, R. L., Faires, J. D., y Burden, A. M.
+\textit{Análisis numérico}, 10.\textsuperscript{a} ed.
+Cengage Learning, 2017.
+
+\bibitem{butcher2016}
+Butcher, J. C.
+\textit{Numerical Methods for Ordinary Differential Equations}, 3.\textsuperscript{a} ed.
+John Wiley \& Sons, 2016.
+
+\bibitem{virtanen2020}
+Virtanen, P., et al.
+``SciPy 1.0: fundamental algorithms for scientific computing in Python.''
+\textit{Nature Methods}, vol. 17, pp. 261--272, 2020.
+
+\bibitem{harris2020}
+Harris, C. R., et al.
+``Array programming with NumPy.''
+\textit{Nature}, vol. 585, pp. 357--362, 2020.
+
+\bibitem{meurer2017}
+Meurer, A., et al.
+``SymPy: symbolic computing in Python.''
+\textit{PeerJ Computer Science}, vol. 3, e103, 2017.
+
+\bibitem{hunter2007}
+Hunter, J. D.
+``Matplotlib: a 2D graphics environment.''
+\textit{Computing in Science \& Engineering}, vol. 9, no. 3, pp. 90--95, 2007.
+
+\bibitem{fichas2025}
+Renting Colombia, \textit{Ficha técnica Chevrolet Spark GT}; Autocosmos, \textit{Catálogo Renault Kwid 1.0};
+cars-data.com, \textit{Chevrolet Spark dimensions}. Consultadas en 2026.
+
+\bibitem{icesi_guia}
+Universidad Icesi.
+\textit{Guía de proyectos de Electromagnetismo} y apuntes de clase (circuito RC, ley de Gauss, campos eléctricos en
+la materia). Cali, 2026.
+
+\bibitem{anthropic2026}
+Anthropic.
+\textit{Claude} (modelo de lenguaje), usado mediante Claude Code. 2026. Disponible en:
+\url{https://claude.ai}.
+
+\end{thebibliography}
+\endgroup
+
+% =================================================
+% OBSERVACIÓN SOBRE EL USO DE INTELIGENCIA ARTIFICIAL
+% =================================================
+
+\vspace{0.3cm}
+\noindent
+\textbf{OBSERVACIÓN SOBRE EL USO DE INTELIGENCIA
+ARTIFICIAL (IA)}
+
+\vspace{0.1cm}
+
+\noindent
+En el desarrollo del proyecto se usaron: Claude (Anthropic) \cite{anthropic2026}, mediante Claude Code, como asistente
+de programación y de redacción, y su skill Anatomy para la figura del corte del detector; Whisper, en local, para
+transcribir los audios de la orientación del profesor; y ChatGPT o Gemini para las imágenes ilustrativas, que se
+marcan como generadas con IA. El uso se declara al final de cada apartado. Los autores definieron el problema y el
+caso de estudio, contrastaron las deducciones con los apuntes de clase, ejecutaron y verificaron los cálculos
+(soluciones analíticas, SciPy, pruebas automáticas y balance de energía), detectaron y corrigieron la fórmula
+aproximada del cambio de frecuencia, y son responsables de la veracidad, validez, interpretación y calidad de los
+contenidos presentados.
+
+\vspace{0.3cm}
+\noindent
+\textbf{OBSERVACIÓN SOBRE LOS DESARROLLOS NUMÉRICOS
+Y COMPUTACIONALES}
+
+\vspace{0.1cm}
+
+\noindent
+El código fuente, las pruebas, el script que genera las figuras y el simulador están en el repositorio
+\url{https://github.com/luisrodriguez-rgb/Proyecto-Final-Fisica}. Para reproducirlos:
+{\footnotesize
+\begin{itemize}
+ \item \texttt{python3 -m venv .venv}
+ \item \texttt{.venv/bin/pip install -r requirements.txt}
+ \item \texttt{.venv/bin/streamlit run app.py} (pestaña \emph{Caso: vehículo})
+ \item \texttt{.venv/bin/python -m pytest -q tests}
+ \item \texttt{.venv/bin/python scripts/generar\_figuras.py}
+\end{itemize}}
+\noindent El informe extendido por criterio de la rúbrica está en la carpeta \texttt{docs/}.
+
+\end{document}
