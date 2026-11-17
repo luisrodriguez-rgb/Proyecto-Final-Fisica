@@ -1,0 +1,1086 @@
+\documentclass[aspectratio=169,10pt]{beamer}
+
+% ==========================================
+% PAQUETES
+% ==========================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usepackage{hyperref}
+
+\usetikzlibrary{arrows.meta,positioning}
+\graphicspath{{figuras/}}
+
+% ==========================================
+% IDENTIDAD VISUAL ICESI
+% ==========================================
+
+\definecolor{AzulIcesi}{HTML}{5454E9}
+\definecolor{VerdeIcesi}{HTML}{4CB979}
+\definecolor{AmarilloIcesi}{HTML}{E4EB60}
+\definecolor{MoradoIcesi}{HTML}{865CF0}
+
+\definecolor{GrisFondo}{HTML}{F4F5F7}
+\definecolor{GrisTexto}{HTML}{596273}
+\definecolor{GrisClaro}{HTML}{E5E7EB}
+
+% ==========================================
+% CONFIGURACIÓN BEAMER
+% ==========================================
+
+\usetheme{default}
+
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamercolor{normal text}{
+ fg=black,
+ bg=white
+}
+
+\setbeamercolor{structure}{
+ fg=AzulIcesi
+}
+
+\setbeamercolor{frametitle}{
+ fg=AzulIcesi,
+ bg=white
+}
+
+\setbeamercolor{block title}{
+ fg=white,
+ bg=AzulIcesi
+}
+
+\setbeamercolor{block body}{
+ fg=black,
+ bg=GrisFondo
+}
+
+\setbeamercolor{itemize item}{
+ fg=VerdeIcesi
+}
+
+\setbeamercolor{enumerate item}{
+ fg=AzulIcesi
+}
+
+\setbeamercolor{alerted text}{
+ fg=AzulIcesi
+}
+
+\setbeamerfont{frametitle}{
+ size=\large,
+ series=\bfseries
+}
+
+\setbeamertemplate{itemize item}{
+ \raise0.2ex\hbox{\small$\blacktriangleright$}
+}
+
+\setbeamertemplate{itemize subitem}{
+ \scriptsize$\bullet$
+}
+
+% ==========================================
+% TÍTULO DE DIAPOSITIVAS
+% ==========================================
+
+\setbeamertemplate{frametitle}{
+ \vspace{0.25cm}
+ \insertframetitle
+ \par
+ \vspace{0.12cm}
+ {\color{AzulIcesi}\rule{\linewidth}{1pt}}
+ \vspace{-0.15cm}
+}
+
+% ==========================================
+% PIE DE PÁGINA
+% ==========================================
+\logo{
+    \includegraphics[height=0.8cm]{logo_icesi.png}
+}
+
+\setbeamertemplate{footline}{
+ \leavevmode
+ \hbox{
+  \begin{beamercolorbox}[
+   wd=.82\paperwidth,
+   ht=2.8ex,
+   dp=1.2ex,
+   leftskip=1em
+  ]{normal text}
+   \color{GrisTexto}
+   \scriptsize
+   UNIVERSIDAD ICESI
+   \quad | \quad
+   SEMP: SENSOR ELECTROMAGNÉTICO DE PROXIMIDAD
+  \end{beamercolorbox}
+
+
+ }
+}
+
+% ==========================================
+% INFORMACIÓN DEL PROYECTO
+% ==========================================
+
+\title[SEMP]{
+ SEMP: SENSOR ELECTROMAGNÉTICO DE PROXIMIDAD
+}
+
+\subtitle{
+ Una espira en el piso que detecta un carro y reconoce si es un Spark o un Kwid
+}
+
+\author{
+ Luis Ernesto Rodríguez\\
+ Sebastián Santander Soto\\
+ Kevin Lozano Gómez\\
+ Juan Pablo Corchuelo\\
+ Mateo López
+}
+
+\institute{
+ Electromagnetismo\\
+ Universidad Icesi
+}
+
+\date{
+ Cali, Colombia\\
+ 2026
+}
+
+% Crédito para las imágenes generadas con IA (lo exige la guía)
+\newcommand{\creditoia}{{\tiny\color{GrisTexto}Imagen ilustrativa generada con IA a partir de un prompt del equipo.}}
+\newcommand{\fuente}[1]{{\tiny\color{GrisTexto}#1}}
+
+% ==========================================
+% INICIO DEL DOCUMENTO
+% ==========================================
+
+\begin{document}
+
+% ==========================================
+% 1. PORTADA INSTITUCIONAL
+% ==========================================
+
+\begin{frame}[plain]
+
+\begin{columns}[T]
+
+\column{0.56\textwidth}
+
+\vspace{0.1cm}
+
+\IfFileExists{logo_icesi.png}{
+ \includegraphics[width=3.4cm]{logo_icesi.png}
+}{
+ {\color{AzulIcesi}
+ \Large\bfseries Universidad Icesi}
+}
+
+\vspace{0.3cm}
+
+{\color{VerdeIcesi}\rule{1.2cm}{2.5pt}}
+
+\vspace{0.25cm}
+
+{\color{AzulIcesi}
+\fontsize{19}{23}\selectfont
+\bfseries
+SEMP: Sensor electromagnético de proximidad
+}
+
+\vspace{0.3cm}
+
+{\color{GrisTexto}
+\normalsize
+Una espira en el piso que detecta un carro y reconoce si es un Spark o un Kwid
+}
+
+\vspace{0.2cm}
+
+{\color{AzulIcesi}\rule{\linewidth}{0.8pt}}
+
+\vspace{0.15cm}
+
+\textbf{Autores}
+
+\vspace{0.1cm}
+
+\small
+Luis Ernesto Rodríguez, Sebastián Santander Soto,\\
+Kevin Lozano Gómez, Juan Pablo Corchuelo, Mateo López
+
+\vspace{0.15cm}
+
+\footnotesize
+Electromagnetismo -- Universidad Icesi\\
+{\color{GrisTexto}Cali, Colombia -- 2026}
+
+\column{0.42\textwidth}
+
+\vspace{1.2cm}
+
+\includegraphics[width=\linewidth]{ia-portada.jpg}
+
+\creditoia
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 2. CONTENIDO
+% ==========================================
+
+\begin{frame}{Contenido}
+
+\begin{columns}[c]
+
+\column{0.45\textwidth}
+
+\begin{enumerate}
+ \item Introducción
+ \item Modelo teórico: esquema D.E.P.A.
+ \item Implementación numérica
+ \item Simulación computacional
+ \item Resultados y discusión
+ \item Conclusiones
+ \item Referencias
+\end{enumerate}
+
+\column{0.5\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-spark-atardecer.png}
+
+\fuente{Escena 3D del simulador: el Spark detenido sobre la espira, con la talanquera abierta.}
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 3. INTRODUCCIÓN
+% ==========================================
+
+\section{Introducción}
+
+\begin{frame}{Introducción}
+
+\begin{columns}[T]
+
+\column{0.55\textwidth}
+
+\begin{block}{Contexto del proyecto}
+Los sensores inductivos detectan metal sin contacto: en fábricas, semáforos y parqueaderos, donde una espira
+enterrada detecta el carro y abre la talanquera.
+\end{block}
+
+\begin{itemize}
+ \item \textbf{Problema:} abrir la talanquera y saber \alert{qué carro llegó}, sin cámaras ni botones.
+ \item \textbf{Caso propuesto en clase:} distinguir un \textbf{Chevrolet Spark GT} de un \textbf{Renault Kwid}.
+ \item \textbf{Objetivos:} modelar el detector con Faraday y Ampère; resolverlo analíticamente y con Euler y RK4
+       a mano; simularlo en 3D y medir si reconoce cada carro.
+\end{itemize}
+
+\column{0.42\textwidth}
+
+\includegraphics[width=\linewidth]{ia-aplicaciones.jpg}
+
+\creditoia
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 4. MODELO TEÓRICO
+% ==========================================
+
+\section{Modelo teórico}
+
+\begin{frame}{Descripción del proceso: esquema D.E.P.A.}
+
+Como en el espectrómetro de masas, el proceso se divide en etapas y cada una usa solo la física que necesita.
+
+\vspace{0.3cm}
+
+\begin{center}
+\begin{tikzpicture}[>=Stealth]
+ \tikzset{caja/.style={draw=AzulIcesi, fill=GrisFondo, rounded corners=2pt, minimum width=2.2cm,
+          minimum height=1.6cm, align=center, text width=2.05cm}}
+ \node[align=center, text width=1.5cm] (ins) {\small\textbf{Insumos}\\[1pt]\scriptsize parqueaderos, semáforos};
+ \node[caja, right=0.35cm of ins] (D) {{\color{AzulIcesi}\bfseries\Large D}\\[1pt]{\scriptsize\textbf{Detección}\\¿hay carro?, ¿cuál?}};
+ \node[caja, right=0.3cm of D] (E) {{\color{AzulIcesi}\bfseries\Large E}\\[1pt]{\scriptsize\textbf{Emisiones}\\corrientes de Foucault en el chasis}};
+ \node[caja, right=0.3cm of E] (P) {{\color{AzulIcesi}\bfseries\Large P}\\[1pt]{\scriptsize\textbf{Propiedades}\\$f$ = 55 kHz, energía, potencia}};
+ \node[caja, right=0.3cm of P] (A) {{\color{AzulIcesi}\bfseries\Large A}\\[1pt]{\scriptsize\textbf{Alerta}\\sube $f$, abre la talanquera}};
+ \node[align=center, text width=1.5cm, right=0.35cm of A] (S) {\small\textbf{Solución}\\[1pt]\scriptsize reconoce el carro};
+ \draw[->, thick, GrisTexto] (ins) -- (D);
+ \draw[->, thick, AzulIcesi] (D) -- (E);
+ \draw[->, thick, AzulIcesi] (E) -- (P);
+ \draw[->, thick, AzulIcesi] (P) -- (A);
+ \draw[->, thick, GrisTexto] (A) -- (S);
+ \node[below=0.55cm of P, xshift=-1.25cm, draw=VerdeIcesi, thick, rounded corners=2pt, align=center,
+       text width=6.2cm] (caso)
+       {\scriptsize\textbf{Caso de estudio:} espira de 1.8 m bajo un Spark o un Kwid $\rightarrow$ \textbf{Simulador}};
+ \draw[->, GrisTexto] (ins.south) |- (caso.west);
+ \draw[->, GrisTexto] (S.south) |- (caso.east);
+\end{tikzpicture}
+\end{center}
+
+\vspace{0.2cm}
+
+\begin{columns}[T]
+\column{0.48\textwidth}
+\small
+\textbf{Contexto de inicio:} un parqueadero que necesita saber qué carro entra.
+\column{0.48\textwidth}
+\small
+\textbf{Contexto de impacto:} abrir la talanquera y registrar el modelo.
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Descripción del proceso: qué pasa físicamente}
+
+\begin{columns}[c]
+
+\column{0.5\textwidth}
+
+\includegraphics[width=\linewidth]{ia-campo-corrientes.jpg}
+
+\creditoia
+
+\column{0.47\textwidth}
+
+\begin{enumerate}
+ \item La espira, con corriente alterna, crea un campo $\vec B(t)$ que sube desde el pavimento.
+ \item Ese campo cambia y, por la \textbf{ley de Faraday}, induce corrientes de Foucault en el chasis de acero.
+ \item Por la \textbf{ley de Lenz}, esas corrientes crean un campo contrario: el chasis ``bloquea'' parte del flujo.
+ \item La inductancia de la espira \alert{baja} y la frecuencia del oscilador \alert{sube}.
+ \item Más bajo el carro, más efecto.
+\end{enumerate}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Representación del sistema}
+
+\begin{columns}[c]
+
+\column{0.56\textwidth}
+
+\includegraphics[width=\linewidth]{anatomy-corte-espira.png}
+
+\fuente{Corte del detector (figura hecha con la skill Anatomy de Claude). Los números salen del modelo.}
+
+\column{0.41\textwidth}
+
+\includegraphics[width=0.78\linewidth]{ia-corte-pavimento.jpg}
+
+\creditoia
+
+\vspace{0.1cm}
+
+\small
+\begin{itemize}
+ \item Espira de 3 vueltas en una ranura de 5 cm.
+ \item Cable al detector: un oscilador LC.
+ \item El chasis queda a 20 cm (Spark) o 23 cm (Kwid) de la espira.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Caso de estudio: Spark frente a Kwid}
+
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+\includegraphics[width=\linewidth]{ia-comparacion-carros.jpg}
+
+\creditoia\ {\tiny\color{GrisTexto}Carros genéricos, no los modelos reales.}
+
+\vspace{0.2cm}
+
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark GT & Kwid \\
+\midrule
+Largo $\times$ ancho (m) & $3.64\times1.60$ & $3.68\times1.59$ \\
+Peso (kg) & 966 & 785 \\
+\textbf{Altura libre al piso} & \textbf{15 cm} & \textbf{18 cm} \\
+\bottomrule
+\end{tabular}
+
+\column{0.46\textwidth}
+
+\textbf{La espira}
+
+\small
+\begin{itemize}
+ \item Cuadrada de 1.8 m (6 $\times$ 6 pies), 3 vueltas de alambre 14 AWG.
+ \item Enterrada a 5 cm; $R = 0.6~\Omega$.
+ \item Capacitor del oscilador: $C = 0.1~\mu$F.
+\end{itemize}
+
+\textbf{Supuestos}
+
+\begin{itemize}
+ \item Chasis = placa plana de acero ($\sigma = 6\times10^6$ S/m, $\mu_r = 100$).
+ \item El carro tapa una fracción $\eta$ de la espira (0.89 y 0.88).
+ \item Régimen cuasi-estático, materiales lineales.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Formalismo matemático: solo las ecuaciones de Maxwell necesarias}
+
+\begin{columns}[T]
+
+\column{0.52\textwidth}
+
+\textbf{Faraday} (la central)
+\[
+ \oint_C \vec E\cdot d\vec l = -\frac{d\Phi_B}{dt},\qquad \Phi_B=\vec B\cdot\vec A
+\]
+induce las corrientes en el chasis y la fem $-L\,di/dt$ en la espira.
+
+\textbf{Ampère}, sin corriente de desplazamiento
+\[
+ \oint_C \vec B\cdot d\vec l = \mu_0 I_{enc}
+\]
+
+\textbf{Gauss magnética}, solo como frontera: $B_z$ continuo en el chasis.
+
+\column{0.44\textwidth}
+
+\begin{block}{¿Por qué baja $L$ si el acero es magnético?}
+\small
+Profundidad de penetración a 55 kHz:
+\[
+ \delta=\sqrt{\frac{2}{\omega\mu_0\mu_r\sigma}} = 0.087~\text{mm}
+\]
+El campo casi no entra: el chasis actúa como conductor perfecto y \alert{expulsa} el flujo.
+\end{block}
+
+\small
+\textbf{Cuasi-estático:} $\lambda = c/f = 5.4$ km, 3\,000 veces la espira; $\omega\varepsilon_0/\sigma = 5\times10^{-13}$.
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Formalismo matemático: inductancia y efecto del chasis}
+
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+\textbf{Espira} (circular de igual área, $a = 1.016$ m):
+\[
+ L_0 = \mu_0N^2a\left[\ln\frac{8a}{r_w}-2\right] = 83.0~\mu\text{H}
+\]
+
+\textbf{Chasis} a $d = h_{piso} + 5$ cm (Dodd y Deeds):
+\[
+ \Delta Z = \eta\; j\omega\pi\mu_0a^2N^2\!\int_0^\infty\! J_1^2(\alpha a)\,\Gamma\,F^2\,d\alpha
+\]
+\[
+ L_{\text{eff}} = L_0 + \frac{\operatorname{Im}\Delta Z}{\omega},\qquad R_{\text{eff}} = R_0 + \operatorname{Re}\Delta Z
+\]
+
+\column{0.46\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark & Kwid \\
+\midrule
+Distancia chasis--espira & 20 cm & 23 cm \\
+Fracción tapada $\eta$ & 0.89 & 0.88 \\
+$\Delta L$ & $-10.7~\mu$H & $-9.5~\mu$H \\
+$\Delta L/L_0$ & $\mathbf{-12.9}$ \% & $\mathbf{-11.4}$ \% \\
+$\Delta R$ & $+0.064~\Omega$ & $+0.054~\Omega$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+
+\small
+Regla de instalación de espiras: $\approx 71~\mu$H. Mismo orden que el modelo.
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Formalismo matemático: el oscilador LC, como el RC de clase}
+
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+Kirchhoff en la malla, con la convención de signos de clase:
+\[
+ -\frac{q}{C} - iR - L\frac{di}{dt}=0,\quad i=\frac{dq}{dt}
+\]
+\[
+ \Rightarrow\; L\ddot q + R\dot q + \frac{q}{C} = 0
+\]
+Con $q=e^{st}$: $s = -\dfrac{R}{2L}\pm j\omega_d$, \; $\omega_d\approx\dfrac{1}{\sqrt{LC}}$.
+
+\[
+ f_0 = \frac{1}{2\pi\sqrt{L_0C}} = 55.25~\text{kHz},\qquad Q = \frac{\omega_0L_0}{R} = 48
+\]
+
+\column{0.46\textwidth}
+
+\begin{block}{Cambio de frecuencia (exacto)}
+\[
+ \frac{f}{f_0} = \left(1+\frac{\Delta L}{L_0}\right)^{-1/2}
+\]
+\end{block}
+
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark & Kwid \\
+\midrule
+$\Delta f/f_0$ exacto & $+7.13$ \% & $+6.23$ \% \\
+Aproximación $-\tfrac12\Delta L/L_0$ & $+6.44$ \% & $+5.70$ \% \\
+Frecuencia con el carro & \textbf{59.18 kHz} & \textbf{58.69 kHz} \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.2cm}
+
+\small
+Condición inicial: capacitor cargado, $q(0)=q_0$, $i(0)=0$.
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 5. IMPLEMENTACIÓN NUMÉRICA
+% ==========================================
+
+\section{Implementación numérica}
+
+\begin{frame}{Métodos de análisis numérico}
+
+\begin{columns}[T]
+
+\column{0.46\textwidth}
+
+El oscilador es de segundo orden; se escribe como sistema con $\mathbf y = (q, i)$:
+\[
+ \frac{d}{dt}\begin{pmatrix} q\\ i\end{pmatrix} = \begin{pmatrix} i\\ -\dfrac{Ri + q/C}{L}\end{pmatrix}
+\]
+
+\textbf{Euler} (orden 1): $\;\mathbf y_{n+1}=\mathbf y_n+h\,\mathbf f(t_n,\mathbf y_n)$
+
+\vspace{0.15cm}
+
+\textbf{Justificación:} la guía pide ambos; RK4 es el estándar de precisión para EDO.
+
+\column{0.5\textwidth}
+
+\textbf{Runge--Kutta 4} (orden 4)
+\[
+\begin{aligned}
+ \mathbf k_1 &= \mathbf f(t_n,\mathbf y_n) \\
+ \mathbf k_2 &= \mathbf f\!\left(t_n+\tfrac h2,\,\mathbf y_n+\tfrac h2\mathbf k_1\right) \\
+ \mathbf k_3 &= \mathbf f\!\left(t_n+\tfrac h2,\,\mathbf y_n+\tfrac h2\mathbf k_2\right) \\
+ \mathbf k_4 &= \mathbf f(t_n+h,\,\mathbf y_n+h\mathbf k_3) \\
+ \mathbf y_{n+1} &= \mathbf y_n + \tfrac h6\,(\mathbf k_1+2\mathbf k_2+2\mathbf k_3+\mathbf k_4)
+\end{aligned}
+\]
+
+\end{columns}
+
+\begin{block}{Procedimiento}
+\small
+Se integra el oscilador 30 períodos y la frecuencia se \textbf{mide contando los cruces por cero} de $q(t)$,
+igual que un detector real.
+\end{block}
+
+\end{frame}
+
+\begin{frame}{Validación numérica: convergencia}
+
+\begin{columns}[c]
+
+\column{0.55\textwidth}
+
+\includegraphics[width=\linewidth]{convergencia.png}
+
+\fuente{Circuito RL de la bobina con solución exacta: error frente al paso.}
+
+\column{0.42\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}rrr@{}}
+\toprule
+Pasos/período & Error en $f$, RK4 & Euler \\
+\midrule
+10 & $-1.1\times10^{-3}$ & $-1.0\times10^{-1}$ \\
+20 & $-8.1\times10^{-5}$ & $-2.8\times10^{-2}$ \\
+40 & $-5.1\times10^{-6}$ & $-6.5\times10^{-3}$ \\
+80 & $-3.2\times10^{-7}$ & $-1.2\times10^{-3}$ \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.25cm}
+
+\small
+\begin{itemize}
+ \item Órdenes medidos: \textbf{1.01} (Euler) y \textbf{4.02} (RK4).
+ \item Al duplicar los pasos, el error de RK4 baja \alert{16 veces}.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{En el oscilador, Euler explota}
+
+\begin{columns}[c]
+
+\column{0.62\textwidth}
+
+\includegraphics[width=\linewidth]{oscilador-lc.png}
+
+\column{0.35\textwidth}
+
+\small
+Sin pérdidas, un paso de Euler multiplica cada modo por
+\[
+ |1+j\omega h| = \sqrt{1+(\omega h)^2} > 1
+\]
+para \emph{cualquier} paso: la energía crece.
+
+\vspace{0.15cm}
+
+Con 40 pasos por período: $\times10^{11}$ en 30 períodos.
+
+\vspace{0.15cm}
+
+RK4 reproduce la pérdida exacta $e^{-Rt/L}$ (0.0197).
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{La simulación corrigió una fórmula}
+
+\begin{columns}[c]
+
+\column{0.5\textwidth}
+
+Al principio se usó la aproximación
+\[
+ \frac{\Delta f}{f_0}\approx -\frac12\frac{\Delta L}{L_0} = +6.44~\%\ \text{(Spark)}
+\]
+
+Al simular el oscilador con RK4 salió
+\[
+ \frac{\Delta f}{f_0} = +7.130~\% \text{ con cualquier paso}
+\]
+
+y coincide con la fórmula exacta $(1+\Delta L/L_0)^{-1/2}-1 = +7.13$ \%.
+
+\column{0.46\textwidth}
+
+\begin{block}{Lección}
+La aproximación solo vale si $|\Delta L/L_0|\ll 1$. Con un carro el cambio es del 13 \%: \alert{el método numérico
+decidió qué fórmula usar}, y todo el proyecto se corrigió a la exacta.
+\end{block}
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 6. SIMULACIÓN COMPUTACIONAL
+% ==========================================
+
+\section{Simulación computacional}
+
+\begin{frame}{Modelo de simulación: escena 3D del parqueadero}
+
+\begin{columns}[T]
+
+\column{0.49\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-spark-atardecer.png}
+
+\fuente{Spark: 59.18 kHz, la pantalla dice SPARK y la talanquera se abre.}
+
+\column{0.49\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-kwid-dia.png}
+
+\fuente{Kwid: más alto, la frecuencia sube menos (58.69 kHz).}
+
+\end{columns}
+
+\vspace{0.2cm}
+
+\small
+Python (NumPy, SciPy, SymPy) para el modelo; Streamlit y Three.js para la escena. Los carros tienen sus medidas
+reales y se pueden cambiar el carro, la espira, su profundidad, las vueltas y la velocidad.
+
+\end{frame}
+
+\begin{frame}{Resultados de la simulación: lo que mide el detector}
+
+\begin{columns}[T]
+
+\column{0.62\textwidth}
+
+\vspace{0.3cm}
+
+\includegraphics[width=\linewidth]{carro-altura.png}
+
+\column{0.35\textwidth}
+
+\vspace{0.3cm}
+
+\small
+\begin{itemize}
+ \item Más bajo el carro, más baja $L$ y más sube $f$.
+ \item Pendiente: unos 0.46 puntos de $\Delta L/L$ por centímetro.
+ \item Invirtiendo la curva, el detector estima la altura: \textbf{14.9 cm} (Spark) y \textbf{18.0 cm} (Kwid).
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Resultados de la simulación: el carro cruzando la espira}
+
+\begin{columns}[c]
+
+\column{0.55\textwidth}
+
+\includegraphics[width=\linewidth]{carro-paso.png}
+
+\column{0.42\textwidth}
+
+\small
+\begin{itemize}
+ \item A 10 km/h la señal es un \textbf{trapecio} de 2 s: sube mientras el carro tapa la espira, se mantiene y baja.
+ \item El detector necesita unos 18 ms (1\,000 ciclos) para medir la frecuencia con 0.1 \% de resolución.
+ \item Aun a 40 km/h la señal dura medio segundo: miles de mediciones por carro.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Resultados de la simulación: escenarios de diseño}
+
+\begin{columns}[T]
+
+\column{0.52\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Lado de la espira & Spark & Kwid & Diferencia \\
+\midrule
+1.0 m & $-8.8$ \% & $-7.5$ \% & 1.36 \\
+1.5 m & $-12.7$ \% & $-11.2$ \% & \textbf{1.54} \\
+1.8 m & $-12.9$ \% & $-11.4$ \% & 1.48 \\
+2.5 m & $-11.3$ \% & $-10.2$ \% & 1.10 \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+Profundidad & Spark & Kwid & Diferencia \\
+\midrule
+2 cm & $-14.5$ \% & $-12.8$ \% & 1.76 \\
+5 cm & $-12.9$ \% & $-11.4$ \% & 1.48 \\
+10 cm & $-10.7$ \% & $-9.5$ \% & 1.14 \\
+\bottomrule
+\end{tabular}
+
+\column{0.44\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-kwid-a-ras.png}
+
+\fuente{Vista a ras del piso: las líneas de campo se acuestan bajo el chasis.}
+
+\small
+\begin{itemize}
+ \item Espira óptima: \textbf{del tamaño del carro}.
+ \item Menos profunda, más señal.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Segundo escenario: identificar el material}
+
+\begin{columns}[c]
+
+\column{0.6\textwidth}
+
+\includegraphics[width=\linewidth]{identificacion.png}
+
+\column{0.37\textwidth}
+
+\includegraphics[width=0.6\linewidth]{ia-sensor-industrial.jpg}
+
+\creditoia
+
+\small
+\begin{itemize}
+ \item Bobina pequeña en una línea de autopartes.
+ \item La \textbf{fase} de $\Delta Z$ da el material y la \textbf{magnitud}, la distancia.
+ \item 100 \% de acierto.
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 7. RESULTADOS Y DISCUSIÓN
+% ==========================================
+
+\section{Resultados y discusión}
+
+\begin{frame}{Resultados principales}
+
+\begin{columns}[T]
+
+\column{0.5\textwidth}
+
+\begin{block}{Caso del carro (espira de 1.8 m)}
+\footnotesize
+\begin{tabular}{@{}lrr@{}}
+\toprule
+ & Spark & Kwid \\
+\midrule
+$\Delta L/L_0$ & $-12.87$ \% & $-11.39$ \% \\
+Frecuencia (sin carro 55.25 kHz) & 59.18 kHz & 58.69 kHz \\
+Altura estimada & 14.9 cm & 18.0 cm \\
+Potencia absorbida (50 mA) & 80 $\mu$W & 67 $\mu$W \\
+\bottomrule
+\end{tabular}
+\end{block}
+
+\column{0.46\textwidth}
+
+\begin{itemize}
+ \item \textbf{Teoría:} $L_0 = 83~\mu$H, $f_0 = 55.25$ kHz, $\delta = 0.087$ mm.
+ \item \textbf{Numérico:} RK4 da la frecuencia con error $5\times10^{-6}$ y la energía exacta; Euler diverge.
+ \item \textbf{Simulación:} los dos carros se detectan y se reconocen; diferencia de 0.49 kHz.
+ \item \textbf{Comparación:} simulación = fórmula exacta (+7.13 \%).
+\end{itemize}
+
+\end{columns}
+
+\end{frame}
+
+\begin{frame}{Discusión}
+
+\begin{columns}[T]
+
+\column{0.52\textwidth}
+
+\begin{itemize}
+ \item \textbf{Teoría y simulación:} el chasis baja $L$ como en los detectores reales; el carro más bajo cambia
+       más; la regla de instalación da el mismo orden de $L_0$.
+ \item \textbf{Impacto:} funciona de noche y con lluvia, sin partes expuestas ni cámaras; menos de 1 mW en la espira.
+ \item \textbf{Limitaciones:}
+ \begin{itemize}
+  \item el chasis como placa plana da un \alert{máximo} del efecto;
+  \item un Kwid cargado (16 cm) se confunde con un Spark;
+  \item un modelo de elementos finitos daría el valor exacto.
+ \end{itemize}
+\end{itemize}
+
+\column{0.44\textwidth}
+
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+ & Espira & Cámara & Ultrasonido \\
+\midrule
+Noche y lluvia & Sí & Le afecta & Le afecta \\
+Partes expuestas & No & Sí & Sí \\
+Modelo exacto & No & Sí & No \\
+\bottomrule
+\end{tabular}
+
+\vspace{0.3cm}
+
+\small
+\textbf{Mejora:} una segunda espira mide el largo del carro y, junto con la altura, reduce las confusiones.
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 8. CONCLUSIONES
+% ==========================================
+
+\section{Conclusiones}
+
+\begin{frame}{Conclusiones}
+
+\begin{enumerate}
+ \item Con solo \textbf{Faraday y Ampère} se explica el detector: el chasis induce corrientes de Foucault que bajan
+       la inductancia de la espira.
+ \item El oscilador LC se resuelve con \textbf{Kirchhoff, igual que el RC de clase}: $f_0 = 55.25$ kHz.
+ \item El detector reconoce los dos carros por su altura: \textbf{Spark 59.18 kHz} y \textbf{Kwid 58.69 kHz}.
+ \item RK4 converge con orden 4 y conserva la energía; \textbf{Euler explota} en el oscilador. La simulación
+       \textbf{corrigió la fórmula} del cambio de frecuencia.
+ \item \textbf{Trabajo futuro:} modelo de elementos finitos con el chasis real, segunda espira para medir el largo
+       y validación con un detector comercial.
+\end{enumerate}
+
+\end{frame}
+
+% ==========================================
+% 9. REFERENCIAS
+% ==========================================
+
+\section{Referencias}
+
+\begin{frame}{Referencias}
+
+\scriptsize
+
+\begin{thebibliography}{10}
+
+\bibitem{dodd}
+Dodd, C. V. y Deeds, W. E.
+Analytical solutions to eddy-current probe-coil problems.
+\textit{Journal of Applied Physics}, 39, 2829--2838, 1968.
+
+\bibitem{fhwa}
+Federal Highway Administration.
+\textit{Traffic Detector Handbook}, 3.\textsuperscript{a} ed., 2006.
+
+\bibitem{griffiths}
+Griffiths, D. J.
+\textit{Introduction to Electrodynamics}, 4.\textsuperscript{a} ed.
+Cambridge University Press, 2017.
+
+\bibitem{grover}
+Grover, F. W.
+\textit{Inductance Calculations}. Dover, 2004.
+
+\bibitem{butcher}
+Butcher, J. C.
+\textit{Numerical Methods for Ordinary Differential Equations}, 3.\textsuperscript{a} ed. Wiley, 2016.
+
+\bibitem{clase}
+Universidad Icesi. Guía de proyectos y apuntes de clase de Electromagnetismo, 2026.
+
+\bibitem{fichas}
+Fichas técnicas del Chevrolet Spark GT y del Renault Kwid (Renting Colombia, Autocosmos), 2025.
+
+\bibitem{iag}
+Anthropic. \textit{Claude}; OpenAI \textit{ChatGPT} y Google \textit{Gemini} (imágenes ilustrativas), 2026.
+
+\end{thebibliography}
+
+\end{frame}
+
+% ==========================================
+% 10. MATERIAL COMPLEMENTARIO
+% ==========================================
+
+\begin{frame}{Material complementario}
+
+\begin{columns}[c]
+
+\column{0.5\textwidth}
+
+Los desarrollos numéricos y computacionales pueden consultarse en:
+
+\begin{itemize}
+ \item Código fuente: modelo físico, Euler y RK4, oscilador LC y escena 3D.
+ \item 13 pruebas automáticas y el script que genera las figuras.
+ \item Informe completo organizado por la rúbrica.
+ \item Simulador: \texttt{streamlit run app.py}, pestaña \textbf{Caso: vehículo}.
+\end{itemize}
+
+\vspace{0.3cm}
+
+\textbf{Repositorio del proyecto:}
+
+\url{https://github.com/luisrodriguez-rgb/Proyecto-Final-Fisica}
+
+\column{0.45\textwidth}
+
+\includegraphics[width=\linewidth]{escena-3d-kwid-a-ras.png}
+
+\end{columns}
+
+\end{frame}
+
+% ==========================================
+% 11. CIERRE
+% ==========================================
+
+\begin{frame}[plain]
+
+\vfill
+
+\begin{center}
+
+{\color{AzulIcesi}
+\fontsize{30}{36}\selectfont
+\bfseries
+GRACIAS
+}
+
+\vspace{0.4cm}
+
+{\color{VerdeIcesi}
+\rule{1.5cm}{2pt}
+}
+
+\vspace{0.5cm}
+
+{\large Preguntas y discusión}
+
+\vspace{0.8cm}
+
+\IfFileExists{logo_icesi.png}{
+ \includegraphics[width=2.8cm]{logo_icesi.png}
+}{
+ {\color{AzulIcesi}\bfseries Universidad Icesi}
+}
+
+\end{center}
+
+\vfill
+
+\end{frame}
+
+\end{document}
