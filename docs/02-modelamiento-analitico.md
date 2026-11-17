@@ -1,0 +1,416 @@
+# 2. Modelamiento analítico
+
+> Criterio de la rúbrica: **Modelamiento analítico (20 %)**, formulación y solución de ecuaciones.
+> La guía pide explicar cómo se obtiene el modelo a partir de las leyes físicas, no solo sustituir
+> valores. Cada resultado de esta sección se deduce paso a paso y la parte simbólica se verifica con SymPy
+> en [`sensor/symbolic.py`](../sensor/symbolic.py) (pestaña **Derivación** del simulador).
+
+Valores de referencia usados en los ejemplos (los mismos que trae por defecto el simulador):
+$N = 150$, $a = 15$ mm, $l = 20$ mm, $R_0 = 5\ \Omega$, $V_0 = 5$ V, $f = 1$ kHz y pieza a $d = 5$ mm.
+
+## 2.1 Campo magnético de la bobina idealizada
+
+**Una espira** de radio $a$ con corriente $i$. Por Biot–Savart, sobre su eje y a una distancia $z$ de su centro,
+
+$$B_z(z) = \frac{\mu_0\, i\, a^2}{2\,(a^2+z^2)^{3/2}} .$$
+
+**Solenoide ideal** (largo, $l \gg a$). Se aplica Ampère, $\oint\vec B\cdot d\vec l = \mu_0 I_{enc}$, sobre un
+rectángulo de longitud $l_c$ con un lado dentro del solenoide y otro fuera, donde $B\approx 0$. Solo
+aporta el lado interior y el rectángulo encierra $n\,l_c$ espiras ($n = N/l$):
+
+$$B\,l_c = \mu_0\, n\, l_c\, i \quad\Rightarrow\quad B = \frac{\mu_0 N i}{l} .$$
+
+**Solenoide finito.** Sumando espiras sobre el eje se obtiene
+
+$$B_z(z) = \frac{\mu_0 N i}{2l}\left[\frac{z - z_1}{\sqrt{a^2+(z-z_1)^2}} - \frac{z - z_2}{\sqrt{a^2+(z-z_2)^2}}\right],$$
+
+con la bobina entre $z_1$ y $z_2$. Fuera del eje, el simulador suma el campo de espiras circulares
+expresado con integrales elípticas completas $K$ y $E$ (función `campo_espira` en
+[`sensor/physics.py`](../sensor/physics.py)).
+
+## 2.2 Inductancia aproximada de la bobina
+
+Igual que en clase el flujo eléctrico de un campo uniforme a través de una superficie plana es
+$\Phi = \vec E\cdot\vec A$, el flujo magnético por una espira del solenoide ideal es
+
+$$\Phi_B = \vec B\cdot\vec A = \frac{\mu_0 N i}{l}\,\pi a^2 .$$
+
+El flujo total enlazado por las $N$ espiras es $\Lambda = N\Phi_B$, y la inductancia es la razón entre ese
+flujo y la corriente (como $C = Q/\Delta V$ es la razón entre carga y potencial):
+
+$$L = \frac{\Lambda}{i} = \frac{\mu_0 N^2 \pi a^2}{l} .$$
+
+Una bobina de sensor es corta ($l/a = 1.33$), así que el campo no es uniforme y la fórmula ideal
+sobreestima. Se usa la corrección de Wheeler (error cercano al 1 % para $l > 0.8a$):
+
+$$L_0 = \frac{\mu_0 N^2\pi a^2}{l + 0.9a} .$$
+
+| | Ideal $\mu_0N^2A/l$ | Wheeler |
+|---|---|---|
+| $L$ | 0.999 mH | **0.597 mH** |
+
+La fórmula ideal da un 67.5 % más que la de Wheeler para esta bobina. Como $L\propto N^2$, duplicar las
+espiras cuadruplica la inductancia.
+
+## 2.3 Circuito RL: ley de mallas de Kirchhoff
+
+Se recorre la malla en el sentido de la corriente con el acuerdo de signos de clase:
+
+- al pasar por la fuente del polo negativo al positivo, $+\varepsilon$;
+- al pasar por el resistor en el sentido de la corriente, $-\Delta V_R = -iR$;
+- al pasar por la bobina en el sentido de la corriente, $-\Delta V_L = -L\,\dfrac{di}{dt}$. Este término sale
+  de la ley de Faraday: la fem autoinducida es $-d\Lambda/dt = -L\,di/dt$ y se opone al cambio de corriente.
+
+$$\sum \Delta V_i = 0 \quad\Rightarrow\quad \varepsilon - iR - L\frac{di}{dt} = 0 \tag{1}$$
+
+### 2.3.1 Energizar la bobina (interruptor en A, fuente DC)
+
+Con $\varepsilon = V_0$ constante, dividiendo (1) entre $L$:
+
+$$\frac{di}{dt} = \frac{R}{L}\left(\frac{\varepsilon}{R} - i\right) = \frac{1}{\tau}\,(i_{max} - i),
+\qquad i_{max} = \frac{\varepsilon}{R},\qquad \tau = \frac{L}{R} .$$
+
+$i_{max}$ es la corriente cuando la bobina ya no se opone ($di/dt = 0$), igual que $q_{max} = \varepsilon C$
+en el capacitor. La EDO es separable. Con $i(0) = 0$:
+
+$$\int_0^t \frac{dt}{\tau} = \int_0^{i(t)} \frac{di}{i_{max} - i}
+\;\Rightarrow\; \frac{t}{\tau} = -\ln\left(i_{max} - i\right)\Big|_0^{i(t)}
+\;\Rightarrow\; -\frac{t}{\tau} = \ln\left|\frac{i_{max} - i(t)}{i_{max}}\right| .$$
+
+Aplicando exponencial y despejando:
+
+$$\boxed{\,i(t) = i_{max}\left(1 - e^{-t/\tau}\right)\,} \tag{2}$$
+
+En $t = \tau$, $i = i_{max}(1 - e^{-1}) = 0.63\,i_{max}$. Con los valores de referencia,
+$i_{max} = 1$ A y $\tau_0 = L_0/R_0 = 119.3\ \mu$s sin pieza; con cobre a 5 mm, $\tau = 108.1\ \mu$s.
+
+### 2.3.2 Desenergizar la bobina (interruptor en B)
+
+Retirar la fuente equivale a $\varepsilon = 0$ en (1): $L\,di/dt = -iR$. Separando variables desde
+$i(t_s) = i_s$:
+
+$$i(t) = i_s\, e^{-(t-t_s)/\tau} .$$
+
+### 2.3.3 Analogía con el circuito RC de clase
+
+| Circuito RC (clase) | Circuito RL (sensor) |
+|---|---|
+| $\varepsilon - iR - q/C = 0$ | $\varepsilon - iR - L\,di/dt = 0$ |
+| variable: carga $q(t)$ | variable: corriente $i(t)$ |
+| $q_{max} = \varepsilon C$ | $i_{max} = \varepsilon/R$ |
+| $\tau = RC$ | $\tau = L/R$ |
+| $q(t) = q_{max}(1 - e^{-t/\tau})$ | $i(t) = i_{max}(1 - e^{-t/\tau})$ |
+| energía $q^2/2C$ en el campo eléctrico | energía $\tfrac12 L i^2$ en el campo magnético |
+| el capacitor se opone a cambios bruscos de voltaje | la bobina se opone a cambios bruscos de corriente |
+
+Las dos ecuaciones tienen la misma forma, por eso Euler y RK4 se validan contra la misma clase de solución
+exponencial. El simulador muestra este caso con la opción **Escalón DC** (figura izquierda).
+
+![Respuesta temporal](figuras/respuesta-temporal.png)
+
+### 2.3.4 Alimentación alterna (operación real del sensor)
+
+El sensor trabaja con $\varepsilon(t) = V_0\sin\omega t$. La solución de (1) es la suma de una parte
+transitoria y una parte permanente. Para la permanente se prueba $i_{ss} = A\sin\omega t + B\cos\omega t$
+(coeficientes indeterminados). Sustituyendo en (1) e igualando senos y cosenos:
+
+$$A = \frac{V_0 R}{R^2+\omega^2L^2},\qquad B = -\frac{V_0\,\omega L}{R^2+\omega^2L^2}
+\quad\Rightarrow\quad i_{ss}(t) = I_p\sin(\omega t - \varphi),$$
+
+$$I_p = \frac{V_0}{|Z|},\qquad |Z| = \sqrt{R^2 + \omega^2L^2},\qquad \varphi = \arctan\frac{\omega L}{R} .$$
+
+Con la condición inicial $i(0) = I_0$:
+
+$$i(t) = \left[I_0 + I_p\sin\varphi\right]e^{-t/\tau} + I_p\sin(\omega t - \varphi). \tag{3}$$
+
+SymPy (`dsolve`) llega a la misma expresión y verifica que el residuo al sustituirla en (1) es cero.
+Sin pieza, $\omega L_0 = 3.75\ \Omega$, $|Z| = 6.25\ \Omega$ e $I_p = 0.800$ A.
+
+**Energía y potencia**: energía magnética máxima $E_{max} = \tfrac12 L I_p^2$ y potencia media
+$\langle P\rangle = \tfrac12 R I_p^2 = I_{rms}^2 R$.
+
+### 2.3.5 Actividad del apunte de clase, aplicada a la bobina
+
+El apunte del circuito RC propone tres actividades. Aquí se resuelven para el circuito RL.
+
+**Actividad 1: obtener la otra variable derivando.** En el RC se pide sacar $i(t) = dq/dt$ de $q(t)$. En el RL la
+variable es la corriente, así que lo natural es obtener el **voltaje de la bobina**:
+
+$$\Delta V_L(t) = L\frac{di}{dt} = L\cdot\frac{i_{max}}{\tau}e^{-t/\tau} = \varepsilon\, e^{-t/\tau} .$$
+
+Al conectar, toda la fem cae en la bobina ($\Delta V_L = \varepsilon$) y nada en la resistencia, porque la
+corriente todavía es cero. Con el tiempo ocurre lo contrario: la corriente llega a $i_{max}$, $\Delta V_L \to 0$ y
+toda la fem cae en $R$. Es la imagen especular del RC, donde la corriente arranca en su máximo $\varepsilon/R$ y
+decae mientras la carga crece.
+
+**Actividad 2: el proceso inverso.** Al pasar el interruptor a B se hace $\varepsilon = 0$ en (1), y la corriente
+decae como $i_s e^{-(t - t_s)/\tau}$ (sección 2.3.2). El voltaje de la bobina cambia de signo: ahora la bobina
+**entrega** energía al circuito para tratar de mantener la corriente, como el capacitor que se descarga.
+
+**Actividad 3: dos ciclos con los valores de clase.** El apunte pide graficar dos ciclos de carga y descarga con
+$R = 60$ kΩ, $C = 200$ µF y $\varepsilon = 9$ V. Lo resolvimos con las **mismas funciones** `euler` y `rk4` del
+simulador, cambiando solo la ecuación:
+
+$$\tau = RC = (60\times10^3)(200\times10^{-6}) = 12\ \text{s},\qquad q_{max} = \varepsilon C = 1.8\ \text{mC},
+\qquad i_0 = \frac{\varepsilon}{R} = 150\ \mu\text{A}.$$
+
+![Ejercicio RC de clase](figuras/rc-clase-dos-ciclos.png)
+
+Que el mismo código resuelva el ejercicio de clase y el sensor demuestra que los dos problemas son la misma
+matemática.
+
+### 2.3.6 Balance de energía
+
+Si se multiplica la ecuación (1) por $i$:
+
+$$\underbrace{\varepsilon\, i}_{\text{potencia de la fuente}} = \underbrace{i^2R}_{\text{calor en } R} +
+\underbrace{L\,i\frac{di}{dt}}_{\frac{d}{dt}\left(\frac12 Li^2\right)} .$$
+
+Al integrar desde $t = 0$, la energía que entrega la fuente se reparte entre el calor de la resistencia y la
+energía guardada en el campo magnético:
+
+$$\int_0^t\varepsilon\, i\,dt = \int_0^t i^2R\,dt + \tfrac12 L\,i(t)^2 .$$
+
+Con cobre a 5 mm, durante el energizado ($5\tau$): la fuente entrega 2.145 mJ, la resistencia disipa 1.881 mJ y
+la bobina guarda 0.264 mJ. El error del balance calculado con RK4 es de $5\times10^{-7}$. Al desenergizar, esos
+0.264 mJ se convierten en calor en la resistencia. Es la conservación de la energía aplicada al circuito.
+
+![Balance de energía](figuras/balance-energia.png)
+
+## 2.4 Efecto de la pieza metálica
+
+### Modelo simple (el que pide la propuesta)
+
+"Inductancia constante por cada posición de detección": para cada distancia $d$ se reemplazan $L$ y $R$
+por $L_{\text{eff}}(d)$ y $R_{\text{eff}}(d)$ y se usan las fórmulas anteriores. Lo que falta es calcular esos
+dos valores a partir de la física.
+
+### Cálculo de $L_{\text{eff}}$ y $R_{\text{eff}}$ (Dodd y Deeds, 1968)
+
+Por simetría, el potencial vector solo tiene componente $A_\varphi(\rho, z)$. Separando variables, las
+soluciones son de la forma $J_1(\alpha\rho)\,e^{\pm\alpha z}$ en el aire ($\nabla^2 A = 0$) y
+$J_1(\alpha\rho)\,e^{\alpha_1 z}$ en el conductor ($\nabla^2 A = j\omega\mu\sigma A$), con
+
+$$\alpha_1 = \sqrt{\alpha^2 + j\omega\mu_0\mu_r\sigma} .$$
+
+Al imponer las condiciones de frontera de la sección 1.5 en $z = 0$ aparece el coeficiente de reflexión
+
+$$\Gamma(\alpha) = \frac{\mu_r\alpha - \alpha_1}{\mu_r\alpha + \alpha_1},$$
+
+y al sumar sobre las espiras de la bobina, el factor geométrico
+
+$$F(\alpha) = \frac{e^{-\alpha d} - e^{-\alpha(d+l)}}{\alpha l} .$$
+
+El cambio de impedancia que produce la pieza es
+
+$$\Delta Z = j\omega\pi\mu_0 a^2 N^2 \int_0^\infty J_1^2(\alpha a)\,\Gamma(\alpha)\,F^2(\alpha)\,d\alpha,$$
+
+y de él salen los parámetros efectivos:
+
+$$L_{\text{eff}} = L_0 + \frac{\operatorname{Im}\Delta Z}{\omega},\qquad R_{\text{eff}} = R_0 + \operatorname{Re}\Delta Z .$$
+
+La integral se evalúa numéricamente (regla del trapecio en una malla logarítmica de 6000 puntos, función
+`delta_Z`). Para una sola espira y un conductor perfecto se reduce a $\Delta L = -M$, donde $M$ es la
+inductancia mutua entre la espira y su imagen a distancia $2d$: es el **método de las imágenes**.
+
+### Resultados ($d = 5$ mm, $f = 1$ kHz)
+
+| Material | $\sigma$ (S/m) | $\mu_r$ | $\delta$ (mm) | $\Delta L/L_0$ | $\Delta R$ (Ω) |
+|---|---|---|---|---|---|
+| Cobre | $5.96\times10^{7}$ | 1 | 2.06 | −8.45 % | +0.050 |
+| Aluminio | $3.77\times10^{7}$ | 1 | 2.59 | −8.05 % | +0.060 |
+| Latón | $1.5\times10^{7}$ | 1 | 4.11 | −6.94 % | +0.080 |
+| Acero inoxidable 304 | $1.45\times10^{6}$ | 1.02 | 13.1 | −2.71 % | +0.090 |
+| Acero al carbono | $6.0\times10^{6}$ | 100 | 0.65 | **+5.51 %** | +0.106 |
+
+![Parámetros frente a la distancia](figuras/parametros-vs-distancia.png)
+
+El acero al carbono cambia de signo con la frecuencia: $\Delta L/L_0$ = +8.4 % a 100 Hz, +5.5 % a 1 kHz,
++0.1 % a 10 kHz y −4.0 % a 50 kHz. A baja frecuencia domina la magnetización; a alta frecuencia $\delta$ es tan
+pequeña que domina el apantallamiento por corrientes de Foucault.
+
+![Inductancia frente a la frecuencia](figuras/inductancia-vs-frecuencia.png)
+
+## 2.5 Pieza en movimiento: inductancia variable
+
+Si la pieza se mueve, $L$ depende del tiempo. La ley de Faraday se aplica al flujo enlazado
+$\Lambda = L(t)\,i$:
+
+$$\varepsilon - iR - \frac{d}{dt}\big[L(t)\,i\big] = 0
+\quad\Rightarrow\quad \frac{di}{dt} = \frac{\varepsilon(t) - \left[R(t) + \dot L(t)\right] i}{L(t)} .$$
+
+El término $\dot L\, i$ actúa como una resistencia adicional. Para una pieza que se mueve despacio frente al
+período de la fuente es pequeño, y la amplitud sigue la curva cuasi-estática $V_0/|Z(d(t))|$. Esta EDO no tiene
+solución cerrada, así que se resuelve solo numéricamente (pestaña **Paso del objeto**).
+
+## 2.6 Señal de detección y sensibilidad
+
+El sensor compara la amplitud con pieza, $I_p$, con la amplitud sin pieza, $I_{p,0}$:
+
+$$s = \frac{|I_p - I_{p,0}|}{I_{p,0}} \ \ge\ \text{umbral}\quad\Rightarrow\quad \text{detectado}.$$
+
+Derivando $I_p = V_0/\sqrt{R^2+\omega^2L^2}$:
+
+$$\frac{\partial I_p}{\partial L} = -\frac{V_0\,\omega^2 L}{(R^2+\omega^2L^2)^{3/2}},\qquad
+\frac{\partial I_p}{\partial R} = -\frac{V_0\,R}{(R^2+\omega^2L^2)^{3/2}} .$$
+
+Las dos derivadas son negativas. En un conductor no magnético, $L$ baja (lo que sube $I_p$) y $R$ sube (lo que
+baja $I_p$): los efectos compiten. Con el acero inoxidable casi se cancelan y la señal es muy débil
+(0.20 %). Ese resultado se discute en la [validación](06-validacion-e-impacto.md).
+
+### 2.6.1 Factor de calidad
+
+Los cambios relativos de $L$ que produce la pieza **no dependen de $N$**: $L_0$ y $\Delta L$ crecen los dos con
+$N^2$, y el cobre a 5 mm da −8.45 % con 50 espiras o con 500. Lo que sí cambia es cuánto de ese efecto llega a la
+corriente. La amplitud depende de $\sqrt{R^2 + \omega^2L^2}$, y un cambio en $L$ solo se nota si el término
+$\omega L$ pesa frente a $R$. Esa razón es el **factor de calidad**:
+
+$$Q = \frac{\omega L}{R} .$$
+
+| Configuración | $Q$ | Señal con cobre a 5 mm |
+|---|---|---|
+| $N = 50$ | 0.08 | 0.06 % |
+| $N = 150$ (referencia) | 0.75 | 2.35 % |
+| $N = 300$ | 3.0 | 7.7 % |
+| $N = 150$, $R_0 = 1\ \Omega$ | 3.7 | 8.1 % |
+
+Un sensor sensible necesita $Q$ grande: muchas espiras, alambre de baja resistencia o una frecuencia alta.
+
+## 2.7 Análisis dimensional
+
+| Expresión | Unidades | Comprobación |
+|---|---|---|
+| $L = \mu_0 N^2 A/l$ | $\dfrac{\text{H}}{\text{m}}\cdot\dfrac{\text{m}^2}{\text{m}} = \text{H}$ | ✓ |
+| $\tau = L/R$ | $\dfrac{\text{V·s/A}}{\text{V/A}} = \text{s}$ | ✓ |
+| $L\,di/dt$ | $\text{H}\cdot\text{A/s} = \text{V}$ | igual que $\varepsilon$ e $iR$ ✓ |
+| $\omega L$ | $\text{s}^{-1}\cdot\text{H} = \Omega$ | se suma con $R$ en $|Z|$ ✓ |
+| $\delta = \sqrt{2/(\omega\mu\sigma)}$ | $\sqrt{\dfrac{1}{\text{s}^{-1}\cdot\text{H/m}\cdot\text{S/m}}} = \text{m}$ | ✓ |
+| $\alpha^2$ y $\omega\mu\sigma$ en $\alpha_1$ | $\text{m}^{-2}$ ambos | se pueden sumar ✓ |
+| $\Delta Z = j\omega\mu_0 a^2N^2\int\ldots d\alpha$ | $\text{s}^{-1}\cdot\text{H/m}\cdot\text{m}^2\cdot\text{m}^{-1} = \Omega$ | ✓ |
+| $\tfrac12 L i^2$ | $\text{H}\cdot\text{A}^2 = \text{J}$ | ✓ |
+
+## 2.8 Interpretación física
+
+- La pieza **conductora no magnética** expulsa flujo (Lenz). $L$ baja y $R$ sube, más cuanto más cerca está y
+  cuanto mejor conduce.
+- El efecto decae en distancias del orden del **radio de la bobina**: a $d = a$ ya es pequeño. Por eso los
+  sensores comerciales tienen alcances de una fracción de su diámetro.
+- La **frecuencia** controla $\delta$. A más frecuencia, corrientes más superficiales y respuesta más
+  parecida entre metales no ferrosos; los ferromagnéticos pasan de aumentar a disminuir $L$.
+- En el escalón DC la bobina se comporta como el capacitor de clase pero con la corriente como variable: crece
+  hasta el 63 % en $\tau$, y la pieza, al bajar $L$, acorta $\tau$.
+
+
+## 2.9 Sensor capacitivo (clase) frente a sensor inductivo
+
+| | Pantalla o sensor capacitivo | Sensor inductivo |
+|---|---|---|
+| Campo que usa | Eléctrico, entre electrodos | Magnético, alrededor de la bobina |
+| Magnitud que cambia | $C = \varepsilon A/d$ | $L_{\text{eff}}$ y $R_{\text{eff}}$ |
+| Por qué cambia | El dedo (conductor) acorta la distancia efectiva: $C' = \varepsilon A/d'$ con $d' < d$ | Las corrientes de Foucault expulsan flujo; los ferromagnéticos lo concentran |
+| Qué detecta | Cualquier objeto conductor o dieléctrico (dedo, agua, plástico) | Solo metales |
+| Ventaja industrial | Detecta líquidos y plásticos | Inmune a polvo, aceite y suciedad no metálica |
+| Señal | $\Delta C_{ij} = C'_{ij} - C_{ij}$ en una matriz de electrodos | $\lvert I_p - I_{p,0}\rvert / I_{p,0}$ |
+
+Los dos usan la misma estrategia: un elemento cuyo valor depende solo de la geometría y de los materiales cercanos
+($C$ o $L$), y un circuito que mide su cambio.
+
+
+## 2.10 Modelo del detector de espira (caso del carro)
+
+El caso principal usa las mismas leyes con otra geometría y agrega un capacitor, lo que convierte el circuito en un
+**oscilador LC**: la unión de los dos circuitos vistos, el RC de clase y el RL de este proyecto.
+
+### 2.10.1 Inductancia de la espira
+
+Una espira circular de radio $a$, hecha con alambre de radio $r_w$ y con $N$ vueltas, tiene
+
+$$L_0 = \mu_0 N^2 a\left[\ln\!\left(\frac{8a}{r_w}\right) - 2\right].$$
+
+La espira cuadrada de lado $s = 1.8$ m se reemplaza por una circular de igual área, $a = s/\sqrt{\pi} = 1.016$ m. Con
+$N = 3$ y alambre 14 AWG ($r_w = 0.8$ mm):
+
+$$L_0 = (4\pi\times10^{-7})(9)(1.016)\left[\ln(10\,160) - 2\right] = 83.0\ \mu\text{H}.$$
+
+La regla práctica de los manuales de instalación, $L \approx P\,(N^2 + N)/4$ (en µH, con el perímetro $P$ en pies),
+da 70.9 µH: el mismo orden de magnitud.
+
+### 2.10.2 El chasis como placa conductora
+
+Se usa la misma integral de Dodd y Deeds de la sección 2.4, con el chasis de acero a una distancia
+$d = h_{piso} + p$ de la espira ($p = 5$ cm de profundidad). El carro no tapa toda la espira, así que el cambio de
+impedancia se multiplica por la **fracción cubierta** $\eta$:
+
+$$\Delta Z_{carro} = \eta\,\Delta Z_{placa}(d),\qquad \eta = \min\!\left(1, \frac{\text{ancho}}{s}\right)\cdot\frac{\text{solape a lo largo}}{s}.$$
+
+| | Spark ($h_{piso}$ = 15 cm) | Kwid ($h_{piso}$ = 18 cm) |
+|---|---|---|
+| Distancia chasis–espira $d$ | 20 cm | 23 cm |
+| Fracción cubierta $\eta$ | 0.89 | 0.88 |
+| $\Delta L$ | −10.7 µH | −9.5 µH |
+| $\Delta L / L_0$ | −12.87 % | −11.39 % |
+| $\Delta R$ | +0.064 Ω | +0.054 Ω |
+
+### 2.10.3 El oscilador LC: Kirchhoff con capacitor y bobina
+
+El detector conecta la espira a un capacitor $C$. Recorriendo la malla con el acuerdo de signos de clase (sin
+fuente, porque el oscilador solo repone la energía que se pierde):
+
+$$-\frac{q}{C} - iR - L\frac{di}{dt} = 0,\qquad i = \frac{dq}{dt}
+\quad\Rightarrow\quad L\frac{d^2q}{dt^2} + R\frac{dq}{dt} + \frac{q}{C} = 0 .$$
+
+Es una EDO de segundo orden. Probando $q = e^{st}$:
+
+$$Ls^2 + Rs + \frac1C = 0\quad\Rightarrow\quad s = -\frac{R}{2L} \pm j\,\omega_d,\qquad
+\omega_d = \sqrt{\frac{1}{LC} - \left(\frac{R}{2L}\right)^2}\;\approx\;\omega_0 = \frac{1}{\sqrt{LC}}.$$
+
+La carga oscila como $q(t) = q_0\, e^{-Rt/2L}\cos\omega_d t$ (más un término pequeño en seno). La energía, que pasa
+del capacitor ($q^2/2C$) a la bobina ($\tfrac12 Li^2$) y de vuelta, se pierde en la resistencia como $e^{-Rt/L}$.
+
+Con $L_0 = 83.0$ µH, $C = 0.1$ µF y $R = 0.6\ \Omega$:
+
+$$f_0 = \frac{1}{2\pi\sqrt{L_0C}} = 55.25\ \text{kHz},\qquad Q = \frac{\omega_0 L_0}{R} = 48 .$$
+
+Como $Q \gg 1$, $\omega_d$ y $\omega_0$ difieren en menos de 0.01 %. Un oscilador real (Colpitts o similar) repone
+con un transistor la energía que se pierde y mantiene la oscilación indefinidamente.
+
+### 2.10.4 Cambio de frecuencia con el carro
+
+Si la inductancia pasa de $L_0$ a $L_0 + \Delta L$:
+
+$$\frac{f}{f_0} = \sqrt{\frac{L_0}{L_0 + \Delta L}} = \left(1 + \frac{\Delta L}{L_0}\right)^{-1/2}.$$
+
+Para cambios pequeños, la serie de Taylor da $\Delta f / f_0 \approx -\tfrac12 \Delta L / L_0$. Con un carro el cambio
+no es pequeño y hay que usar la expresión exacta:
+
+| | $\Delta L/L_0$ | Aproximación $-\tfrac12\Delta L/L_0$ | Exacta | Frecuencia con el carro |
+|---|---|---|---|---|
+| Spark | −12.87 % | +6.44 % | **+7.13 %** | 59.18 kHz |
+| Kwid | −11.39 % | +5.70 % | **+6.23 %** | 58.69 kHz |
+
+La simulación numérica del oscilador con RK4 da +7.13 % para el Spark y confirma la fórmula exacta
+([03 · Métodos numéricos](03-metodos-numericos.md#39-el-oscilador-lc-del-detector)).
+
+### 2.10.5 El carro cruzando la espira
+
+Mientras el carro avanza, la fracción cubierta crece linealmente desde que la nariz entra hasta que la espira queda
+tapada, se mantiene constante y luego baja. La señal $-\Delta L/L$ tiene forma de trapecio. A 10 km/h, un Spark
+(3.64 m) sobre una espira de 1.8 m produce una señal que dura $(3.64 + 1.8)/2.78 = 2.0$ s. El detector necesita
+apenas unos milisegundos para medir la frecuencia, así que cada carro da miles de mediciones.
+
+### 2.10.6 Reconocer el carro
+
+La curva $\Delta L/L$ en función de la altura libre al piso es monótona: más bajo el carro, más cambio. Basta con
+invertirla: el detector mide $\Delta L/L$ (a partir de $f$), lee en la curva la altura que le corresponde y elige el
+carro de altura más parecida. Con los valores del modelo el Spark da 14.9 cm y el Kwid 18.0 cm. Entre 15 y 18 cm la
+pendiente de la curva es de unos 0.46 puntos de $\Delta L/L$ por centímetro.
+
+### 2.10.7 Análisis dimensional del caso del carro
+
+| Expresión | Unidades | Comprobación |
+|---|---|---|
+| $\mu_0 N^2 a\,[\ln(8a/r_w) - 2]$ | $\text{H/m}\cdot\text{m}$ = H (el logaritmo es adimensional) | ✓ |
+| $q/C$, $iR$, $L\,di/dt$ | V los tres | se pueden sumar en la malla ✓ |
+| $1/\sqrt{LC}$ | $1/\sqrt{\text{H}\cdot\text{F}} = 1/\sqrt{\text{s}^2}$ = s⁻¹ | ✓ |
+| $R/2L$ | $\Omega/\text{H}$ = s⁻¹ | tasa de amortiguamiento ✓ |
+| $Q = \omega_0 L/R$ | adimensional | ✓ |
